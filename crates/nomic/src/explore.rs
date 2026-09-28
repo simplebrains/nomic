@@ -27,6 +27,9 @@ pub struct ExploreReport {
     pub rules_allowed: BTreeMap<String, usize>,
     pub rules_denied: BTreeMap<String, usize>,
     pub exceptions_exercised: BTreeMap<String, usize>,
+    /// Actions never tried because a parameter's type cannot be enumerated.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub skipped_actions: Vec<String>,
     pub counterexample: Option<Counterexample>,
 }
 
@@ -54,11 +57,13 @@ pub fn explore(model: &Model, opts: &ExploreOptions) -> Result<ExploreReport, Ma
     let mut machine = Machine::new(model);
     machine.fresh = opts.fresh;
     let init = machine.initial_state()?;
+    let skipped_actions: Vec<String> = machine.enumerate_with_skips(&init).1.iter().map(|s| s.to_string()).collect();
 
     let mut report = ExploreReport {
         depth_limit: opts.depth,
         state_limit: opts.max_states,
         exhausted: true,
+        skipped_actions,
         ..Default::default()
     };
     let mut seen: HashMap<State, usize> = HashMap::new();

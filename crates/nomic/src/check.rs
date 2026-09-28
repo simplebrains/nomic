@@ -187,19 +187,6 @@ impl<'a> Checker<'a> {
             }
         }
         for a in &self.model.actions {
-            for p in &a.params {
-                if inhabitants(&p.ty, self.model).is_none() && !self.is_opaque_ref(&p.ty) {
-                    self.warn(
-                        a.pos,
-                        format!(
-                            "action `{}` parameter `{}` has unbounded type {}; legal actions cannot be enumerated",
-                            a.name,
-                            p.name,
-                            type_display(&p.ty)
-                        ),
-                    );
-                }
-            }
             if !self.model.rules.iter().any(|r| r.on.name == a.name) {
                 self.warn(a.pos, format!("action `{}` has no rule; it can never be accepted", a.name));
             }

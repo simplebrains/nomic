@@ -169,6 +169,20 @@ impl From<EvalError> for MachineError {
 
 pub type MResult<T> = Result<T, MachineError>;
 
+/// An action that enumeration left out, and why.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct Skipped {
+    pub action: String,
+    pub param: String,
+    pub ty: String,
+}
+
+impl fmt::Display for Skipped {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{}: parameter `{}` has unbounded type {}; give it a range or opaque type to enumerate it", self.action, self.param, self.ty)
+    }
+}
+
 /// Result of applying an occurrence.
 #[derive(Debug, Clone)]
 pub enum Outcome {
@@ -748,11 +762,14 @@ impl<'a> Machine<'a> {
     // ---- enumeration ---------------------------------------------------------
 
     /// Every well-typed occurrence of every action from `state`, in canonical
-    /// order. Opaque parameters range over the identities already in the
-    /// state plus `fresh` new ones. Errors on `Int` or `Text` parameters.
-    pub fn all_occurrences(&self, state: &State) -> MResult<Vec<Occurrence>> {
+    /// order. Opaque and `Text` parameters range over the values already in
+    /// the state plus `fresh` new ones; an action with an `Int` parameter
+    /// cannot be enumerated and is skipped. Returns the occurrences and the
+    /// skipped actions with the parameter that stopped them.
+    pub fn enumerate_with_skips(&self, state: &State) -> (Vec<Occurrence>, Vec<Skipped>) {
         let mut out = Vec::new();
-        for a in &self.model.actions {
+        let mut skipped = Vec::new();
+        'actions: for a in &self.model.actions {
             let mut domains = Vec::new();
             for p in &a.params {
                 let d = match inhabitants(&p.ty, self.model) {
@@ -765,11 +782,16 @@ impl<'a> Machine<'a> {
                             }
                             ids
                         }
-                        _ => {
-                            return Err(MachineError::Type {
-                                pos: Some(a.pos),
-                                message: format!("action `{}` parameter `{}` has unbounded type {}", a.name, p.name, type_display(&p.ty)),
-                            })
+                        TypeRef::Text => {
+                            let mut texts: Vec<Value> = state.texts().into_iter().collect();
+                            for i in 1..=self.fresh {
+                                texts.push(Value::Text(format!("#{i}")));
+                            }
+                            texts
+                        }
+                        other => {
+                            skipped.push(Skipped { action: a.name.clone(), param: p.name.clone(), ty: type_display(other) });
+                            continue 'actions;
                         }
                     },
                 };
@@ -779,7 +801,12 @@ impl<'a> Machine<'a> {
                 out.push(Occurrence { name: a.name.clone(), args });
             }
         }
-        Ok(out)
+        (out, skipped)
+    }
+
+    /// Every enumerable occurrence (see `enumerate_with_skips`).
+    pub fn all_occurrences(&self, state: &State) -> MResult<Vec<Occurrence>> {
+        Ok(self.enumerate_with_skips(state).0)
     }
 
     /// Stages 1–4 only: which occurrences would be accepted from this state.

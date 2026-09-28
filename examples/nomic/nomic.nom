@@ -15,7 +15,7 @@
 /// rules was added for it, realizing the "match against occurrence and
 /// current state" wording of the core semantics.
 model NomicMachine
-  documents "README.md#L195-L210@34537387826a" "the pipeline section of the README"
+  documents "README.md#L196-L210@77de0c9701bc" "the pipeline section of the README"
   realizes "crates/nomic/src/machine.rs#L1-L15@eb1871a676c8" "the module doc lists the ten stages"
   evidences "crates/nomic/tests/examples.rs#L77-L85@eedf5b4d87bc" "tic-tac-toe: 5478 positions, 958 terminal"
   evidences "crates/nomic/tests/examples.rs#L87-L94@c341eb0d5d74" "Connect Four ply counts match OEIS A212693"
@@ -34,7 +34,7 @@ type InvariantId = 1..2
 fact At: Stage
 /// Rule `r` matched the occurrence's pattern.
 fact Matched(r: RuleId)
-  realizes "crates/nomic/src/machine.rs#L425-L444@179252b7c99c" "match_pattern: bind, wildcard, literal per parameter"
+  realizes "crates/nomic/src/machine.rs#L442-L461@c05e641f91fc" "match_pattern: bind, wildcard, literal per parameter"
 fact Ruled(r: RuleId): Disposition
 fact HasEffects(r: RuleId)
 /// Two allowing rules disagree about one key in the same round.
@@ -60,7 +60,7 @@ derive Done: Bool = Outcome != none
 /// action can be legal and still end in a model error at Verify. The cited
 /// code contradicts this description; closing the gap flips the relation.
 derive Legal: Bool = AnyMatch && !AnyDenial
-  contradicts "crates/nomic/src/machine.rs#L762-L781@c8593e3a3b12" "is_legal stops after dispositions and ensures"
+  contradicts "crates/nomic/src/machine.rs#L825-L844@60313ea43af5" "is_legal stops after dispositions and ensures"
 /// Reaction rounds are capped so a non-settling cascade is an error, not a hang.
 derive MaxRounds: Int = 64
   configures "crates/nomic/src/machine.rs#L27@a5b0ef35796c"
@@ -83,7 +83,7 @@ rule DoBegin on Begin {
   assert At = Typecheck
   assert Round = 0
 }
-  realizes "crates/nomic/src/machine.rs#L261-L267@6f6a90772236" "apply: typecheck the occurrence first"
+  realizes "crates/nomic/src/machine.rs#L278-L284@6ec6b409d343" "apply: typecheck the occurrence first"
 
 rule MatchOnlyDuringMatch on RuleMatches(r, d, fx) {
   require At == Match "rules are matched only in the Match stage"
@@ -96,7 +96,7 @@ rule DoMatch on RuleMatches(r, d, fx) when At == Match && !Matched(r) {
   assert Ruled(r) = d
   if fx && d == Allow { assert HasEffects(r) }
 }
-  realizes "crates/nomic/src/machine.rs#L384-L423@d953f18ec4e3" "evaluate_rules: one trace per matched rule; a denied rule's effects are dropped"
+  realizes "crates/nomic/src/machine.rs#L401-L440@b5155c272b11" "evaluate_rules: one trace per matched rule; a denied rule's effects are dropped"
 
 rule AdvanceNotDone on Advance { deny if Done "the transition has ended" }
 rule AdvanceNotIdle on Advance { require At != Idle "nothing in progress" }
@@ -107,7 +107,7 @@ rule ToResolve on Advance when At == Check { assert At = Resolve }
 rule ResolveRejects on Advance when At == Resolve && (!AnyMatch || AnyDenial) {
   assert Outcome = Rejected
 }
-  realizes "crates/nomic/src/machine.rs#L279-L286@be7b3d0a1ffa"
+  realizes "crates/nomic/src/machine.rs#L296-L303@cc501716d1d3"
 rule ResolveProceeds on Advance when At == Resolve && AnyMatch && !AnyDenial {
   assert At = Transition
 }
@@ -116,7 +116,7 @@ rule ApplyEffects on Advance when At == Transition && !Conflict {
   assert Applied
   assert At = Detect
 }
-  realizes "crates/nomic/src/machine.rs#L627-L668@b6932cefbd30" "apply_effects: keyed by fact and key tuple"
+  realizes "crates/nomic/src/machine.rs#L650-L691@59bfffaf4500" "apply_effects: keyed by fact and key tuple"
 rule ConflictOnlyInTransition on EffectsConflict {
   require At == Transition && !Done "conflicts arise while applying effects"
 }
@@ -124,7 +124,7 @@ rule DoConflict on EffectsConflict when At == Transition {
   assert Conflict
   assert Outcome = ModelError
 }
-  realizes "crates/nomic/src/machine.rs#L638-L648@72dcf71bca7f" "two effects on one key that differ is MachineError::Conflict"
+  realizes "crates/nomic/src/machine.rs#L661-L671@65d7f7ffb997" "two effects on one key that differ is MachineError::Conflict"
 rule ToReact on Advance when At == Detect { assert At = React }
 /// React: every pending event fires in one round; detection runs again after.
 rule ReactionRound on Advance when At == React && AnyPending && Round < MaxRounds {
@@ -134,11 +134,11 @@ rule ReactionRound on Advance when At == React && AnyPending && Round < MaxRound
   }
   assert Round = (Round ?? 0) + 1
 }
-  realizes "crates/nomic/src/machine.rs#L306-L363@b5bc1ac7bb98"
+  realizes "crates/nomic/src/machine.rs#L323-L380@9d43c76b0e76"
 rule ReactionLimit on Advance when At == React && AnyPending && Round >= MaxRounds {
   assert Outcome = ModelError
 }
-  realizes "crates/nomic/src/machine.rs#L311-L314@65906bd23e85"
+  realizes "crates/nomic/src/machine.rs#L328-L331@98dcf1d12ba7"
 rule Settled on Advance when At == React && !AnyPending {
   assert At = Verify
 }
@@ -146,12 +146,12 @@ rule Settled on Advance when At == React && !AnyPending {
 rule VerifyFails on Advance when At == Verify && Unexcused {
   assert Outcome = ModelError
 }
-  realizes "crates/nomic/src/machine.rs#L365-L375@f319cc59bf41"
+  realizes "crates/nomic/src/machine.rs#L382-L392@a4bd1efc0367"
 rule DoCommit on Advance when At == Verify && !Unexcused {
   assert At = Commit
   assert Outcome = Accepted
 }
-  realizes "crates/nomic/src/machine.rs#L377-L380@3dad437bde16"
+  realizes "crates/nomic/src/machine.rs#L394-L397@302162979bd9"
 
 rule DetectOnlyWhenDetecting on EventDetected(e) {
   require (At == Detect || At == React) && !Done "events are detected after effects apply"
@@ -160,11 +160,11 @@ rule DetectOnlyWhenDetecting on EventDetected(e) {
 rule OncePerTransition on EventDetected(e) {
   deny if Fired(e) || Pending(e) "already fired this transition"
 }
-  realizes "crates/nomic/src/machine.rs#L351-L356@30c46b3f6ec2" "the implementation drops the duplicate silently rather than refusing it"
+  realizes "crates/nomic/src/machine.rs#L368-L373@205680706e7f" "the implementation drops the duplicate silently rather than refusing it"
 rule DoDetect on EventDetected(e) when (At == Detect || At == React) && !Fired(e) && !Pending(e) {
   assert Pending(e)
 }
-  realizes "crates/nomic/src/machine.rs#L671-L697@a16b9920dddb" "detect: false in the previous state, true in the new one"
+  realizes "crates/nomic/src/machine.rs#L694-L732@296cc3982bda" "detect: false in the previous state, true in the new one"
 
 rule FailOnlyInVerify on InvariantFails(i, x) {
   require At == Verify && !Done "invariants are checked at Verify"
@@ -173,7 +173,7 @@ rule DoFail on InvariantFails(i, x) when At == Verify {
   assert Violated(i)
   if x { assert Excused(i) }
 }
-  realizes "crates/nomic/src/machine.rs#L701-L725@57145bff9db0" "verify: exceptions are consulted only for failures"
+  realizes "crates/nomic/src/machine.rs#L736-L760@9722bdc69159" "verify: exceptions are consulted only for failures"
 
 event TransitionCommitted when Outcome == Accepted
 event TransitionRejected when Outcome == Rejected
@@ -182,7 +182,7 @@ event ModelDefect when Outcome == ModelError
 invariant AcceptedMeansCommitted: Outcome != Accepted || At == Commit
 /// A rejected occurrence changes nothing.
 invariant RejectedAppliesNothing: Outcome != Rejected || !Applied
-  realizes "crates/nomic/src/machine.rs#L279-L286@be7b3d0a1ffa"
+  realizes "crates/nomic/src/machine.rs#L296-L303@cc501716d1d3"
 invariant NothingFiresTwice: all(e: EventId => !(Fired(e) && Pending(e)))
 invariant RoundsBounded: (Round ?? 0) <= MaxRounds
 invariant ExcusedImpliesViolated: all(i: InvariantId where Excused(i) => Violated(i))

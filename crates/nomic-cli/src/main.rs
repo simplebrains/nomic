@@ -131,6 +131,9 @@ fn run(args: &[String]) -> Result<ExitCode, String> {
             for occ in m.legal_actions(&s0).map_err(|e| e.to_string())? {
                 println!("{occ}");
             }
+            for sk in m.enumerate_with_skips(&s0).1 {
+                eprintln!("not enumerated: {sk}");
+            }
             Ok(ExitCode::SUCCESS)
         }
         "play" => {
@@ -213,6 +216,9 @@ fn run(args: &[String]) -> Result<ExitCode, String> {
                     report.states, report.transitions, report.rejected_attempts, report.terminal_states, report.max_depth_reached, elapsed
                 );
                 println!("exhaustive: {}", if report.exhausted { "yes" } else { "no (limit reached)" });
+                for sk in &report.skipped_actions {
+                    println!("not explored: {sk}");
+                }
                 if !report.events.is_empty() {
                     println!("events:");
                     for (e, n) in &report.events {

@@ -159,6 +159,21 @@ impl State {
         self.facts.get(fact).into_iter().flat_map(|m| m.iter())
     }
 
+    /// Every `Text` value present anywhere in the state, as a key or a value.
+    pub fn texts(&self) -> std::collections::BTreeSet<Value> {
+        let mut out = std::collections::BTreeSet::new();
+        for instances in self.facts.values() {
+            for (key, value) in instances {
+                for v in key.iter().chain(std::iter::once(value)) {
+                    if matches!(v, Value::Text(_)) {
+                        out.insert(v.clone());
+                    }
+                }
+            }
+        }
+        out
+    }
+
     /// Every opaque identity of type `ty` present anywhere in the state, as a
     /// key or a value: the known population of an open domain.
     pub fn identities_of(&self, ty: &str) -> std::collections::BTreeSet<Value> {
