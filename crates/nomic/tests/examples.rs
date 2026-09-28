@@ -87,7 +87,7 @@ fn tic_tac_toe_has_the_known_number_of_reachable_positions() {
 #[test]
 fn connect_four_invariants_hold_to_depth_four() {
     let model = load_example("connect_four");
-    let report = explore(&model, &ExploreOptions { depth: Some(4), max_states: 100_000 }).unwrap();
+    let report = explore(&model, &ExploreOptions { depth: Some(4), max_states: 100_000, ..Default::default() }).unwrap();
     assert!(report.counterexample.is_none(), "{:?}", report.counterexample);
     // Distinct positions after 0..=4 plies: 1, 7, 49, 238, 1120 (OEIS A212693).
     assert_eq!(report.states, 1 + 7 + 49 + 238 + 1120);

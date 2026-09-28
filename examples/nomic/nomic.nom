@@ -18,7 +18,7 @@ model NomicMachine
   documents "README.md#L169-L184@34537387826a" "the pipeline section of the README"
   realizes "crates/nomic/src/machine.rs#L1-L15@eb1871a676c8" "the module doc lists the ten stages"
   evidences "crates/nomic/tests/examples.rs#L77-L85@eedf5b4d87bc" "tic-tac-toe: 5478 positions, 958 terminal"
-  evidences "crates/nomic/tests/examples.rs#L87-L94@2a19afd194ef" "Connect Four ply counts match OEIS A212693"
+  evidences "crates/nomic/tests/examples.rs#L87-L94@c341eb0d5d74" "Connect Four ply counts match OEIS A212693"
 
 /// The pipeline stages, in order. `Idle` is between transitions.
 type Stage =
