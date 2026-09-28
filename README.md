@@ -40,6 +40,16 @@ Rust crates form a Cargo workspace; TypeScript packages form a pnpm
 workspace. A language server (`crates/nomic-lsp`) over the Rust checker is the
 next planned crate.
 
+## Install
+
+```
+cargo install nomic-cli        # the `nomic` command, from crates.io
+```
+
+The crates are [`nomic`](https://crates.io/crates/nomic) (the machine as a
+library), [`nomic-fmt`](https://crates.io/crates/nomic-fmt) (the formatter),
+and [`nomic-cli`](https://crates.io/crates/nomic-cli) (the command).
+
 ## Build and run
 
 ```
