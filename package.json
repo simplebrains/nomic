@@ -5,11 +5,14 @@
   "license": "MIT",
   "scripts": {
     "build": "pnpm -r run build",
-    "test": "pnpm -r run test",
-    "check": "cargo test && pnpm -r run build && pnpm -r run test && cargo run --release -q -- cite examples/nomic/nomic.nom"
+    "test": "pnpm -r run test && node --test scripts/*.test.mjs",
+    "check": "cargo test && pnpm -r run build && pnpm -r run test && node --test scripts/*.test.mjs && cargo run --release -q -- cite examples/nomic/nomic.nom && node scripts/release.mjs check",
+    "release": "node scripts/release.mjs"
   },
   "devDependencies": {
     "@types/node": "^22.0.0"
   },
-  "engines": { "node": ">=20" }
+  "engines": {
+    "node": ">=20"
+  }
 }

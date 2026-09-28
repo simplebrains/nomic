@@ -169,6 +169,22 @@ items. Statements or scenario steps that shared a source line stay together
 when they fit, so `Move(4, 1, 4, 3); Move(4, 6, 4, 4)` survives as a move pair.
 Tests assert that formatting every example is idempotent and preserves its IR.
 
+## Releasing
+
+Every change to a crate or package comes with a change note in `changes/`
+(format in `changes/README.md`): which packages it touches, at what level, and
+a paragraph that becomes the changelog entry. Then:
+
+```
+pnpm release check      # every changed package has a pending note (CI runs this on PRs)
+pnpm release plan       # pending bumps, next versions, publish order, registry status
+pnpm release version    # bump manifests, rewrite pins, write changelogs, commit
+pnpm release publish    # cargo publish in dependency order, then pnpm publish
+```
+
+Dependents follow automatically: a bump to `nomic` patches `nomic-fmt` and
+`nomic-cli` and rewrites their version pins. Publishing is idempotent.
+
 ## Editors and markdown
 
 - **VS Code / Cursor:** `pnpm --filter nomic-vscode dev:link`, then reload. `.nom` files get the Nomic grammar, and fenced blocks tagged ```` ```nomic ```` or ```` ```nom ```` highlight inside markdown files and in the markdown preview, via an injection grammar the extension contributes.
