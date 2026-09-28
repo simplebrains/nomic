@@ -189,6 +189,9 @@ impl Outcome {
 
 pub struct Machine<'a> {
     pub model: &'a Model,
+    /// How many fresh identities per opaque type to offer when enumerating
+    /// actions: `#1`, `#2`, ... beyond those already present in the state.
+    pub fresh: usize,
 }
 
 /// Effects attributed to the rule that produced them, for conflict reporting.
@@ -199,7 +202,7 @@ struct Attributed {
 
 impl<'a> Machine<'a> {
     pub fn new(model: &'a Model) -> Self {
-        Self { model }
+        Self { model, fresh: 1 }
     }
 
     // ---- initial state -----------------------------------------------------
@@ -520,17 +523,21 @@ impl<'a> Machine<'a> {
                     pushed += 1;
                 }
                 Stmt::For { binders, filter, body, pos } => {
-                    let mut domains = Vec::new();
+                    let mut domains: Vec<Vec<Value>> = Vec::new();
+                    // Each binder contributes rows; flatten a row to one value per name.
+                    let mut widths = Vec::new();
                     for b in binders {
-                        let d = inhabitants(&b.ty, self.model).ok_or_else(|| {
-                            type_err(*pos, format!("cannot iterate over unbounded type {}", type_display(&b.ty)))
-                        })?;
-                        domains.push(d);
+                        let rows = crate::eval::binder_rows(self.model, state, b, *pos)?;
+                        widths.push(b.names.len());
+                        domains.push(rows.into_iter().map(Value::Row).collect());
                     }
                     drop(ev);
                     for binding in cartesian(&domains) {
-                        for (b, v) in binders.iter().zip(&binding) {
-                            env.push(&b.name, v.clone());
+                        for (b, row) in binders.iter().zip(&binding) {
+                            let Value::Row(vals) = row else { unreachable!() };
+                            for (name, v) in b.names.iter().zip(vals) {
+                                env.push(name, v.clone());
+                            }
                         }
                         let keep = match filter {
                             None => true,
@@ -542,8 +549,10 @@ impl<'a> Machine<'a> {
                             },
                         };
                         let r = if keep { self.exec_block(body, state, env, effects, disp, rule) } else { Ok(()) };
-                        for _ in binders {
-                            env.pop();
+                        for b in binders {
+                            for _ in &b.names {
+                                env.pop();
+                            }
                         }
                         r?;
                         if matches!(disp, Disposition::Deny { .. }) {
@@ -674,10 +683,22 @@ impl<'a> Machine<'a> {
             let Some(cond) = &ev.when else { continue };
             let mut domains = Vec::new();
             for p in &ev.params {
-                let d = inhabitants(&p.ty, self.model).ok_or_else(|| MachineError::Type {
-                    pos: Some(ev.pos),
-                    message: format!("event `{}` parameter `{}` is not finite", ev.name, p.name),
-                })?;
+                let d = match inhabitants(&p.ty, self.model) {
+                    Some(d) => d,
+                    None => match &p.ty {
+                        TypeRef::Named { name } if self.model.is_opaque(name) => {
+                            let mut ids = before.identities_of(name);
+                            ids.extend(after.identities_of(name));
+                            ids.into_iter().collect()
+                        }
+                        _ => {
+                            return Err(MachineError::Type {
+                                pos: Some(ev.pos),
+                                message: format!("event `{}` parameter `{}` is not finite", ev.name, p.name),
+                            })
+                        }
+                    },
+                };
                 domains.push(d);
             }
             for binding in cartesian(&domains) {
@@ -726,17 +747,32 @@ impl<'a> Machine<'a> {
 
     // ---- enumeration ---------------------------------------------------------
 
-    /// Every well-typed occurrence of every action, in canonical order.
-    /// Errors if any action has an unbounded parameter.
-    pub fn all_occurrences(&self) -> MResult<Vec<Occurrence>> {
+    /// Every well-typed occurrence of every action from `state`, in canonical
+    /// order. Opaque parameters range over the identities already in the
+    /// state plus `fresh` new ones. Errors on `Int` or `Text` parameters.
+    pub fn all_occurrences(&self, state: &State) -> MResult<Vec<Occurrence>> {
         let mut out = Vec::new();
         for a in &self.model.actions {
             let mut domains = Vec::new();
             for p in &a.params {
-                let d = inhabitants(&p.ty, self.model).ok_or_else(|| MachineError::Type {
-                    pos: Some(a.pos),
-                    message: format!("action `{}` parameter `{}` has unbounded type {}", a.name, p.name, type_display(&p.ty)),
-                })?;
+                let d = match inhabitants(&p.ty, self.model) {
+                    Some(d) => d,
+                    None => match &p.ty {
+                        TypeRef::Named { name } if self.model.is_opaque(name) => {
+                            let mut ids: Vec<Value> = state.identities_of(name).into_iter().collect();
+                            for i in 1..=self.fresh {
+                                ids.push(Value::Opaque(name.clone(), format!("#{i}")));
+                            }
+                            ids
+                        }
+                        _ => {
+                            return Err(MachineError::Type {
+                                pos: Some(a.pos),
+                                message: format!("action `{}` parameter `{}` has unbounded type {}", a.name, p.name, type_display(&p.ty)),
+                            })
+                        }
+                    },
+                };
                 domains.push(d);
             }
             for args in cartesian(&domains) {
@@ -749,7 +785,7 @@ impl<'a> Machine<'a> {
     /// Stages 1–4 only: which occurrences would be accepted from this state.
     pub fn legal_actions(&self, state: &State) -> MResult<Vec<Occurrence>> {
         let mut out = Vec::new();
-        for occ in self.all_occurrences()? {
+        for occ in self.all_occurrences(state)? {
             if self.is_legal(state, &occ)? {
                 out.push(occ);
             }

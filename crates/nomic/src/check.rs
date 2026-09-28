@@ -34,6 +34,8 @@ enum Ty {
     Bool,
     Text,
     Enum(String),
+    /// An opaque identity type: equality only.
+    Opaque(String),
     Opt(Box<Ty>),
     None,
     Unknown,
@@ -48,6 +50,7 @@ impl Ty {
             TypeRef::Named { name } => match model.type_decl(name).map(|t| &t.def) {
                 Some(TypeDef::Enum { .. }) => Ty::Enum(name.clone()),
                 Some(TypeDef::Range { .. }) => Ty::Int,
+                Some(TypeDef::Opaque) => Ty::Opaque(name.clone()),
                 None => Ty::Unknown,
             },
             TypeRef::Opt { inner } => Ty::Opt(Box::new(Ty::from_ref(inner, model))),
@@ -74,7 +77,7 @@ impl fmt::Display for Ty {
             Ty::Int => write!(f, "Int"),
             Ty::Bool => write!(f, "Bool"),
             Ty::Text => write!(f, "Text"),
-            Ty::Enum(n) => write!(f, "{n}"),
+            Ty::Enum(n) | Ty::Opaque(n) => write!(f, "{n}"),
             Ty::Opt(t) => write!(f, "{t}?"),
             Ty::None => write!(f, "none"),
             Ty::Unknown => write!(f, "?"),
@@ -113,6 +116,9 @@ impl<'a> Checker<'a> {
 
     fn run(&mut self) {
         self.declarations();
+        for o in &self.model.orders {
+            self.order(o);
+        }
         for d in &self.model.derives {
             let mut env = self.env_from(&d.params);
             let t = self.infer(&d.body, &mut env);
@@ -124,11 +130,11 @@ impl<'a> Checker<'a> {
         for e in &self.model.events {
             if let Some(w) = &e.when {
                 for p in &e.params {
-                    if inhabitants(&p.ty, self.model).is_none() {
+                    if inhabitants(&p.ty, self.model).is_none() && !self.is_opaque_ref(&p.ty) {
                         self.error(
                             e.pos,
                             format!(
-                                "event `{}` is condition-backed, so parameter `{}` must have a finite type, not {}",
+                                "event `{}` is condition-backed, so parameter `{}` must have a finite or opaque type, not {}",
                                 e.name,
                                 p.name,
                                 type_display(&p.ty)
@@ -182,7 +188,7 @@ impl<'a> Checker<'a> {
         }
         for a in &self.model.actions {
             for p in &a.params {
-                if inhabitants(&p.ty, self.model).is_none() {
+                if inhabitants(&p.ty, self.model).is_none() && !self.is_opaque_ref(&p.ty) {
                     self.warn(
                         a.pos,
                         format!(
@@ -306,6 +312,69 @@ impl<'a> Checker<'a> {
         }
     }
 
+    fn is_opaque_ref(&self, t: &TypeRef) -> bool {
+        matches!(t, TypeRef::Named { name } if self.model.is_opaque(name))
+    }
+
+    /// An `order` must name an enum, use only its variants, and be acyclic.
+    fn order(&mut self, o: &OrderDecl) {
+        let Some(TypeDef::Enum { variants }) = self.model.type_decl(&o.ty).map(|t| t.def.clone()) else {
+            self.error(o.pos, format!("`order {}`: orders are declared over enum types", o.ty));
+            return;
+        };
+        for chain in &o.chains {
+            for v in chain {
+                if !variants.contains(v) {
+                    self.error(o.pos, format!("`order {}`: `{v}` is not a variant of `{}`", o.ty, o.ty));
+                }
+            }
+        }
+        for v in &variants {
+            if self.model.precedes(&o.ty, v, v) == Some(true) {
+                self.error(o.pos, format!("`order {}`: `{v}` precedes itself; the order has a cycle", o.ty));
+                return;
+            }
+        }
+    }
+
+    /// Bind a quantifier or `for` binder into `env`, checking its source.
+    fn bind(&mut self, b: &Binder, env: &mut BTreeMap<String, Ty>, pos: Pos, what: &str) {
+        match &b.source {
+            BinderSource::Type { ty } => {
+                self.type_ref(ty, pos);
+                if b.names.len() != 1 {
+                    self.error(pos, format!("a type binder binds one name; `({}) in Fact` binds a key tuple", b.names.join(", ")));
+                }
+                if inhabitants(ty, self.model).is_none() {
+                    let hint = if self.is_opaque_ref(ty) { "; range over a population instead: `x in SomeFact`" } else { "" };
+                    self.error(pos, format!("cannot {what} over unbounded type {}{hint}", type_display(ty)));
+                }
+                for n in &b.names {
+                    env.insert(n.clone(), Ty::from_ref(ty, self.model));
+                }
+            }
+            BinderSource::Fact { fact } => {
+                let Some(f) = self.model.fact(fact) else {
+                    self.error(pos, format!("`in {fact}`: no such fact; a population binder ranges over a fact's keys"));
+                    for n in &b.names {
+                        env.insert(n.clone(), Ty::Unknown);
+                    }
+                    return;
+                };
+                if f.keys.len() != b.names.len() {
+                    self.error(
+                        pos,
+                        format!("fact `{fact}` has {} key(s); bind {} name(s) with `({}) in {fact}`", f.keys.len(), f.keys.len(), f.keys.iter().map(|k| k.name.as_str()).collect::<Vec<_>>().join(", ")),
+                    );
+                }
+                let keys = f.keys.clone();
+                for (n, k) in b.names.iter().zip(keys.iter()) {
+                    env.insert(n.clone(), Ty::from_ref(&k.ty, self.model));
+                }
+            }
+        }
+    }
+
     fn type_ref(&mut self, t: &TypeRef, pos: Pos) {
         match t {
             TypeRef::Named { name } => {
@@ -420,11 +489,7 @@ impl<'a> Checker<'a> {
             Stmt::For { binders, filter, body, pos } => {
                 let mut inner = env.clone();
                 for b in binders {
-                    self.type_ref(&b.ty, *pos);
-                    if inhabitants(&b.ty, self.model).is_none() {
-                        self.error(*pos, format!("cannot iterate over unbounded type {}", type_display(&b.ty)));
-                    }
-                    inner.insert(b.name.clone(), Ty::from_ref(&b.ty, self.model));
+                    self.bind(b, &mut inner, *pos, "iterate");
                 }
                 if let Some(f) = filter {
                     self.expect_bool(f, &mut inner, "`for ... where`");
@@ -572,6 +637,9 @@ impl<'a> Checker<'a> {
                         if !l.compatible(&r) {
                             self.error(*pos, format!("cannot order {l} against {r}"));
                         }
+                        if matches!(l.strip(), Ty::Opaque(_)) || matches!(r.strip(), Ty::Opaque(_)) {
+                            self.error(*pos, format!("{l} is an opaque identity type; identities compare only for equality"));
+                        }
                         Ty::Bool
                     }
                     BinOp::Add | BinOp::Sub | BinOp::Mul | BinOp::Div | BinOp::Mod => {
@@ -613,18 +681,14 @@ impl<'a> Checker<'a> {
             Expr::Quant { q, binders, filter, body, pos } => {
                 let mut inner = env.clone();
                 for b in binders {
-                    self.type_ref(&b.ty, *pos);
-                    if inhabitants(&b.ty, self.model).is_none() {
-                        self.error(*pos, format!("cannot quantify over unbounded type {}", type_display(&b.ty)));
-                    }
-                    inner.insert(b.name.clone(), Ty::from_ref(&b.ty, self.model));
+                    self.bind(b, &mut inner, *pos, "quantify");
                 }
                 if let Some(f) = filter {
                     self.expect_bool(f, &mut inner, "`where` filter");
                 }
                 let bt = self.infer(body, &mut inner);
                 match q {
-                    Quantifier::All | Quantifier::Exists | Quantifier::Count => {
+                    Quantifier::All | Quantifier::Exists | Quantifier::None | Quantifier::Count => {
                         if !bt.compatible(&Ty::Bool) {
                             self.error(body.pos(), format!("quantifier body must be Bool, got {bt}"));
                         }
@@ -634,6 +698,7 @@ impl<'a> Checker<'a> {
                             Ty::Bool
                         }
                     }
+                    Quantifier::Unique => Ty::Bool,
                     Quantifier::Sum => {
                         if !bt.compatible(&Ty::Int) {
                             self.error(body.pos(), format!("`sum` body must be Int, got {bt}"));
@@ -708,6 +773,17 @@ impl<'a> Checker<'a> {
     }
 
     fn call(&mut self, name: &str, args: &[Expr], pos: Pos, env: &mut BTreeMap<String, Ty>) -> Ty {
+        if self.model.is_opaque(name) {
+            if args.len() != 1 {
+                self.error(pos, format!("`{name}(...)` builds an opaque identity from exactly one text"));
+            } else {
+                let t = self.infer(&args[0], env);
+                if !t.compatible(&Ty::Text) {
+                    self.error(pos, format!("`{name}(...)` takes a Text representation, got {t}"));
+                }
+            }
+            return Ty::Opaque(name.to_string());
+        }
         if let Some(d) = self.model.derive(name) {
             let params = d.params.clone();
             let result = Ty::from_ref(&d.result, self.model);

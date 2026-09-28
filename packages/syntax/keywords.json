@@ -15,7 +15,8 @@
     "scenario",
     "cite",
     "import",
-    "include"
+    "include",
+    "order"
   ],
   "modifiers": [
     "observed",
@@ -43,7 +44,8 @@
     "rejected",
     "by",
     "match",
-    "as"
+    "as",
+    "in"
   ],
   "builtins": [
     "all",
@@ -51,7 +53,9 @@
     "count",
     "sum",
     "first",
-    "legal"
+    "legal",
+    "none",
+    "unique"
   ],
   "relations": [
     "realizes",
@@ -71,5 +75,8 @@
     "Int",
     "Bool",
     "Text"
+  ],
+  "types": [
+    "opaque"
   ]
 }

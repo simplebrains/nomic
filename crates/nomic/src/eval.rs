@@ -64,6 +64,35 @@ impl Env {
     }
 }
 
+/// The rows a binder ranges over: one value per bound name. A type binder
+/// enumerates its finite type; a population binder walks the key tuples
+/// currently present in a fact, in canonical order.
+pub fn binder_rows(model: &Model, state: &State, b: &Binder, pos: Pos) -> EResult<Vec<Vec<Value>>> {
+    match &b.source {
+        BinderSource::Type { ty } => match inhabitants(ty, model) {
+            Some(d) => Ok(d.into_iter().map(|v| vec![v]).collect()),
+            None => {
+                let hint = if matches!(ty, TypeRef::Named { name } if model.is_opaque(name)) {
+                    "; quantify over a population instead: `x in SomeFact`"
+                } else {
+                    ""
+                };
+                err(pos, format!("cannot quantify over unbounded type {}{hint}", type_display(ty)))
+            }
+        },
+        BinderSource::Fact { fact } => {
+            let decl = model.fact(fact).ok_or_else(|| EvalError { pos, message: format!("unknown fact `{fact}`") })?;
+            if decl.keys.len() != b.names.len() {
+                return err(
+                    pos,
+                    format!("fact `{fact}` has {} key(s); bind {} name(s) with `(a, b) in {fact}`", decl.keys.len(), decl.keys.len()),
+                );
+            }
+            Ok(state.instances(fact).map(|(k, _)| k.clone()).collect())
+        }
+    }
+}
+
 pub struct Evaluator<'a> {
     pub model: &'a Model,
     pub state: &'a State,
@@ -165,8 +194,14 @@ impl<'a> Evaluator<'a> {
         err(pos, format!("unknown name `{name}`"))
     }
 
-    /// Apply a derived value or look up a fact.
+    /// Apply a derived value, look up a fact, or construct an opaque identity.
     pub fn call(&mut self, name: &str, args: Vec<Value>, pos: Pos) -> EResult<Value> {
+        if self.model.is_opaque(name) {
+            return match args.as_slice() {
+                [Value::Text(r)] => Ok(Value::Opaque(name.to_string(), r.clone())),
+                _ => err(pos, format!("`{name}` is an opaque type; write `{name}(\"repr\")` with one text argument")),
+            };
+        }
         if let Some(d) = self.model.derive(name) {
             if d.params.len() != args.len() {
                 return err(pos, format!("`{name}` takes {} argument(s), got {}", d.params.len(), args.len()));
@@ -239,7 +274,8 @@ impl<'a> Evaluator<'a> {
             BinOp::Eq => Ok(Value::Bool(l == r)),
             BinOp::Ne => Ok(Value::Bool(l != r)),
             BinOp::Lt | BinOp::Le | BinOp::Gt | BinOp::Ge => {
-                let ord = self.compare(&l, &r, pos)?;
+                // Incomparable pairs of a partial order are simply not related.
+                let Some(ord) = self.compare(&l, &r, pos)? else { return Ok(Value::Bool(false)) };
                 Ok(Value::Bool(match op {
                     BinOp::Lt => ord.is_lt(),
                     BinOp::Le => ord.is_le(),
@@ -274,17 +310,32 @@ impl<'a> Evaluator<'a> {
         }
     }
 
-    fn compare(&self, l: &Value, r: &Value, pos: Pos) -> EResult<std::cmp::Ordering> {
+    /// The modeled order: `None` means the pair is incomparable. Enums follow
+    /// their `order` declaration when they have one, else declaration order.
+    fn compare(&self, l: &Value, r: &Value, pos: Pos) -> EResult<Option<std::cmp::Ordering>> {
+        use std::cmp::Ordering;
         match (l, r) {
-            (Value::Int(a), Value::Int(b)) => Ok(a.cmp(b)),
-            (Value::Text(a), Value::Text(b)) => Ok(a.cmp(b)),
+            (Value::Int(a), Value::Int(b)) => Ok(Some(a.cmp(b))),
+            (Value::Text(a), Value::Text(b)) => Ok(Some(a.cmp(b))),
             (Value::Variant(ta, va), Value::Variant(tb, vb)) if ta == tb => {
+                if va == vb {
+                    return Ok(Some(Ordering::Equal));
+                }
+                if let Some(before) = self.model.precedes(ta, va, vb) {
+                    if before {
+                        return Ok(Some(Ordering::Less));
+                    }
+                    return Ok(if self.model.precedes(ta, vb, va) == Some(true) { Some(Ordering::Greater) } else { None });
+                }
                 let Some(TypeDef::Enum { variants }) = self.model.type_decl(ta).map(|t| &t.def) else {
                     return err(pos, format!("unknown enum `{ta}`"));
                 };
                 let ia = variants.iter().position(|v| v == va);
                 let ib = variants.iter().position(|v| v == vb);
-                Ok(ia.cmp(&ib))
+                Ok(Some(ia.cmp(&ib)))
+            }
+            (Value::Opaque(ta, _), Value::Opaque(tb, _)) if ta == tb => {
+                err(pos, format!("`{ta}` is an opaque identity type; identities compare only for equality"))
             }
             _ => err(pos, format!("cannot order {} against {}", l.type_name(), r.type_name())),
         }
@@ -301,28 +352,30 @@ impl<'a> Evaluator<'a> {
     ) -> EResult<Value> {
         let mut domains = Vec::with_capacity(binders.len());
         for b in binders {
-            let Some(d) = inhabitants(&b.ty, self.model) else {
-                return err(pos, format!("cannot quantify over unbounded type {}", type_display(&b.ty)));
-            };
-            domains.push(d);
+            domains.push(binder_rows(self.model, self.state, b, pos)?);
         }
         let mut acc = match q {
-            Quantifier::All => Value::Bool(true),
+            Quantifier::All | Quantifier::None | Quantifier::Unique => Value::Bool(true),
             Quantifier::Exists => Value::Bool(false),
             Quantifier::Count | Quantifier::Sum => Value::Int(0),
             Quantifier::First => Value::None,
         };
+        let mut seen: std::collections::BTreeSet<Value> = std::collections::BTreeSet::new();
         let mut idx = vec![0usize; binders.len()];
         if domains.iter().any(|d| d.is_empty()) {
             return Ok(acc);
         }
         'outer: loop {
             for (k, b) in binders.iter().enumerate() {
-                env.push(&b.name, domains[k][idx[k]].clone());
+                for (name, v) in b.names.iter().zip(&domains[k][idx[k]]) {
+                    env.push(name, v.clone());
+                }
             }
-            let result = self.quant_step(q, filter, body, pos, env, &mut acc);
-            for _ in binders {
-                env.pop();
+            let result = self.quant_step(q, filter, body, pos, env, &mut acc, &mut seen);
+            for b in binders {
+                for _ in &b.names {
+                    env.pop();
+                }
             }
             if result? {
                 break;
@@ -356,6 +409,7 @@ impl<'a> Evaluator<'a> {
         pos: Pos,
         env: &mut Env,
         acc: &mut Value,
+        seen: &mut std::collections::BTreeSet<Value>,
     ) -> EResult<bool> {
         if let Some(f) = filter {
             match self.eval(f, env)? {
@@ -381,6 +435,23 @@ impl<'a> Evaluator<'a> {
                 }
                 other => err(pos, format!("`exists` body must be Bool, got {}", other.type_name())),
             },
+            Quantifier::None => match self.eval(body, env)? {
+                Value::Bool(false) => Ok(false),
+                Value::Bool(true) => {
+                    *acc = Value::Bool(false);
+                    Ok(true)
+                }
+                other => err(pos, format!("`none` body must be Bool, got {}", other.type_name())),
+            },
+            Quantifier::Unique => {
+                let key = self.eval(body, env)?;
+                if seen.insert(key) {
+                    Ok(false)
+                } else {
+                    *acc = Value::Bool(false);
+                    Ok(true)
+                }
+            }
             Quantifier::Count => match self.eval(body, env)? {
                 Value::Bool(b) => {
                     if b {

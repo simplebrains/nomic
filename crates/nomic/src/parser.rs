@@ -103,13 +103,17 @@ pub const KEYWORDS: &[&str] = &[
     "scenario", "on", "when", "require", "deny", "allow", "assert", "retract", "emit", "let", "if",
     "else", "given", "expect", "emits", "rejected", "by", "match", "all", "exists", "count", "sum",
     "first", "where", "true", "false", "none", "observed", "required", "expected", "assumed",
-    "for", "nothing", "ensure", "legal", "cite", "import", "include", "as",
+    "for", "nothing", "ensure", "legal", "cite", "import", "include", "as", "opaque", "order", "in", "unique",
     "realizes", "derives_from", "evidences", "contradicts", "configures", "documents",
 ];
 
 impl Parser {
     fn peek(&self) -> &Tok {
         &self.toks[self.i].tok
+    }
+    fn peek_at(&self, n: usize) -> &Tok {
+        let j = (self.i + n).min(self.toks.len() - 1);
+        &self.toks[j].tok
     }
     fn pos(&self) -> Pos {
         self.toks[self.i].pos
@@ -256,6 +260,27 @@ impl Parser {
                 let n = d.name.clone();
                 m.types.push(d);
                 Some(n)
+            }
+            "order" => {
+                self.bump();
+                let ty = self.ident()?;
+                self.expect(Tok::Colon)?;
+                let mut chains = Vec::new();
+                loop {
+                    let mut chain = vec![self.ident()?];
+                    while self.eat(Tok::Lt) {
+                        chain.push(self.ident()?);
+                    }
+                    if chain.len() < 2 {
+                        return self.err("an order chain needs at least two elements, like `A < B`");
+                    }
+                    chains.push(chain);
+                    if !self.eat(Tok::Comma) {
+                        break;
+                    }
+                }
+                m.orders.push(OrderDecl { ty: ty.clone(), chains, doc, pos });
+                Some(ty)
             }
             "fact" => {
                 self.bump();
@@ -434,6 +459,9 @@ impl Parser {
             self.expect(Tok::DotDot)?;
             let hi = self.int_lit()?;
             return Ok(TypeDecl { name, doc, def: TypeDef::Range { lo, hi }, pos });
+        }
+        if self.eat_kw("opaque") {
+            return Ok(TypeDecl { name, doc, def: TypeDef::Opaque, pos });
         }
         let mut variants = vec![self.ident()?];
         while self.eat(Tok::Pipe) {
@@ -644,17 +672,7 @@ impl Parser {
             "for" => {
                 self.bump();
                 self.expect(Tok::LParen)?;
-                let mut binders = Vec::new();
-                loop {
-                    let name = self.ident()?;
-                    self.expect(Tok::Colon)?;
-                    let ty = self.type_ref()?;
-                    binders.push(Binder { name, ty });
-                    if self.eat(Tok::Comma) {
-                        continue;
-                    }
-                    break;
-                }
+                let binders = self.binders()?;
                 let filter = if self.eat_kw("where") { Some(self.expr()?) } else { None };
                 self.expect(Tok::RParen)?;
                 let body = self.block()?;
@@ -852,11 +870,12 @@ impl Parser {
                     self.bump();
                     Ok(Expr::Lit { value: Literal::Bool { value: s == "true" }, pos })
                 }
+                "none" if *self.peek_at(1) == Tok::LParen => self.quant(),
                 "none" => {
                     self.bump();
                     Ok(Expr::Lit { value: Literal::None, pos })
                 }
-                "all" | "exists" | "count" | "sum" | "first" => self.quant(),
+                "all" | "exists" | "count" | "sum" | "first" | "unique" => self.quant(),
                 "match" => self.match_expr(),
                 "legal" => {
                     self.bump();
@@ -885,30 +904,54 @@ impl Parser {
             Tok::Ident(s) => match s.as_str() {
                 "all" => Quantifier::All,
                 "exists" => Quantifier::Exists,
+                "none" => Quantifier::None,
                 "count" => Quantifier::Count,
                 "sum" => Quantifier::Sum,
                 "first" => Quantifier::First,
+                "unique" => Quantifier::Unique,
                 _ => unreachable!(),
             },
             _ => unreachable!(),
         };
         self.expect(Tok::LParen)?;
-        let mut binders = Vec::new();
-        loop {
-            let name = self.ident()?;
-            self.expect(Tok::Colon)?;
-            let ty = self.type_ref()?;
-            binders.push(Binder { name, ty });
-            if self.eat(Tok::Comma) {
-                continue;
-            }
-            break;
-        }
+        let binders = self.binders()?;
         let filter = if self.eat_kw("where") { Some(Box::new(self.expr()?)) } else { None };
         self.expect(Tok::FatArrow)?;
         let body = Box::new(self.expr()?);
         self.expect(Tok::RParen)?;
         Ok(Expr::Quant { q, binders, filter, body, pos })
+    }
+
+    /// `x: T`, `x in Fact`, or `(a, b) in Fact`, comma-separated.
+    fn binders(&mut self) -> PResult<Vec<Binder>> {
+        let mut binders = Vec::new();
+        loop {
+            if self.eat(Tok::LParen) {
+                let mut names = vec![self.ident()?];
+                while self.eat(Tok::Comma) {
+                    names.push(self.ident()?);
+                }
+                self.expect(Tok::RParen)?;
+                self.expect_kw("in")?;
+                let fact = self.ident()?;
+                binders.push(Binder { names, source: BinderSource::Fact { fact } });
+            } else {
+                let name = self.ident()?;
+                if self.eat_kw("in") {
+                    let fact = self.ident()?;
+                    binders.push(Binder { names: vec![name], source: BinderSource::Fact { fact } });
+                } else {
+                    self.expect(Tok::Colon)?;
+                    let ty = self.type_ref()?;
+                    binders.push(Binder { names: vec![name], source: BinderSource::Type { ty } });
+                }
+            }
+            if self.eat(Tok::Comma) {
+                continue;
+            }
+            break;
+        }
+        Ok(binders)
     }
 
     fn match_expr(&mut self) -> PResult<Expr> {
@@ -988,7 +1031,7 @@ mod keyword_sync {
         let text = std::fs::read_to_string(&path).expect("packages/syntax/keywords.json");
         let json: serde_json::Value = serde_json::from_str(&text).unwrap();
         let mut from_json = BTreeSet::new();
-        for group in ["declarations", "modifiers", "control", "builtins", "relations", "literals"] {
+        for group in ["declarations", "modifiers", "control", "builtins", "relations", "literals", "types"] {
             for k in json[group].as_array().unwrap() {
                 from_json.insert(k.as_str().unwrap().to_string());
             }

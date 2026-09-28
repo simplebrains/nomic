@@ -1,0 +1,585 @@
+{
+  "nomic_core": "0.1",
+  "model": "Todo",
+  "cases": [
+    {
+      "scenario": "a task moves forward through its lifecycle, never backward",
+      "steps": [
+        {
+          "description": "Create(TaskId(\"write-spec\"), High) accepted",
+          "passed": true,
+          "accepted": true,
+          "effects": [
+            "assert Priority(TaskId(\"write-spec\")) = High",
+            "assert Task(TaskId(\"write-spec\")) = Draft"
+          ]
+        },
+        {
+          "description": "expect",
+          "passed": true
+        },
+        {
+          "description": "Advance(TaskId(\"write-spec\"), Ready) accepted",
+          "passed": true,
+          "accepted": true,
+          "effects": [
+            "assert Task(TaskId(\"write-spec\")) = Ready"
+          ]
+        },
+        {
+          "description": "Advance(TaskId(\"write-spec\"), Draft) rejected by AdvanceForward",
+          "passed": true,
+          "accepted": false,
+          "denied_by": [
+            "AdvanceForward"
+          ]
+        },
+        {
+          "description": "Advance(TaskId(\"write-spec\"), Doing) accepted with events",
+          "passed": true,
+          "accepted": true,
+          "events": [
+            "Started(TaskId(\"write-spec\"))"
+          ],
+          "effects": [
+            "assert Task(TaskId(\"write-spec\")) = Doing"
+          ]
+        },
+        {
+          "description": "Advance(TaskId(\"write-spec\"), Done) accepted with events",
+          "passed": true,
+          "accepted": true,
+          "events": [
+            "Finished(TaskId(\"write-spec\"))"
+          ],
+          "effects": [
+            "assert Task(TaskId(\"write-spec\")) = Done"
+          ]
+        },
+        {
+          "description": "Advance(TaskId(\"write-spec\"), Cancelled) rejected by AdvanceForward",
+          "passed": true,
+          "accepted": false,
+          "denied_by": [
+            "AdvanceForward",
+            "AdvanceNotCancel"
+          ]
+        }
+      ],
+      "final_state": [
+        "Priority(TaskId(\"write-spec\")) = High",
+        "Task(TaskId(\"write-spec\")) = Done",
+        "WipLimit = 2"
+      ]
+    },
+    {
+      "scenario": "done and cancelled are incomparable",
+      "steps": [
+        {
+          "description": "Create(TaskId(\"a\"), Normal) accepted",
+          "passed": true,
+          "accepted": true,
+          "effects": [
+            "assert Priority(TaskId(\"a\")) = Normal",
+            "assert Task(TaskId(\"a\")) = Draft"
+          ]
+        },
+        {
+          "description": "Advance(TaskId(\"a\"), Ready) accepted",
+          "passed": true,
+          "accepted": true,
+          "effects": [
+            "assert Task(TaskId(\"a\")) = Ready"
+          ]
+        },
+        {
+          "description": "Cancel(TaskId(\"a\")) accepted",
+          "passed": true,
+          "accepted": true,
+          "effects": [
+            "assert Task(TaskId(\"a\")) = Cancelled"
+          ]
+        },
+        {
+          "description": "Advance(TaskId(\"a\"), Done) rejected by AdvanceForward",
+          "passed": true,
+          "accepted": false,
+          "denied_by": [
+            "AdvanceForward"
+          ]
+        },
+        {
+          "description": "expect",
+          "passed": true
+        },
+        {
+          "description": "expect",
+          "passed": true
+        },
+        {
+          "description": "Cancel(TaskId(\"a\")) rejected by CancelOpen",
+          "passed": true,
+          "accepted": false,
+          "denied_by": [
+            "CancelOpen"
+          ]
+        }
+      ],
+      "final_state": [
+        "Priority(TaskId(\"a\")) = Normal",
+        "Task(TaskId(\"a\")) = Cancelled",
+        "WipLimit = 2"
+      ]
+    },
+    {
+      "scenario": "identities compare by representation and are never enumerated",
+      "steps": [
+        {
+          "description": "Create(TaskId(\"x\"), Low) accepted",
+          "passed": true,
+          "accepted": true,
+          "effects": [
+            "assert Priority(TaskId(\"x\")) = Low",
+            "assert Task(TaskId(\"x\")) = Draft"
+          ]
+        },
+        {
+          "description": "Create(TaskId(\"x\"), High) rejected by CreateFresh",
+          "passed": true,
+          "accepted": false,
+          "denied_by": [
+            "CreateFresh"
+          ]
+        },
+        {
+          "description": "expect",
+          "passed": true
+        },
+        {
+          "description": "Advance(TaskId(\"y\"), Ready) rejected by AdvanceExists",
+          "passed": true,
+          "accepted": false,
+          "denied_by": [
+            "AdvanceExists",
+            "AdvanceForward"
+          ]
+        }
+      ],
+      "final_state": [
+        "Priority(TaskId(\"x\")) = Low",
+        "Task(TaskId(\"x\")) = Draft",
+        "WipLimit = 2"
+      ]
+    },
+    {
+      "scenario": "work in progress is limited and the limit is a fact",
+      "steps": [
+        {
+          "description": "Create(TaskId(\"a\"), Low) accepted",
+          "passed": true,
+          "accepted": true,
+          "effects": [
+            "assert Priority(TaskId(\"a\")) = Low",
+            "assert Task(TaskId(\"a\")) = Draft"
+          ]
+        },
+        {
+          "description": "Create(TaskId(\"b\"), Normal) accepted",
+          "passed": true,
+          "accepted": true,
+          "effects": [
+            "assert Priority(TaskId(\"b\")) = Normal",
+            "assert Task(TaskId(\"b\")) = Draft"
+          ]
+        },
+        {
+          "description": "Create(TaskId(\"c\"), High) accepted",
+          "passed": true,
+          "accepted": true,
+          "effects": [
+            "assert Priority(TaskId(\"c\")) = High",
+            "assert Task(TaskId(\"c\")) = Draft"
+          ]
+        },
+        {
+          "description": "Advance(TaskId(\"a\"), Ready) accepted",
+          "passed": true,
+          "accepted": true,
+          "effects": [
+            "assert Task(TaskId(\"a\")) = Ready"
+          ]
+        },
+        {
+          "description": "Advance(TaskId(\"b\"), Ready) accepted",
+          "passed": true,
+          "accepted": true,
+          "effects": [
+            "assert Task(TaskId(\"b\")) = Ready"
+          ]
+        },
+        {
+          "description": "Advance(TaskId(\"c\"), Ready) accepted",
+          "passed": true,
+          "accepted": true,
+          "effects": [
+            "assert Task(TaskId(\"c\")) = Ready"
+          ]
+        },
+        {
+          "description": "Advance(TaskId(\"a\"), Doing) accepted",
+          "passed": true,
+          "accepted": true,
+          "events": [
+            "Started(TaskId(\"a\"))"
+          ],
+          "effects": [
+            "assert Task(TaskId(\"a\")) = Doing"
+          ]
+        },
+        {
+          "description": "Advance(TaskId(\"b\"), Doing) accepted",
+          "passed": true,
+          "accepted": true,
+          "events": [
+            "Started(TaskId(\"b\"))"
+          ],
+          "effects": [
+            "assert Task(TaskId(\"b\")) = Doing"
+          ]
+        },
+        {
+          "description": "Advance(TaskId(\"c\"), Doing) rejected by WithinWip",
+          "passed": true,
+          "accepted": false,
+          "denied_by": [
+            "WithinWip"
+          ]
+        },
+        {
+          "description": "SetWipLimit(1) rejected by DoSetWip",
+          "passed": true,
+          "accepted": false,
+          "denied_by": [
+            "DoSetWip"
+          ]
+        },
+        {
+          "description": "SetWipLimit(3) accepted",
+          "passed": true,
+          "accepted": true,
+          "effects": [
+            "assert WipLimit = 3"
+          ]
+        },
+        {
+          "description": "Advance(TaskId(\"c\"), Doing) accepted",
+          "passed": true,
+          "accepted": true,
+          "events": [
+            "Started(TaskId(\"c\"))"
+          ],
+          "effects": [
+            "assert Task(TaskId(\"c\")) = Doing"
+          ]
+        },
+        {
+          "description": "expect",
+          "passed": true
+        }
+      ],
+      "final_state": [
+        "Priority(TaskId(\"a\")) = Low",
+        "Priority(TaskId(\"b\")) = Normal",
+        "Priority(TaskId(\"c\")) = High",
+        "Task(TaskId(\"a\")) = Doing",
+        "Task(TaskId(\"b\")) = Doing",
+        "Task(TaskId(\"c\")) = Doing",
+        "WipLimit = 3"
+      ]
+    },
+    {
+      "scenario": "at most one task per priority level in progress",
+      "steps": [
+        {
+          "description": "Create(TaskId(\"a\"), High) accepted",
+          "passed": true,
+          "accepted": true,
+          "effects": [
+            "assert Priority(TaskId(\"a\")) = High",
+            "assert Task(TaskId(\"a\")) = Draft"
+          ]
+        },
+        {
+          "description": "Create(TaskId(\"b\"), High) accepted",
+          "passed": true,
+          "accepted": true,
+          "effects": [
+            "assert Priority(TaskId(\"b\")) = High",
+            "assert Task(TaskId(\"b\")) = Draft"
+          ]
+        },
+        {
+          "description": "Advance(TaskId(\"a\"), Ready) accepted",
+          "passed": true,
+          "accepted": true,
+          "effects": [
+            "assert Task(TaskId(\"a\")) = Ready"
+          ]
+        },
+        {
+          "description": "Advance(TaskId(\"b\"), Ready) accepted",
+          "passed": true,
+          "accepted": true,
+          "effects": [
+            "assert Task(TaskId(\"b\")) = Ready"
+          ]
+        },
+        {
+          "description": "Advance(TaskId(\"a\"), Doing) accepted",
+          "passed": true,
+          "accepted": true,
+          "events": [
+            "Started(TaskId(\"a\"))"
+          ],
+          "effects": [
+            "assert Task(TaskId(\"a\")) = Doing"
+          ]
+        },
+        {
+          "description": "Advance(TaskId(\"b\"), Doing) rejected by OnePerLevelInProgress",
+          "passed": true,
+          "accepted": false,
+          "denied_by": [
+            "OnePerLevelInProgress"
+          ]
+        }
+      ],
+      "final_state": [
+        "Priority(TaskId(\"a\")) = High",
+        "Priority(TaskId(\"b\")) = High",
+        "Task(TaskId(\"a\")) = Doing",
+        "Task(TaskId(\"b\")) = Ready",
+        "WipLimit = 2"
+      ]
+    },
+    {
+      "scenario": "blocked tasks wait; finishing the blocker releases them",
+      "steps": [
+        {
+          "description": "Create(TaskId(\"deploy\"), High) accepted",
+          "passed": true,
+          "accepted": true,
+          "effects": [
+            "assert Priority(TaskId(\"deploy\")) = High",
+            "assert Task(TaskId(\"deploy\")) = Draft"
+          ]
+        },
+        {
+          "description": "Create(TaskId(\"review\"), Normal) accepted",
+          "passed": true,
+          "accepted": true,
+          "effects": [
+            "assert Priority(TaskId(\"review\")) = Normal",
+            "assert Task(TaskId(\"review\")) = Draft"
+          ]
+        },
+        {
+          "description": "Block(TaskId(\"deploy\"), TaskId(\"review\")) accepted",
+          "passed": true,
+          "accepted": true,
+          "effects": [
+            "assert Blocked(TaskId(\"deploy\"), TaskId(\"review\")) = true"
+          ]
+        },
+        {
+          "description": "Block(TaskId(\"deploy\"), TaskId(\"deploy\")) rejected by BlockTasks",
+          "passed": true,
+          "accepted": false,
+          "denied_by": [
+            "BlockTasks"
+          ]
+        },
+        {
+          "description": "Advance(TaskId(\"deploy\"), Ready) accepted",
+          "passed": true,
+          "accepted": true,
+          "effects": [
+            "assert Task(TaskId(\"deploy\")) = Ready"
+          ]
+        },
+        {
+          "description": "Advance(TaskId(\"deploy\"), Doing) rejected by NotBlocked",
+          "passed": true,
+          "accepted": false,
+          "denied_by": [
+            "NotBlocked"
+          ]
+        },
+        {
+          "description": "Advance(TaskId(\"review\"), Ready) accepted",
+          "passed": true,
+          "accepted": true,
+          "effects": [
+            "assert Task(TaskId(\"review\")) = Ready"
+          ]
+        },
+        {
+          "description": "Advance(TaskId(\"review\"), Doing) accepted",
+          "passed": true,
+          "accepted": true,
+          "events": [
+            "Started(TaskId(\"review\"))"
+          ],
+          "effects": [
+            "assert Task(TaskId(\"review\")) = Doing"
+          ]
+        },
+        {
+          "description": "Advance(TaskId(\"review\"), Done) accepted with events",
+          "passed": true,
+          "accepted": true,
+          "events": [
+            "Finished(TaskId(\"review\"))",
+            "Unblocked(TaskId(\"deploy\"))"
+          ],
+          "effects": [
+            "assert Task(TaskId(\"review\")) = Done",
+            "retract Blocked(TaskId(\"deploy\"), TaskId(\"review\"))"
+          ]
+        },
+        {
+          "description": "expect",
+          "passed": true
+        },
+        {
+          "description": "Advance(TaskId(\"deploy\"), Doing) accepted with events",
+          "passed": true,
+          "accepted": true,
+          "events": [
+            "Started(TaskId(\"deploy\"))"
+          ],
+          "effects": [
+            "assert Task(TaskId(\"deploy\")) = Doing"
+          ]
+        }
+      ],
+      "final_state": [
+        "Priority(TaskId(\"deploy\")) = High",
+        "Priority(TaskId(\"review\")) = Normal",
+        "Task(TaskId(\"deploy\")) = Doing",
+        "Task(TaskId(\"review\")) = Done",
+        "WipLimit = 2"
+      ]
+    },
+    {
+      "scenario": "cancelling a blocked task drops its blocking records",
+      "steps": [
+        {
+          "description": "Create(TaskId(\"a\"), Low) accepted",
+          "passed": true,
+          "accepted": true,
+          "effects": [
+            "assert Priority(TaskId(\"a\")) = Low",
+            "assert Task(TaskId(\"a\")) = Draft"
+          ]
+        },
+        {
+          "description": "Create(TaskId(\"b\"), Low) accepted",
+          "passed": true,
+          "accepted": true,
+          "effects": [
+            "assert Priority(TaskId(\"b\")) = Low",
+            "assert Task(TaskId(\"b\")) = Draft"
+          ]
+        },
+        {
+          "description": "Block(TaskId(\"a\"), TaskId(\"b\")) accepted",
+          "passed": true,
+          "accepted": true,
+          "effects": [
+            "assert Blocked(TaskId(\"a\"), TaskId(\"b\")) = true"
+          ]
+        },
+        {
+          "description": "Advance(TaskId(\"a\"), Ready) accepted",
+          "passed": true,
+          "accepted": true,
+          "effects": [
+            "assert Task(TaskId(\"a\")) = Ready"
+          ]
+        },
+        {
+          "description": "Cancel(TaskId(\"a\")) accepted",
+          "passed": true,
+          "accepted": true,
+          "effects": [
+            "retract Blocked(TaskId(\"a\"), TaskId(\"b\"))",
+            "assert Task(TaskId(\"a\")) = Cancelled"
+          ]
+        },
+        {
+          "description": "expect",
+          "passed": true
+        }
+      ],
+      "final_state": [
+        "Priority(TaskId(\"a\")) = Low",
+        "Priority(TaskId(\"b\")) = Low",
+        "Task(TaskId(\"a\")) = Cancelled",
+        "Task(TaskId(\"b\")) = Draft",
+        "WipLimit = 2"
+      ]
+    },
+    {
+      "scenario": "subtasks nest without two-cycles",
+      "steps": [
+        {
+          "description": "Create(TaskId(\"epic\"), High) accepted",
+          "passed": true,
+          "accepted": true,
+          "effects": [
+            "assert Priority(TaskId(\"epic\")) = High",
+            "assert Task(TaskId(\"epic\")) = Draft"
+          ]
+        },
+        {
+          "description": "Create(TaskId(\"story\"), Normal) accepted",
+          "passed": true,
+          "accepted": true,
+          "effects": [
+            "assert Priority(TaskId(\"story\")) = Normal",
+            "assert Task(TaskId(\"story\")) = Draft"
+          ]
+        },
+        {
+          "description": "Nest(TaskId(\"story\"), TaskId(\"epic\")) accepted",
+          "passed": true,
+          "accepted": true,
+          "effects": [
+            "assert Parent(TaskId(\"story\")) = TaskId(\"epic\")"
+          ]
+        },
+        {
+          "description": "Nest(TaskId(\"epic\"), TaskId(\"story\")) rejected by NestAcyclic",
+          "passed": true,
+          "accepted": false,
+          "denied_by": [
+            "NestAcyclic"
+          ]
+        },
+        {
+          "description": "expect",
+          "passed": true
+        }
+      ],
+      "final_state": [
+        "Parent(TaskId(\"story\")) = TaskId(\"epic\")",
+        "Priority(TaskId(\"epic\")) = High",
+        "Priority(TaskId(\"story\")) = Normal",
+        "Task(TaskId(\"epic\")) = Draft",
+        "Task(TaskId(\"story\")) = Draft",
+        "WipLimit = 2"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,196 @@
+/// A to-do service: the model behind an MCP-style task tool. Task identities
+/// come from outside as UUIDs or database keys; the lifecycle is a partial
+/// order; and every constraint ranges over the tasks that exist rather than
+/// over any enumerable domain.
+///
+/// Three Core constructs carry the whole model. `type TaskId = opaque` admits
+/// identities the machine can store and compare but never enumerate. `order
+/// Status` declares the lifecycle as chains whose transitive closure is the
+/// order, so Done and Cancelled are incomparable and "only move forward" is a
+/// single `<`. Population binders (`t in Task`, `(t, b) in Blocked`) quantify
+/// over a fact's current keys, which is how cardinality, uniqueness, and
+/// "no blocker remains" are stated without materializing any collection.
+model Todo
+
+type TaskId = opaque
+type Status = Draft | Ready | Doing | Done | Cancelled
+/// The lifecycle. Cancelled follows Ready or Doing but is unrelated to Done:
+/// neither is later than the other, so neither can move to the other.
+order Status: Draft < Ready < Doing < Done, Ready < Cancelled, Doing < Cancelled
+type Level = Low | Normal | High
+type Limit = 1..5
+
+fact Task(id: TaskId): Status
+fact Priority(id: TaskId): Level
+/// `id` cannot start until `by` is finished or cancelled.
+fact Blocked(id: TaskId, blocker: TaskId)
+fact Parent(id: TaskId): TaskId
+/// How many tasks may be in Doing at once.
+fact WipLimit: Int
+
+derive Exists(id: TaskId): Bool = Task(id) != none
+derive Terminal(s: Status): Bool = s == Done || s == Cancelled
+derive Open(id: TaskId): Bool = Task(id) != none && !Terminal(Task(id) ?? Done)
+derive InProgress: Int = count(t in Task => Task(t) == Doing)
+/// Open tasks still blocking `id`.
+derive Blockers(id: TaskId): Int = count((t, b) in Blocked where t == id => Open(b))
+derive Wip: Int = WipLimit ?? 1
+
+action Create(id: TaskId, level: Level)
+/// Move a task forward along the lifecycle order.
+action Advance(id: TaskId, to: Status)
+action Cancel(id: TaskId)
+action Block(id: TaskId, blocker: TaskId)
+action Unblock(id: TaskId, blocker: TaskId)
+action Nest(child: TaskId, parent: TaskId)
+action SetWipLimit(n: Limit)
+
+rule CreateFresh on Create(id, l) { require Task(id) == none "that task id is already in use" }
+rule DoCreate on Create(id, l) when Task(id) == none {
+  assert Task(id) = Draft
+  assert Priority(id) = l
+}
+
+rule AdvanceExists on Advance(id, to) { require Exists(id) "no such task" }
+rule AdvanceForward on Advance(id, to) {
+  require (Task(id) ?? Done) < to "a task only moves forward in its lifecycle"
+}
+rule AdvanceNotCancel on Advance(id, to) { require to != Cancelled "use Cancel to cancel" }
+rule NotBlocked on Advance(id, to) {
+  require to != Doing || Blockers(id) == 0 "blocked by an open task"
+}
+rule WithinWip on Advance(id, to) {
+  require to != Doing || InProgress < Wip "work-in-progress limit reached"
+}
+rule DoAdvance on Advance(id, to) when Exists(id) && (Task(id) ?? Done) < to {
+  assert Task(id) = to
+}
+
+rule CancelOpen on Cancel(id) { require Open(id) "only an open task can be cancelled" }
+rule DoCancel on Cancel(id) when Open(id) {
+  assert Task(id) = Cancelled
+  for ((t, b) in Blocked where t == id) { retract Blocked(t, b) }
+}
+
+rule BlockTasks on Block(id, k) {
+  require Exists(id) && Exists(k) && id != k "both must be distinct existing tasks"
+}
+rule BlockOpen on Block(id, k) {
+  require Open(id) && Open(k) "only open tasks take part in blocking"
+}
+rule DoBlock on Block(id, k) when Open(id) && Open(k) && id != k { assert Blocked(id, k) }
+rule DoUnblock on Unblock(id, k) {
+  require Blocked(id, k) "not blocked k that task"
+  retract Blocked(id, k)
+}
+
+rule NestTasks on Nest(c, p) {
+  require Exists(c) && Exists(p) && c != p "both must be distinct existing tasks"
+}
+rule NestAcyclic on Nest(c, p) { require Parent(p) != c "that would make each the other's parent" }
+rule DoNest on Nest(c, p) when Exists(c) && Exists(p) && c != p && Parent(p) != c {
+  assert Parent(c) = p
+}
+
+rule DoSetWip on SetWipLimit(n) {
+  require n >= InProgress "lower the work in progress first"
+  assert WipLimit = n
+}
+
+/// Announced for each task the moment it enters Doing; the population of
+/// identities in the state is what the detector ranges over.
+event Started(id: TaskId) when Task(id) == Doing
+event Finished(id: TaskId) when Task(id) == Done
+/// Every blocker of `id` has ended, while some blocking record still exists.
+event Unblocked(id: TaskId) when
+  Open(id) && Blockers(id) == 0 && exists((t, b) in Blocked => t == id)
+
+/// A finished task releases everything it was blocking.
+rule ReleaseBlocked on Finished(id) {
+  for ((t, b) in Blocked where b == id) { retract Blocked(t, b) }
+}
+
+/// At most one task per priority level may be in progress.
+ensure OnePerLevelInProgress: unique(t in Task where Task(t) == Doing => Priority(t))
+
+invariant WipRespected: InProgress <= Wip
+invariant EveryTaskHasPriority: all(t in Task => Priority(t) != none)
+invariant PriorityOnlyForTasks: all(t in Priority => Task(t) != none)
+invariant BlockersAreTasks: all((t, b) in Blocked => Exists(t) && Exists(b) && t != b)
+invariant TerminalTasksHoldNoBlockers: none((t, b) in Blocked => Terminal(Task(t) ?? Done))
+invariant ParentsAreTasks: all(c in Parent => Exists(c) && Exists(Parent(c) ?? c))
+invariant NoSelfParent: none(c in Parent => Parent(c) == c)
+
+init { assert WipLimit = 2 }
+
+scenario "a task moves forward through its lifecycle, never backward" {
+  Create(TaskId("write-spec"), High)
+  expect Task(TaskId("write-spec")) == Draft && count(t in Task => true) == 1
+  Advance(TaskId("write-spec"), Ready)
+  Advance(TaskId("write-spec"), Draft) rejected by AdvanceForward
+  Advance(TaskId("write-spec"), Doing) emits Started(TaskId("write-spec"))
+  Advance(TaskId("write-spec"), Done) emits Finished(TaskId("write-spec"))
+  Advance(TaskId("write-spec"), Cancelled) rejected by AdvanceForward
+}
+
+scenario "done and cancelled are incomparable" {
+  Create(TaskId("a"), Normal)
+  Advance(TaskId("a"), Ready)
+  Cancel(TaskId("a"))
+  Advance(TaskId("a"), Done) rejected by AdvanceForward
+  expect !((Task(TaskId("a")) ?? Draft) < Done) && !(Done < (Task(TaskId("a")) ?? Draft))
+  expect Cancelled > Ready && Cancelled > Draft && !(Cancelled < Done) && !(Done < Cancelled)
+  Cancel(TaskId("a")) rejected by CancelOpen
+}
+
+scenario "identities compare by representation and are never enumerated" {
+  Create(TaskId("x"), Low)
+  Create(TaskId("x"), High) rejected by CreateFresh
+  expect TaskId("x") == TaskId("x") && TaskId("x") != TaskId("y") && Exists(TaskId("x")) && !Exists(TaskId("y"))
+  Advance(TaskId("y"), Ready) rejected by AdvanceExists
+}
+
+scenario "work in progress is limited and the limit is a fact" {
+  Create(TaskId("a"), Low); Create(TaskId("b"), Normal); Create(TaskId("c"), High)
+  Advance(TaskId("a"), Ready); Advance(TaskId("b"), Ready); Advance(TaskId("c"), Ready)
+  Advance(TaskId("a"), Doing); Advance(TaskId("b"), Doing)
+  Advance(TaskId("c"), Doing) rejected by WithinWip
+  SetWipLimit(1) rejected by DoSetWip
+  SetWipLimit(3)
+  Advance(TaskId("c"), Doing)
+  expect InProgress == 3
+}
+
+scenario "at most one task per priority level in progress" {
+  Create(TaskId("a"), High); Create(TaskId("b"), High)
+  Advance(TaskId("a"), Ready); Advance(TaskId("b"), Ready)
+  Advance(TaskId("a"), Doing)
+  Advance(TaskId("b"), Doing) rejected by OnePerLevelInProgress
+}
+
+scenario "blocked tasks wait; finishing the blocker releases them" {
+  Create(TaskId("deploy"), High); Create(TaskId("review"), Normal)
+  Block(TaskId("deploy"), TaskId("review"))
+  Block(TaskId("deploy"), TaskId("deploy")) rejected by BlockTasks
+  Advance(TaskId("deploy"), Ready)
+  Advance(TaskId("deploy"), Doing) rejected by NotBlocked
+  Advance(TaskId("review"), Ready); Advance(TaskId("review"), Doing)
+  Advance(TaskId("review"), Done) emits Finished(TaskId("review")), Unblocked(TaskId("deploy"))
+  expect Blockers(TaskId("deploy")) == 0 && none((t, b) in Blocked => true)
+  Advance(TaskId("deploy"), Doing) emits Started(TaskId("deploy"))
+}
+
+scenario "cancelling a blocked task drops its blocking records" {
+  Create(TaskId("a"), Low); Create(TaskId("b"), Low)
+  Block(TaskId("a"), TaskId("b"))
+  Advance(TaskId("a"), Ready)
+  Cancel(TaskId("a"))
+  expect none((t, b) in Blocked => true) && Task(TaskId("a")) == Cancelled
+}
+
+scenario "subtasks nest without two-cycles" {
+  Create(TaskId("epic"), High); Create(TaskId("story"), Normal)
+  Nest(TaskId("story"), TaskId("epic"))
+  Nest(TaskId("epic"), TaskId("story")) rejected by NestAcyclic
+  expect Parent(TaskId("story")) == TaskId("epic") && all(c in Parent => Exists(c))
+}

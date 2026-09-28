@@ -19,6 +19,12 @@ pub enum Value {
     Text(String),
     /// An enum variant, carried with its owning type name.
     Variant(String, String),
+    /// An identity from an open domain: (type name, representation).
+    /// Equality is by representation; the domain is never enumerated.
+    Opaque(String, String),
+    /// A tuple of values. Never stored in state; used while enumerating
+    /// multi-name binders.
+    Row(Vec<Value>),
 }
 
 impl fmt::Display for Value {
@@ -29,6 +35,11 @@ impl fmt::Display for Value {
             Value::Int(n) => write!(f, "{n}"),
             Value::Text(s) => write!(f, "{s:?}"),
             Value::Variant(_, v) => write!(f, "{v}"),
+            Value::Opaque(t, r) => write!(f, "{t}({r:?})"),
+            Value::Row(vs) => {
+                let parts: Vec<String> = vs.iter().map(|v| v.to_string()).collect();
+                write!(f, "({})", parts.join(", "))
+            }
         }
     }
 }
@@ -40,7 +51,8 @@ impl Value {
             Value::Bool(_) => "Bool".into(),
             Value::Int(_) => "Int".into(),
             Value::Text(_) => "Text".into(),
-            Value::Variant(t, _) => t.clone(),
+            Value::Variant(t, _) | Value::Opaque(t, _) => t.clone(),
+            Value::Row(_) => "row".into(),
         }
     }
 
@@ -70,6 +82,7 @@ impl Value {
             (TypeRef::Named { name }, v) => match model.type_decl(name).map(|t| &t.def) {
                 Some(TypeDef::Enum { .. }) => matches!(v, Value::Variant(t, _) if t == name),
                 Some(TypeDef::Range { lo, hi }) => matches!(v, Value::Int(n) if n >= lo && n <= hi),
+                Some(TypeDef::Opaque) => matches!(v, Value::Opaque(t, _) if t == name),
                 None => false,
             },
             _ => false,
@@ -101,12 +114,13 @@ pub fn inhabitants(ty: &TypeRef, model: &Model) -> Option<Vec<Value>> {
         TypeRef::Range { lo, hi } => Some((*lo..=*hi).map(Value::Int).collect()),
         TypeRef::Named { name } => {
             let decl = model.type_decl(name)?;
-            Some(match &decl.def {
+            match &decl.def {
                 TypeDef::Enum { variants } => {
-                    variants.iter().map(|v| Value::Variant(name.clone(), v.clone())).collect()
+                    Some(variants.iter().map(|v| Value::Variant(name.clone(), v.clone())).collect())
                 }
-                TypeDef::Range { lo, hi } => (*lo..=*hi).map(Value::Int).collect(),
-            })
+                TypeDef::Range { lo, hi } => Some((*lo..=*hi).map(Value::Int).collect()),
+                TypeDef::Opaque => None,
+            }
         }
     }
 }
@@ -143,6 +157,24 @@ impl State {
 
     pub fn instances(&self, fact: &str) -> impl Iterator<Item = (&Key, &Value)> {
         self.facts.get(fact).into_iter().flat_map(|m| m.iter())
+    }
+
+    /// Every opaque identity of type `ty` present anywhere in the state, as a
+    /// key or a value: the known population of an open domain.
+    pub fn identities_of(&self, ty: &str) -> std::collections::BTreeSet<Value> {
+        let mut out = std::collections::BTreeSet::new();
+        for instances in self.facts.values() {
+            for (key, value) in instances {
+                for v in key.iter().chain(std::iter::once(value)) {
+                    if let Value::Opaque(t, _) = v {
+                        if t == ty {
+                            out.insert(v.clone());
+                        }
+                    }
+                }
+            }
+        }
+        out
     }
 
     pub fn set(&mut self, fact: &str, key: Key, value: Value) {

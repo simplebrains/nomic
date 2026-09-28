@@ -50,6 +50,7 @@ enum Item<'a> {
     Import(&'a ImportDecl),
     Include(&'a IncludeDecl),
     Type(&'a TypeDecl),
+    Order(&'a OrderDecl),
     Fact(&'a FactDecl),
     Derive(&'a DeriveDecl),
     Action(&'a ActionDecl),
@@ -68,6 +69,7 @@ impl Item<'_> {
             Item::Import(d) => d.pos.line,
             Item::Include(d) => d.pos.line,
             Item::Type(d) => d.pos.line,
+            Item::Order(d) => d.pos.line,
             Item::Fact(d) => d.pos.line,
             Item::Derive(d) => d.pos.line,
             Item::Action(d) => d.pos.line,
@@ -83,6 +85,7 @@ impl Item<'_> {
         match self {
             Item::Import(_) | Item::Include(_) => None,
             Item::Type(d) => d.doc.as_deref(),
+            Item::Order(d) => d.doc.as_deref(),
             Item::Fact(d) => d.doc.as_deref(),
             Item::Derive(d) => d.doc.as_deref(),
             Item::Action(d) => d.doc.as_deref(),
@@ -98,6 +101,7 @@ impl Item<'_> {
         match self {
             Item::Import(_) | Item::Include(_) => None,
             Item::Type(d) => Some(&d.name),
+            Item::Order(_) => None,
             Item::Fact(d) => Some(&d.name),
             Item::Derive(d) => Some(&d.name),
             Item::Action(d) => Some(&d.name),
@@ -180,6 +184,9 @@ impl<'a> Printer<'a> {
         }
         for d in &m.types {
             items.push(Item::Type(d));
+        }
+        for d in &m.orders {
+            items.push(Item::Order(d));
         }
         for d in &m.facts {
             items.push(Item::Fact(d));
@@ -267,6 +274,10 @@ impl<'a> Printer<'a> {
                 }
                 Item::Include(d) => self.out.push(format!("include {}", quote(&d.path))),
                 Item::Type(d) => self.type_decl(d),
+                Item::Order(d) => {
+                    let chains: Vec<String> = d.chains.iter().map(|c| c.join(" < ")).collect();
+                    self.out.push(format!("order {}: {}", d.ty, chains.join(", ")));
+                }
                 Item::Fact(d) => self.fact(d),
                 Item::Derive(d) => self.derive(d),
                 Item::Action(d) => self.out.push(format!("action {}{}", d.name, params(&d.params))),
@@ -330,6 +341,7 @@ impl<'a> Printer<'a> {
     fn type_decl(&mut self, d: &TypeDecl) {
         let head = format!("type {} = ", d.name);
         match &d.def {
+            TypeDef::Opaque => self.out.push(format!("{head}opaque")),
             TypeDef::Range { lo, hi } => self.out.push(format!("{head}{lo}..{hi}")),
             TypeDef::Enum { variants } => {
                 let one = format!("{head}{}", variants.join(" | "));
@@ -589,7 +601,14 @@ fn params(ps: &[Param]) -> String {
 }
 
 fn binders_str(bs: &[Binder]) -> String {
-    bs.iter().map(|b| format!("{}: {}", b.name, type_display(&b.ty))).collect::<Vec<_>>().join(", ")
+    bs.iter()
+        .map(|b| match &b.source {
+            BinderSource::Type { ty } => format!("{}: {}", b.names.join(", "), type_display(ty)),
+            BinderSource::Fact { fact } if b.names.len() == 1 => format!("{} in {fact}", b.names[0]),
+            BinderSource::Fact { fact } => format!("({}) in {fact}", b.names.join(", ")),
+        })
+        .collect::<Vec<_>>()
+        .join(", ")
 }
 
 fn args(es: &[Expr]) -> String {
@@ -725,6 +744,18 @@ fn step(s: &Step) -> String {
     }
 }
 
+fn quant_name(q: Quantifier) -> &'static str {
+    match q {
+        Quantifier::All => "all",
+        Quantifier::Exists => "exists",
+        Quantifier::None => "none",
+        Quantifier::Count => "count",
+        Quantifier::Sum => "sum",
+        Quantifier::First => "first",
+        Quantifier::Unique => "unique",
+    }
+}
+
 // ---- expressions -------------------------------------------------------------
 
 /// Binding strength; higher binds tighter. Mirrors the parser.
@@ -798,13 +829,7 @@ pub fn expr(e: &Expr, min: u8) -> String {
             format!("{} ? {} : {}", expr(cond, 2), expr(then, 2), expr(els, 2))
         }
         Expr::Quant { q, binders, filter, body, .. } => {
-            let name = match q {
-                Quantifier::All => "all",
-                Quantifier::Exists => "exists",
-                Quantifier::Count => "count",
-                Quantifier::Sum => "sum",
-                Quantifier::First => "first",
-            };
+            let name = quant_name(*q);
             let mut t = format!("{name}({}", binders_str(binders));
             if let Some(f) = filter {
                 t.push_str(" where ");
@@ -895,13 +920,7 @@ fn break_expr_inner(e: &Expr, indent: usize) -> Vec<String> {
             lines
         }
         Expr::Quant { q, binders, filter, body, .. } => {
-            let name = match q {
-                Quantifier::All => "all",
-                Quantifier::Exists => "exists",
-                Quantifier::Count => "count",
-                Quantifier::Sum => "sum",
-                Quantifier::First => "first",
-            };
+            let name = quant_name(*q);
             let mut head = format!("{pad}{name}({}", binders_str(binders));
             if let Some(f) = filter {
                 head.push_str(" where ");

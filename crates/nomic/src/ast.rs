@@ -58,6 +58,20 @@ pub struct Param {
 pub enum TypeDef {
     Enum { variants: Vec<String> },
     Range { lo: i64, hi: i64 },
+    /// An open domain of identities: values enter from outside as `T("repr")`,
+    /// compare only for equality, and cannot be enumerated.
+    Opaque,
+}
+
+/// `order T: a < b < c, d < e`: a declared precedence over an enum, as chains.
+/// Its transitive closure is the order; pairs it does not relate are
+/// incomparable, so a partial order needs no third truth value.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct OrderDecl {
+    pub ty: String,
+    pub chains: Vec<Vec<String>>,
+    pub doc: Option<String>,
+    pub pos: Pos,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -269,17 +283,32 @@ pub enum UnOp {
 pub enum Quantifier {
     All,
     Exists,
+    /// `none(...)`: no binding satisfies the body.
+    None,
     Count,
     Sum,
+    /// `unique(... => key)`: no two distinct bindings share a key value.
+    Unique,
     /// Deterministic selection: the first binding in canonical order that
     /// satisfies the filter, or `none`.
     First,
 }
 
+/// What a quantifier or `for` binder ranges over.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(tag = "kind", rename_all = "snake_case")]
+pub enum BinderSource {
+    /// Every inhabitant of a finite type.
+    Type { ty: TypeRef },
+    /// The key tuples currently present in a fact: its population.
+    Fact { fact: String },
+}
+
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct Binder {
-    pub name: String,
-    pub ty: TypeRef,
+    /// One name for a type or single-key fact; one per key for `(a, b) in F`.
+    pub names: Vec<String>,
+    pub source: BinderSource,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -423,6 +452,8 @@ pub struct Model {
     pub name: Option<String>,
     pub doc: Option<String>,
     pub types: Vec<TypeDecl>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub orders: Vec<OrderDecl>,
     pub facts: Vec<FactDecl>,
     pub derives: Vec<DeriveDecl>,
     pub actions: Vec<ActionDecl>,
@@ -457,6 +488,38 @@ impl Model {
     }
     pub fn type_decl(&self, name: &str) -> Option<&TypeDecl> {
         self.types.iter().find(|t| t.name == name)
+    }
+    pub fn is_opaque(&self, name: &str) -> bool {
+        matches!(self.type_decl(name).map(|t| &t.def), Some(TypeDef::Opaque))
+    }
+    /// Does `a` strictly precede `b` under the declared order of enum `ty`?
+    /// `None` when the type has no declared order.
+    pub fn precedes(&self, ty: &str, a: &str, b: &str) -> Option<bool> {
+        let decls: Vec<&OrderDecl> = self.orders.iter().filter(|o| o.ty == ty).collect();
+        if decls.is_empty() {
+            return None;
+        }
+        // Depth-first search over the chain edges.
+        let mut stack = vec![a];
+        let mut seen = std::collections::BTreeSet::new();
+        while let Some(x) = stack.pop() {
+            if !seen.insert(x) {
+                continue;
+            }
+            for d in &decls {
+                for chain in &d.chains {
+                    for w in chain.windows(2) {
+                        if w[0] == x {
+                            if w[1] == b {
+                                return Some(true);
+                            }
+                            stack.push(&w[1]);
+                        }
+                    }
+                }
+            }
+        }
+        Some(false)
     }
     pub fn invariant(&self, name: &str) -> Option<&InvariantDecl> {
         self.invariants.iter().find(|i| i.name == name)

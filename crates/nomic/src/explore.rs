@@ -40,18 +40,20 @@ pub struct Counterexample {
 pub struct ExploreOptions {
     pub depth: Option<usize>,
     pub max_states: usize,
+    /// Fresh identities per opaque type offered at each state.
+    pub fresh: usize,
 }
 
 impl Default for ExploreOptions {
     fn default() -> Self {
-        Self { depth: None, max_states: 100_000 }
+        Self { depth: None, max_states: 100_000, fresh: 1 }
     }
 }
 
 pub fn explore(model: &Model, opts: &ExploreOptions) -> Result<ExploreReport, MachineError> {
-    let machine = Machine::new(model);
+    let mut machine = Machine::new(model);
+    machine.fresh = opts.fresh;
     let init = machine.initial_state()?;
-    let all = machine.all_occurrences()?;
 
     let mut report = ExploreReport {
         depth_limit: opts.depth,
@@ -72,6 +74,7 @@ pub fn explore(model: &Model, opts: &ExploreOptions) -> Result<ExploreReport, Ma
             continue;
         }
         let mut any_legal = false;
+        let all = machine.all_occurrences(&state)?;
         for occ in &all {
             let outcome = match machine.apply(&state, occ) {
                 Ok(o) => o,

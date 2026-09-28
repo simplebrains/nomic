@@ -202,6 +202,11 @@ fn merge_all(out: &mut Linked, dep: &Linked, file: &Path, pos: Pos) -> Result<()
     merge!(invariants, "invariant");
     merge!(ensures, "ensure");
     merge!(exceptions, "exception");
+    for o in &dep.model.orders {
+        if !out.model.orders.contains(o) {
+            out.model.orders.push(o.clone());
+        }
+    }
     // Init effects are additive once per module; citations dedupe by value.
     if !already {
         out.model.init.extend(dep.model.init.iter().cloned());
@@ -282,6 +287,7 @@ fn import_one(out: &mut Linked, dep: &Linked, n: &ImportName, file: &Path, pos: 
     for x in &closure {
         if let Some(d) = m.type_decl(x) {
             frag.model.types.push(d.clone());
+            frag.model.orders.extend(m.orders.iter().filter(|o| &o.ty == x).cloned());
         }
         if let Some(d) = m.fact(x) {
             frag.model.facts.push(d.clone());
@@ -396,7 +402,16 @@ fn collect_expr(m: &Model, e: &Expr, out: &mut BTreeSet<String>) {
             collect_expr(m, els, out);
         }
         Expr::Quant { binders, filter, body, .. } => {
-            binders.iter().for_each(|b| collect_type(m, &b.ty, out));
+            for b in binders {
+                match &b.source {
+                    BinderSource::Type { ty } => collect_type(m, ty, out),
+                    BinderSource::Fact { fact } => {
+                        if m.fact(fact).is_some() {
+                            out.insert(fact.clone());
+                        }
+                    }
+                }
+            }
             if let Some(f) = filter {
                 collect_expr(m, f, out);
             }
@@ -429,6 +444,9 @@ pub fn rename(m: &mut Model, from: &str, to: &str) {
     };
     for d in &mut m.types {
         r(&mut d.name);
+    }
+    for o in &mut m.orders {
+        r(&mut o.ty);
     }
     for d in &mut m.facts {
         r(&mut d.name);
@@ -474,6 +492,17 @@ pub fn rename(m: &mut Model, from: &str, to: &str) {
     }
 }
 
+fn rename_binder(b: &mut Binder, from: &str, to: &str) {
+    match &mut b.source {
+        BinderSource::Type { ty } => rename_type(ty, from, to),
+        BinderSource::Fact { fact } => {
+            if fact == from {
+                *fact = to.to_string();
+            }
+        }
+    }
+}
+
 fn rename_type(t: &mut TypeRef, from: &str, to: &str) {
     match t {
         TypeRef::Named { name } if name == from => *name = to.to_string(),
@@ -514,7 +543,7 @@ fn rename_stmt(s: &mut Stmt, from: &str, to: &str) {
             els.iter_mut().for_each(|s| rename_stmt(s, from, to));
         }
         Stmt::For { binders, filter, body, .. } => {
-            binders.iter_mut().for_each(|b| rename_type(&mut b.ty, from, to));
+            binders.iter_mut().for_each(|b| rename_binder(b, from, to));
             if let Some(f) = filter {
                 rename_expr(f, from, to);
             }
@@ -548,7 +577,7 @@ fn rename_expr(e: &mut Expr, from: &str, to: &str) {
             rename_expr(els, from, to);
         }
         Expr::Quant { binders, filter, body, .. } => {
-            binders.iter_mut().for_each(|b| rename_type(&mut b.ty, from, to));
+            binders.iter_mut().for_each(|b| rename_binder(b, from, to));
             if let Some(f) = filter {
                 rename_expr(f, from, to);
             }

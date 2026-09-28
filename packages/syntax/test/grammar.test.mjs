@@ -38,7 +38,7 @@ function alternation(scope) {
   const found = [];
   for (const src of regexes(grammar)) {
     // pull the alternation out of patterns like \b(a|b|c)\b
-    const m = src.match(/^\\b\((.*?)\)\\b$/);
+    const m = src.match(/^\\b\((.*?)\)\\b(\(\?=.*\))?$/);
     if (m) found.push(m[1].split("|"));
   }
   return found;
@@ -46,7 +46,7 @@ function alternation(scope) {
 
 test("grammar keyword alternations match keywords.json", () => {
   const groups = alternation();
-  const want = [keywords.control, keywords.builtins, keywords.relations, keywords.declarations, keywords.modifiers, keywords.literals];
+  const want = [keywords.control, keywords.builtins, keywords.relations, keywords.declarations, keywords.modifiers, keywords.literals, keywords.types];
   for (const w of want) {
     const hit = groups.find((g) => g.length === w.length && g.every((x) => w.includes(x)));
     assert.ok(hit, `no alternation in the grammar equals [${w.join(", ")}]`);

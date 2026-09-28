@@ -215,11 +215,11 @@
         },
         {
           "name": "keyword.control.nomic",
-          "match": "\\b(on|when|if|else|for|where|require|deny|allow|assert|retract|emit|let|given|expect|emits|rejected|by|match|as)\\b"
+          "match": "\\b(on|when|if|else|for|where|require|deny|allow|assert|retract|emit|let|given|expect|emits|rejected|by|match|as|in)\\b"
         },
         {
           "name": "support.function.builtin.nomic",
-          "match": "\\b(all|exists|count|sum|first|legal)\\b"
+          "match": "\\b(all|exists|count|sum|first|legal|none|unique)\\b(?=\\s*\\()"
         },
         {
           "name": "keyword.other.relation.nomic",
@@ -227,7 +227,11 @@
         },
         {
           "name": "storage.type.declaration.nomic",
-          "match": "\\b(model|type|fact|derive|action|event|rule|invariant|ensure|exception|init|scenario|cite|import|include)\\b"
+          "match": "\\b(model|type|fact|derive|action|event|rule|invariant|ensure|exception|init|scenario|cite|import|include|order)\\b"
+        },
+        {
+          "name": "support.type.primitive.nomic",
+          "match": "\\b(opaque)\\b"
         }
       ]
     },

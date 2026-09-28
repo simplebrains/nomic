@@ -18,8 +18,9 @@ USAGE:
   nomic actions <model.nom>                 list legal actions from the initial state
   nomic play    <model.nom> <occurrence>... apply occurrences from the initial state and explain
   nomic eval    <model.nom> <expr>          evaluate an expression against the initial state
-  nomic explore <model.nom> [--depth N] [--max-states N] [--json]
-                                              bounded exhaustive exploration with invariant checking
+  nomic explore <model.nom> [--depth N] [--max-states N] [--fresh N] [--json]
+                                              bounded exhaustive exploration with invariant checking;
+                                              --fresh is how many new opaque identities to try per type
   nomic fixture <model.nom> [--out f.json]  generate a conformance fixture from the scenarios
   nomic conform <model.nom> <fixture.json>  check the model against a stored fixture
   nomic report  <model.nom>                 knowledge-status, exception, and citation report
@@ -197,6 +198,9 @@ fn run(args: &[String]) -> Result<ExitCode, String> {
             }
             if let Some(n) = opt(args, "--max-states") {
                 o.max_states = n.parse().map_err(|_| "--max-states needs a number")?;
+            }
+            if let Some(n) = opt(args, "--fresh") {
+                o.fresh = n.parse().map_err(|_| "--fresh needs a number")?;
             }
             let started = std::time::Instant::now();
             let report = explore(&model, &o).map_err(|e| e.to_string())?;
@@ -439,6 +443,25 @@ fn report(model: &Model) {
         let items: Vec<String> = rows.iter().filter(|(_, s, _)| *s == status).map(|(k, _, n)| format!("{k} {n}")).collect();
         if !items.is_empty() {
             println!("  {status} ({}): {}", items.len(), items.join(", "));
+        }
+    }
+    for o in &model.orders {
+        let variants = match model.type_decl(&o.ty).map(|t| &t.def) {
+            Some(nomic::ast::TypeDef::Enum { variants }) => variants.clone(),
+            _ => vec![],
+        };
+        let mut incomparable = Vec::new();
+        for (i, a) in variants.iter().enumerate() {
+            for b in variants.iter().skip(i + 1) {
+                if model.precedes(&o.ty, a, b) != Some(true) && model.precedes(&o.ty, b, a) != Some(true) {
+                    incomparable.push(format!("{a} ∥ {b}"));
+                }
+            }
+        }
+        if incomparable.is_empty() {
+            println!("order {}: total", o.ty);
+        } else {
+            println!("order {}: partial ({})", o.ty, incomparable.join(", "));
         }
     }
     if model.exceptions.is_empty() {

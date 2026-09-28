@@ -32,7 +32,7 @@ crates/nomic-cli    the `nomic` command line, over both
 packages/syntax     editor support: TextMate grammar, Monaco Monarch tokenizer,
                     language configuration, shared keyword list (TypeScript)
 packages/vscode     VS Code extension wrapping the grammar
-examples/           eight example models, one folder each; `<name>/<name>.nom` is the entry
+examples/           nine example models, one folder each; `<name>/<name>.nom` is the entry
 fixtures/           generated conformance fixtures, one per model
 ```
 
@@ -120,6 +120,9 @@ Other constructs, each introduced by one of the example models:
 - `legal(Action(args))` built-in predicate: would the action be accepted now? Lets "no legal move" be a derived value (checkmate, stalemate).
 - `observed | expected | assumed` status prefixes on declarations, and `exception Name on Invariant when cond` naming a known departure from a normative invariant. The verifier reports when an exception is exercised instead of failing (inventory audits, the ship's red-alert power overdraw).
 - `given nothing` / `given Fact(k) = v` scenario steps to start from a constructed state.
+- `type TaskId = opaque`: an open domain of identities. Values enter as `TaskId("u-17")`, compare only for equality, can be stored and passed, and are never enumerated. The explorer draws them from identities already in the state plus `--fresh N` new ones.
+- `order Status: Draft < Ready < Doing < Done, Ready < Cancelled`: a declared precedence over an enum, as chains. Its transitive closure is the order; pairs it does not relate are incomparable, so `<` is simply false for them and a partial order needs no third truth value. Enums without an `order` keep declaration order. The machine's canonical evaluation order is separate and never modeled.
+- `x in Fact` and `(a, b) in Fact` binders: quantifiers and `for` range over a fact's current keys, its population, instead of a type. This is what makes opaque keys quantifiable, and it is how cardinality is stated: `count(t in Task => Task(t) == Doing) <= Wip`. `none(...)` and `unique(x in F => Key(x))` complete the set. Facts are the only collection substrate; a query result never becomes stored state.
 - `rule R on A(p) when cond { ... }`: an applicability guard. False means the rule does not match, unlike `require`, which means the occurrence is forbidden. Needed for anything that dispatches on state, such as a stage machine.
 - **Citations.** Any declaration (or the model) may carry trailing `realizes | derives_from | evidences | contradicts | configures | documents "path#Lstart-Lend[@pin]" ["note"]` clauses grounding it in a file. `nomic cite` resolves them and detects drift by content hash; `contradicts` records a known gap between intent and code. `examples/nomic/nomic.nom` describes this machine's own pipeline with 22 citations into `src/`.
 
@@ -192,6 +195,7 @@ enumeration is in canonical type order.
 | `dungeon` | RPG with dice as action parameters, initiative, death reactions, item conservation | 7 |
 | `ships_computer` | ordered enums as rank, power budget with observed overdraw, two-officer self-destruct | 11 |
 | `nomic` | the machine's own pipeline as a stage machine, every rule citing the Rust that realizes it; one honest `contradicts` | 8 |
+| `todo` | opaque task identities, a partially ordered lifecycle, population binders for cardinality and uniqueness, exploration with fresh identities | 8 |
 
 `fixtures/*.json` are the generated conformance fixtures for each; `cargo test`
 checks every model, every scenario, every fixture, and the tic-tac-toe and
