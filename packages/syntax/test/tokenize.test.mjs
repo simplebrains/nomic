@@ -60,7 +60,10 @@ test("connect four tokenizes with the intended scopes", async () => {
   assert.ok(find(toks, "Column", "entity.name.type.nomic"), "type in an annotation");
   assert.ok(find(toks, "Int", "support.type.primitive.nomic"), "primitive type");
   assert.ok(find(toks, "..", "keyword.operator.range.nomic"), "range operator");
-  assert.ok(find(toks, "require", "keyword.control.nomic"), "statement keyword");
+  assert.ok(find(toks, "deny", "keyword.control.nomic"), "statement keyword");
+  const board = tokenize(grammar, readFileSync(join(root, "examples", "connect_four", "board.nom"), "utf8"));
+  assert.ok(find(board, "require", "keyword.control.nomic"), "statement keyword in the included module");
+  assert.ok(find(board, "import", "storage.type.declaration.nomic"), "`import` is a declaration keyword");
   assert.ok(find(toks, "count", "support.function.builtin.nomic"), "quantifier");
   assert.ok(find(toks, "none", "constant.language.nomic"), "none literal");
   assert.ok(find(toks, "Red", "variable.other.constant.nomic"), "bare variant");
