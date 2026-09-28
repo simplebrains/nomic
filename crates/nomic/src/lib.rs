@@ -44,7 +44,8 @@ pub use ast::Model;
 pub use check::{check, check_ok, Diagnostic};
 pub use explore::{explore, ExploreOptions, ExploreReport};
 pub use machine::{Machine, MachineError, Occurrence, Outcome, Transition};
-pub use parser::{parse, parse_expr, parse_occurrence, ParseError};
+pub use lexer::Comment;
+pub use parser::{parse, parse_expr, parse_occurrence, parse_with_comments, ParseError};
 pub use scenario::{run_all, run_scenario, ScenarioResult};
 pub use value::{State, Value};
 

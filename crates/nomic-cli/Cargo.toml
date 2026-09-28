@@ -1,0 +1,16 @@
+[package]
+name = "nomic-cli"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "The `nomic` command line: check, run, explore, cite, and format Nomic models"
+
+[[bin]]
+name = "nomic"
+path = "src/main.rs"
+
+[dependencies]
+nomic = { path = "../nomic" }
+nomic-fmt = { path = "../nomic-fmt" }
+serde_json = "1"

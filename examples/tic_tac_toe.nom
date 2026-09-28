@@ -40,8 +40,7 @@ event Draw when Filled == 9 && !Wins(X) && !Wins(O)
 rule RecordWinner on Win(m) { assert Winner = m }
 rule RecordDraw on Draw { assert Drawn }
 
-invariant TurnMatchesMarks:
-  Turn == X ? Marks(X) == Marks(O) : Marks(X) == Marks(O) + 1
+invariant TurnMatchesMarks: Turn == X ? Marks(X) == Marks(O) : Marks(X) == Marks(O) + 1
 invariant OneWinner: !(Wins(X) && Wins(O))
 invariant WinnerWins: Winner == none || Wins(Winner)
 invariant DrawIsFull: !Drawn || Filled == 9

@@ -62,7 +62,9 @@ rule DoPlaceOrder on PlaceOrder(id, s) {
   assert OrderSite(id) = s
 }
 
-rule LineOnOpenOrder on AddLine(id, k, q) { require Order(id) == Open "lines can only be added to an open order" }
+rule LineOnOpenOrder on AddLine(id, k, q) {
+  require Order(id) == Open "lines can only be added to an open order"
+}
 rule DoAddLine on AddLine(id, k, q) {
   assert Line(id, k) = Wanted(id, k) + q
 }
@@ -115,7 +117,9 @@ rule DoTransfer on Transfer(a, b, k, q) {
   assert OnHand(b, k) = Stock(b, k) + q
 }
 
-rule AdjustUnderAudit on Adjust(s, k, d) { require Auditing(s) "adjustments are only accepted during an audit" }
+rule AdjustUnderAudit on Adjust(s, k, d) {
+  require Auditing(s) "adjustments are only accepted during an audit"
+}
 rule DoAdjust on Adjust(s, k, d) {
   require Auditing(s)
   assert OnHand(s, k) = Stock(s, k) + d
@@ -146,12 +150,12 @@ invariant OrdersHaveSites: all(id: OrderId => (Order(id) == none) == (OrderSite(
 /// Cycle counts during an audit post their deltas immediately, so on-hand
 /// can go negative until the recount reconciles it. Seen weekly in the
 /// warehouse; the audit cannot be closed until it is fixed.
-observed exception NegativeDuringAudit on NonNegativeStock
-  when all(s: Site, k: Sku where Stock(s, k) < 0 => Auditing(s))
+observed exception NegativeDuringAudit on NonNegativeStock when
+  all(s: Site, k: Sku where Stock(s, k) < 0 => Auditing(s))
 /// The same wart seen from the reservation side: a negative count can sit
 /// below what reserved orders hold until the recount lands.
-observed exception HeldExceedsCountDuringAudit on ReservedWithinStock
-  when all(s: Site, k: Sku where Held(s, k) > Stock(s, k) => Auditing(s))
+observed exception HeldExceedsCountDuringAudit on ReservedWithinStock when
+  all(s: Site, k: Sku where Held(s, k) > Stock(s, k) => Auditing(s))
 
 init {
   for (s: Site, k: Sku) { assert ReorderPoint(s, k) = 5 }

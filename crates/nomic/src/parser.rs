@@ -1,7 +1,7 @@
 //! Recursive-descent parser from the authoring syntax to the IR.
 
 use crate::ast::*;
-use crate::lexer::{lex, Pos, Tok, Token};
+use crate::lexer::{lex, lex_full, Comment, Pos, Tok, Token};
 use std::fmt;
 
 #[derive(Debug, Clone)]
@@ -21,9 +21,14 @@ impl std::error::Error for ParseError {}
 type PResult<T> = Result<T, ParseError>;
 
 pub fn parse(src: &str) -> PResult<Model> {
-    let toks = lex(src).map_err(|e| ParseError { pos: e.pos, message: e.message })?;
+    parse_with_comments(src).map(|(m, _)| m)
+}
+
+/// Parse, also returning the plain `//` comments in source order.
+pub fn parse_with_comments(src: &str) -> PResult<(Model, Vec<Comment>)> {
+    let (toks, comments) = lex_full(src).map_err(|e| ParseError { pos: e.pos, message: e.message })?;
     let mut p = Parser { toks, i: 0 };
-    p.model()
+    Ok((p.model()?, comments))
 }
 
 /// Parse a standalone occurrence such as `Drop(Red, 3)` (used by the CLI).
@@ -315,7 +320,7 @@ impl Parser {
                 self.expect_kw("when")?;
                 let when = self.expr()?;
                 let doc = doc.or_else(|| self.opt_string());
-                m.exceptions.push(ExceptionDecl { name: name.clone(), doc, invariant, when, pos });
+                m.exceptions.push(ExceptionDecl { name: name.clone(), doc, status, invariant, when, pos });
                 Some(name)
             }
             "init" => {
@@ -324,6 +329,7 @@ impl Parser {
                     return self.err("a model may have only one `init` block");
                 }
                 m.init = self.block()?;
+                m.init_pos = Some(pos);
                 None
             }
             "scenario" => {

@@ -159,6 +159,8 @@ pub struct InvariantDecl {
 pub struct ExceptionDecl {
     pub name: String,
     pub doc: Option<String>,
+    #[serde(default)]
+    pub status: Status,
     pub invariant: String,
     pub when: Expr,
     pub pos: Pos,
@@ -403,6 +405,9 @@ pub struct Model {
     pub exceptions: Vec<ExceptionDecl>,
     /// Effects establishing the initial state.
     pub init: Vec<Stmt>,
+    /// Where the `init` block starts, for tools that reproduce layout.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub init_pos: Option<Pos>,
     pub scenarios: Vec<ScenarioDecl>,
     pub citations: Vec<Citation>,
 }

@@ -115,7 +115,21 @@ impl fmt::Display for LexError {
     }
 }
 
+/// A plain `//` comment, kept out of the token stream but available to
+/// tools that must preserve it (the formatter).
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct Comment {
+    pub pos: Pos,
+    pub text: String,
+}
+
 pub fn lex(src: &str) -> Result<Vec<Token>, LexError> {
+    lex_full(src).map(|(t, _)| t)
+}
+
+/// Tokenize, also returning every plain `//` comment with its position.
+pub fn lex_full(src: &str) -> Result<(Vec<Token>, Vec<Comment>), LexError> {
+    let mut comments = Vec::new();
     let chars: Vec<char> = src.chars().collect();
     let mut i = 0usize;
     let mut line = 1u32;
@@ -151,9 +165,11 @@ pub fn lex(src: &str) -> Result<Vec<Token>, LexError> {
             while j < chars.len() && chars[j] != '\n' {
                 j += 1;
             }
+            let text: String = chars[start..j].iter().collect();
             if is_doc {
-                let text: String = chars[start..j].iter().collect();
                 push!(Tok::Doc(text.trim().to_string()), pos);
+            } else {
+                comments.push(Comment { pos, text: text.trim().to_string() });
             }
             col += (j - i) as u32;
             i = j;
@@ -276,7 +292,7 @@ pub fn lex(src: &str) -> Result<Vec<Token>, LexError> {
         col += 1;
     }
     out.push(Token { tok: Tok::Eof, pos: Pos { line, col } });
-    Ok(out)
+    Ok((out, comments))
 }
 
 #[cfg(test)]

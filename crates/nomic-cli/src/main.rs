@@ -23,6 +23,9 @@ USAGE:
   nomic fixture <model.nom> [--out f.json]  generate a conformance fixture from the scenarios
   nomic conform <model.nom> <fixture.json>  check the model against a stored fixture
   nomic report  <model.nom>                 knowledge-status, exception, and citation report
+  nomic fmt     <model.nom>... [--check] [--stdout]
+                                              rewrite models in canonical form; --check exits 1 if any
+                                              file would change; --stdout prints instead of writing
   nomic cite    <model.nom> [--root DIR] [--pin] [--index] [--json]
                                               resolve every citation against the repository root and
                                               report current/stale/unverified/unresolved; --pin rewrites
@@ -271,6 +274,42 @@ fn run(args: &[String]) -> Result<ExitCode, String> {
             report(&model);
             Ok(ExitCode::SUCCESS)
         }
+        "fmt" => {
+            let files: Vec<&String> = args.iter().skip(1).filter(|a| !a.starts_with("--")).collect();
+            if files.is_empty() {
+                return Err("fmt: no files given".into());
+            }
+            let check = flag(args, "--check");
+            let stdout = flag(args, "--stdout");
+            let mut changed = 0usize;
+            for f in files {
+                let src = std::fs::read_to_string(f).map_err(|e| format!("cannot read {f}: {e}"))?;
+                let out = nomic_fmt::format(&src).map_err(|e| format!("{f}:{e}"))?;
+                if stdout {
+                    print!("{out}");
+                    continue;
+                }
+                if out != src {
+                    changed += 1;
+                    if check {
+                        println!("would reformat {f}");
+                    } else {
+                        std::fs::write(f, out).map_err(|e| format!("cannot write {f}: {e}"))?;
+                        println!("formatted {f}");
+                    }
+                }
+            }
+            if check {
+                if changed == 0 {
+                    println!("all files formatted");
+                }
+                return Ok(if changed == 0 { ExitCode::SUCCESS } else { ExitCode::FAILURE });
+            }
+            if !stdout && changed == 0 {
+                println!("already formatted");
+            }
+            Ok(ExitCode::SUCCESS)
+        }
         "cite" => {
             let p = path?;
             let model = load(p)?;
@@ -392,6 +431,9 @@ fn report(model: &Model) {
     }
     for i in &model.invariants {
         rows.push(("invariant".into(), i.status.keyword(), i.name.clone()));
+    }
+    for x in &model.exceptions {
+        rows.push(("exception".into(), x.status.keyword(), x.name.clone()));
     }
     println!("knowledge status:");
     for status in ["required", "observed", "expected", "assumed"] {

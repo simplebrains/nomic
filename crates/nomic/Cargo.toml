@@ -6,10 +6,6 @@ license.workspace = true
 repository.workspace = true
 description = "Nomic Core 0.1 reference machine: a deterministic executable specification language"
 
-[[bin]]
-name = "nomic"
-path = "src/main.rs"
-
 [lib]
 name = "nomic"
 path = "src/lib.rs"

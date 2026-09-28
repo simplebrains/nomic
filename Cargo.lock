@@ -23,6 +23,23 @@ dependencies = [
 ]
 
 [[package]]
+name = "nomic-cli"
+version = "0.1.0"
+dependencies = [
+ "nomic",
+ "nomic-fmt",
+ "serde_json",
+]
+
+[[package]]
+name = "nomic-fmt"
+version = "0.1.0"
+dependencies = [
+ "nomic",
+ "serde_json",
+]
+
+[[package]]
 name = "proc-macro2"
 version = "1.0.107"
 source = "registry+https://github.com/rust-lang/crates.io-index"

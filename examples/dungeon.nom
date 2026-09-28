@@ -63,7 +63,9 @@ action Unlock(actor: Actor, room: Room)
 action Wait(actor: Actor)
 
 rule MoveTurn on Move(a, to) { require !GameOver && Turn == a && Alive(a) "not this actor's turn" }
-rule MoveAdjacent on Move(a, to) { require Adjacent(Location(a) ?? Hall, to) "rooms are not connected" }
+rule MoveAdjacent on Move(a, to) {
+  require Adjacent(Location(a) ?? Hall, to) "rooms are not connected"
+}
 rule MoveUnlocked on Move(a, to) { require !Locked(to) "the door is locked" }
 rule DoMove on Move(a, to) {
   require Turn == a && Alive(a) && Adjacent(Location(a) ?? Hall, to) && !Locked(to)
@@ -71,16 +73,24 @@ rule DoMove on Move(a, to) {
   assert Turn = Next(a)
 }
 
-rule AttackTurn on Attack(a, t, roll) { require !GameOver && Turn == a && Alive(a) "not this actor's turn" }
-rule AttackTarget on Attack(a, t, roll) { require Alive(t) && Hostile(a, t) && SameRoom(a, t) "no such target here" }
+rule AttackTurn on Attack(a, t, roll) {
+  require !GameOver && Turn == a && Alive(a) "not this actor's turn"
+}
+rule AttackTarget on Attack(a, t, roll) {
+  require Alive(t) && Hostile(a, t) && SameRoom(a, t) "no such target here"
+}
 rule DoAttack on Attack(a, t, roll) {
   require Turn == a && Alive(a) && Alive(t) && Hostile(a, t) && SameRoom(a, t)
   assert HP(t) = Health(t) - Damage(a, t, roll)
   assert Turn = Next(a)
 }
 
-rule PickUpTurn on PickUp(a, i) { require !GameOver && Turn == a && Alive(a) "not this actor's turn" }
-rule PickUpHere on PickUp(a, i) { require ItemAt(i) != none && ItemAt(i) == Location(a) "the item is not here" }
+rule PickUpTurn on PickUp(a, i) {
+  require !GameOver && Turn == a && Alive(a) "not this actor's turn"
+}
+rule PickUpHere on PickUp(a, i) {
+  require ItemAt(i) != none && ItemAt(i) == Location(a) "the item is not here"
+}
 rule OnlyHeroesLoot on PickUp(a, i) { require a == Hero "monsters do not pick things up" }
 rule DoPickUp on PickUp(a, i) {
   require Turn == a && Alive(a) && a == Hero && ItemAt(i) != none && ItemAt(i) == Location(a)
@@ -99,9 +109,13 @@ rule DoDrink on Drink(a) {
   assert Turn = Next(a)
 }
 
-rule UnlockTurn on Unlock(a, r) { require !GameOver && Turn == a && Alive(a) "not this actor's turn" }
+rule UnlockTurn on Unlock(a, r) {
+  require !GameOver && Turn == a && Alive(a) "not this actor's turn"
+}
 rule UnlockKey on Unlock(a, r) { require Carrying(a, Key) "no key" }
-rule UnlockAdjacent on Unlock(a, r) { require Locked(r) && Adjacent(Location(a) ?? Hall, r) "no locked door to that room from here" }
+rule UnlockAdjacent on Unlock(a, r) {
+  require Locked(r) && Adjacent(Location(a) ?? Hall, r) "no locked door to that room from here"
+}
 rule DoUnlock on Unlock(a, r) {
   require Turn == a && Alive(a) && Carrying(a, Key) && Locked(r) && Adjacent(Location(a) ?? Hall, r)
   retract Locked(r)
@@ -135,7 +149,8 @@ invariant DeadCarryNothing: all(a: Actor, i: Item where Carrying(a, i) => Alive(
 invariant HealthBounded: all(a: Actor where Alive(a) => Health(a) >= 1 && Health(a) <= MaxHP(a))
 /// Every item is in exactly one place: a room floor, one pack, or consumed.
 invariant ItemsInOnePlace:
-  all(i: Item => (ItemAt(i) != none ? 1 : 0) + count(a: Actor => Carrying(a, i)) + (Consumed(i) ? 1 : 0) == 1)
+  all(i: Item =>
+    (ItemAt(i) != none ? 1 : 0) + count(a: Actor => Carrying(a, i)) + (Consumed(i) ? 1 : 0) == 1)
 invariant TurnIsAlive: !Alive(Hero) || Alive(Turn ?? Hero)
 
 init {

@@ -12,7 +12,8 @@ model ShipsComputer
 
 /// Seniority order: earlier is senior.
 type Officer = Captain | FirstOfficer | ChiefEngineer | Doctor | Ensign
-type System = LifeSupport | Shields | Warp | Impulse | Phasers | Torpedoes | Sensors | Transporter | Holodeck
+type System =
+  LifeSupport | Shields | Warp | Impulse | Phasers | Torpedoes | Sensors | Transporter | Holodeck
 type Alert = Green | Yellow | Red
 type Units = 0..10
 type WarpFactor = 1..9
@@ -43,7 +44,17 @@ derive TotalDraw: Int = sum(s: System => Draw(s))
 derive Reactor: Int = ReactorOutput ?? 0
 /// Minimum power for a system to function. From the technical manual; unverified.
 assumed derive MinPower(s: System): Int =
-  match s { LifeSupport => 2, Shields => 3, Warp => 4, Impulse => 1, Phasers => 2, Torpedoes => 1, Sensors => 1, Transporter => 1, Holodeck => 1 }
+  match s {
+    LifeSupport => 2,
+    Shields => 3,
+    Warp => 4,
+    Impulse => 1,
+    Phasers => 2,
+    Torpedoes => 1,
+    Sensors => 1,
+    Transporter => 1,
+    Holodeck => 1
+  }
 derive Operational(s: System): Bool = !Damaged(s) && Draw(s) >= MinPower(s)
 derive Hull: Int = HullIntegrity ?? 0
 derive TorpedoStock: Int = TorpedoCount ?? 0
@@ -70,20 +81,26 @@ action CancelSelfDestruct(officer: Officer)
 /// One second of the countdown passes.
 action Tick
 
-rule AlertCommand on SetAlert(o, l) { require !Dead && CanCommand(o) "only a senior officer on the bridge can change alert status" }
+rule AlertCommand on SetAlert(o, l) {
+  require !Dead && CanCommand(o) "only a senior officer on the bridge can change alert status"
+}
 rule StandDownWithinBudget on SetAlert(o, l) {
-  require l == Red || TotalDraw <= Reactor "trim power to the reactor rating before standing down from red alert"
+  require
+    l == Red || TotalDraw <= Reactor "trim power to the reactor rating before standing down from red alert"
 }
 rule DoSetAlert on SetAlert(o, l) {
   require CanCommand(o)
   assert AlertStatus = l
 }
 
-rule PowerAuthority on AllocatePower(o, s, u) { require !Dead && Engineering(o) "only engineering or command can reallocate power" }
+rule PowerAuthority on AllocatePower(o, s, u) {
+  require !Dead && Engineering(o) "only engineering or command can reallocate power"
+}
 /// The budget is the reactor rating, plus the two-unit overdraw engineering
 /// takes during red alert (see exception RedAlertOverdraw).
 rule PowerBudget on AllocatePower(o, s, u) {
-  require TotalDraw - Draw(s) + u <= Reactor + (AlertStatus == Red ? 2 : 0) "that allocation exceeds the reactor budget"
+  require
+    TotalDraw - Draw(s) + u <= Reactor + (AlertStatus == Red ? 2 : 0) "that allocation exceeds the reactor budget"
 }
 rule DoAllocate on AllocatePower(o, s, u) {
   require Engineering(o)
@@ -91,7 +108,9 @@ rule DoAllocate on AllocatePower(o, s, u) {
 }
 
 rule ShieldsCommand on RaiseShields(o) { require !Dead && CanCommand(o) "not authorized" }
-rule ShieldsOperational on RaiseShields(o) { require Operational(Shields) "shield generators are not operational" }
+rule ShieldsOperational on RaiseShields(o) {
+  require Operational(Shields) "shield generators are not operational"
+}
 rule DoRaise on RaiseShields(o) {
   require CanCommand(o) && Operational(Shields)
   assert ShieldsUp
@@ -103,8 +122,12 @@ rule DoLower on LowerShields(o) {
 }
 
 rule WarpCommand on EngageWarp(o, f) { require !Dead && CanCommand(o) "not authorized" }
-rule WarpOperational on EngageWarp(o, f) { require Operational(Warp) "warp drive is not operational" }
-rule WarpPower on EngageWarp(o, f) { require Draw(Warp) >= f "insufficient power to the warp coils for that factor" }
+rule WarpOperational on EngageWarp(o, f) {
+  require Operational(Warp) "warp drive is not operational"
+}
+rule WarpPower on EngageWarp(o, f) {
+  require Draw(Warp) >= f "insufficient power to the warp coils for that factor"
+}
 rule DoWarp on EngageWarp(o, f) {
   require CanCommand(o) && Operational(Warp) && Draw(Warp) >= f
   assert WarpSpeed = f
@@ -116,21 +139,29 @@ rule DoStop on AllStop(o) {
 }
 
 rule TorpedoCommand on FireTorpedo(o) { require !Dead && CanCommand(o) "not authorized" }
-rule TorpedoRedAlert on FireTorpedo(o) { require AlertStatus == Red "weapons are locked outside red alert" }
-rule TorpedoReady on FireTorpedo(o) { require Operational(Torpedoes) && TorpedoStock > 0 "torpedo launcher not ready" }
+rule TorpedoRedAlert on FireTorpedo(o) {
+  require AlertStatus == Red "weapons are locked outside red alert"
+}
+rule TorpedoReady on FireTorpedo(o) {
+  require Operational(Torpedoes) && TorpedoStock > 0 "torpedo launcher not ready"
+}
 rule DoFireTorpedo on FireTorpedo(o) {
   require CanCommand(o) && AlertStatus == Red && Operational(Torpedoes) && TorpedoStock > 0
   assert TorpedoCount = TorpedoStock - 1
 }
 rule PhaserCommand on FirePhasers(o) { require !Dead && CanCommand(o) "not authorized" }
-rule PhaserRedAlert on FirePhasers(o) { require AlertStatus == Red "weapons are locked outside red alert" }
+rule PhaserRedAlert on FirePhasers(o) {
+  require AlertStatus == Red "weapons are locked outside red alert"
+}
 rule PhaserReady on FirePhasers(o) { require Operational(Phasers) "phaser banks not operational" }
-rule DoFirePhasers on FirePhasers(o) { require CanCommand(o) && AlertStatus == Red && Operational(Phasers) }
+rule DoFirePhasers on FirePhasers(o) {
+  require CanCommand(o) && AlertStatus == Red && Operational(Phasers)
+}
 
 /// Shields absorb three points per power unit allocated; the rest reaches the hull.
 rule DoTakeHit on TakeHit(d) {
   require !Dead
-  let absorbed = (ShieldsUp && Operational(Shields)) ? Draw(Shields) * 3 : 0
+  let absorbed = ShieldsUp && Operational(Shields) ? Draw(Shields) * 3 : 0
   assert HullIntegrity = Max(0, Hull - Max(0, d - absorbed))
 }
 
@@ -138,20 +169,28 @@ rule DoReportDamage on ReportDamage(s) {
   require !Dead && !Damaged(s) "already reported"
   assert Damaged(s)
 }
-rule RepairAuthority on Repair(o, s) { require !Dead && Engineering(o) "only engineering can clear a damage report" }
+rule RepairAuthority on Repair(o, s) {
+  require !Dead && Engineering(o) "only engineering can clear a damage report"
+}
 rule RepairNeeded on Repair(o, s) { require Damaged(s) "nothing to repair" }
 rule DoRepair on Repair(o, s) {
   require Engineering(o) && Damaged(s)
   retract Damaged(s)
 }
 
-rule DestructAuthority on AuthorizeSelfDestruct(o) { require !Dead && CanCommand(o) "self-destruct needs a senior officer on the bridge" }
-rule DestructOnce on AuthorizeSelfDestruct(o) { require !SelfDestructArmedBy(o) "already authorized" }
+rule DestructAuthority on AuthorizeSelfDestruct(o) {
+  require !Dead && CanCommand(o) "self-destruct needs a senior officer on the bridge"
+}
+rule DestructOnce on AuthorizeSelfDestruct(o) {
+  require !SelfDestructArmedBy(o) "already authorized"
+}
 rule DoAuthorize on AuthorizeSelfDestruct(o) {
   require CanCommand(o) && !SelfDestructArmedBy(o)
   assert SelfDestructArmedBy(o)
 }
-rule CancelIsCaptains on CancelSelfDestruct(o) { require !Dead && o == Captain && OnBridge(o) "only the captain can cancel" }
+rule CancelIsCaptains on CancelSelfDestruct(o) {
+  require !Dead && o == Captain && OnBridge(o) "only the captain can cancel"
+}
 rule DoCancel on CancelSelfDestruct(o) {
   require o == Captain && OnBridge(o)
   for (x: Officer) { retract SelfDestructArmedBy(x) }
@@ -182,8 +221,8 @@ invariant HullBounded: Hull >= 0 && Hull <= 100
 invariant CountdownNeedsAuthorization: Countdown == none || Armed >= 2 || Destroyed
 /// Engineering routinely runs the reactor two units over rating during red
 /// alert. It is in the logs of every engagement and in no manual.
-observed exception RedAlertOverdraw on PowerWithinReactor
-  when AlertStatus == Red && TotalDraw <= Reactor + 2
+observed exception RedAlertOverdraw on PowerWithinReactor when
+  AlertStatus == Red && TotalDraw <= Reactor + 2
 
 /// Reallocation may not starve raised shields or life support.
 ensure ShieldsStayPowered: !ShieldsUp || Draw(Shields) >= MinPower(Shields)

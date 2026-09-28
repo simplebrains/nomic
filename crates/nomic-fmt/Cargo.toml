@@ -1,0 +1,13 @@
+[package]
+name = "nomic-fmt"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "Canonical formatter for Nomic models"
+
+[dependencies]
+nomic = { path = "../nomic" }
+
+[dev-dependencies]
+serde_json = "1"

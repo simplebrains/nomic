@@ -26,7 +26,9 @@ exhaustive: yes
 ## Repository layout
 
 ```
-crates/nomic        the reference machine: library and `nomic` CLI (Rust)
+crates/nomic        the reference machine as a library (Rust)
+crates/nomic-fmt    the canonical formatter (Rust)
+crates/nomic-cli    the `nomic` command line, over both
 packages/syntax     editor support: TextMate grammar, Monaco Monarch tokenizer,
                     language configuration, shared keyword list (TypeScript)
 packages/vscode     VS Code extension wrapping the grammar
@@ -64,6 +66,7 @@ Commands:
 | `fixture <model> [--out f.json]` | generate a language-neutral conformance fixture from the scenarios |
 | `conform <model> <fixture.json>` | check the model against a stored fixture |
 | `report <model>` | knowledge status (required/observed/expected/assumed), exceptions, citations, description coverage |
+| `fmt <model>... [--check] [--stdout]` | rewrite models in canonical form; `--check` fails if anything would change (CI runs it) |
 | `cite <model> [--root DIR] [--pin] [--index]` | resolve every citation against the repository, report `current`, `stale`, `unverified`, or `unresolved`; `--pin` writes the current content hash into each locator; `--index` groups citations by cited file |
 
 Models use the `.nom` extension.
@@ -119,6 +122,18 @@ Other constructs, each introduced by one of the example models:
 - `given nothing` / `given Fact(k) = v` scenario steps to start from a constructed state.
 - `rule R on A(p) when cond { ... }`: an applicability guard. False means the rule does not match, unlike `require`, which means the occurrence is forbidden. Needed for anything that dispatches on state, such as a stage machine.
 - **Citations.** Any declaration (or the model) may carry trailing `realizes | derives_from | evidences | contradicts | configures | documents "path#Lstart-Lend[@pin]" ["note"]` clauses grounding it in a file. `nomic cite` resolves them and detects drift by content hash; `contradicts` records a known gap between intent and code. `examples/nomic.nom` describes this machine's own pipeline with 22 citations into `src/`.
+
+## Formatting
+
+`nomic fmt` prints the IR back to source, so it normalizes what the IR does
+not record (spacing, indentation, line breaks, parentheses) and preserves what
+it does, plus plain `//` comments. Two-space indent, 100 columns, spaces around
+binary operators, parentheses only where precedence requires them (plus around
+`&&` groups inside `||` and nested ternaries, for reading), citations on their
+own indented lines under their declaration, at most one blank line between
+items. Statements or scenario steps that shared a source line stay together
+when they fit, so `Move(4, 1, 4, 3); Move(4, 6, 4, 4)` survives as a move pair.
+Tests assert that formatting every example is idempotent and preserves its IR.
 
 ## Editors and markdown
 

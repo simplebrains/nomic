@@ -15,13 +15,14 @@
 /// rules was added for it, realizing the "match against occurrence and
 /// current state" wording of the core semantics.
 model NomicMachine
-  documents "README.md#L130-L145@34537387826a" "the pipeline section of the README"
+  documents "README.md#L145-L160@34537387826a" "the pipeline section of the README"
   realizes "crates/nomic/src/machine.rs#L1-L15@eb1871a676c8" "the module doc lists the ten stages"
   evidences "crates/nomic/tests/examples.rs#L47-L55@bf9b6ceab024" "tic-tac-toe: 5478 positions, 958 terminal"
   evidences "crates/nomic/tests/examples.rs#L57-L64@0174b02863d3" "Connect Four ply counts match OEIS A212693"
 
 /// The pipeline stages, in order. `Idle` is between transitions.
-type Stage = Idle | Typecheck | Match | Check | Resolve | Transition | Detect | React | Verify | Commit
+type Stage =
+  Idle | Typecheck | Match | Check | Resolve | Transition | Detect | React | Verify | Commit
   realizes "crates/nomic/src/machine.rs#L1-L15@eb1871a676c8"
 type Verdict = Accepted | Rejected | ModelError
 type Disposition = Allow | Deny | Abstain
@@ -84,8 +85,12 @@ rule DoBegin on Begin {
 }
   realizes "crates/nomic/src/machine.rs#L261-L267@6ec6b409d343" "apply: typecheck the occurrence first"
 
-rule MatchOnlyDuringMatch on RuleMatches(r, d, fx) { require At == Match "rules are matched only in the Match stage" }
-rule MatchOnce on RuleMatches(r, d, fx) { require !Matched(r) "a rule matches an occurrence at most once" }
+rule MatchOnlyDuringMatch on RuleMatches(r, d, fx) {
+  require At == Match "rules are matched only in the Match stage"
+}
+rule MatchOnce on RuleMatches(r, d, fx) {
+  require !Matched(r) "a rule matches an occurrence at most once"
+}
 rule DoMatch on RuleMatches(r, d, fx) when At == Match && !Matched(r) {
   assert Matched(r)
   assert Ruled(r) = d
@@ -112,7 +117,9 @@ rule ApplyEffects on Advance when At == Transition && !Conflict {
   assert At = Detect
 }
   realizes "crates/nomic/src/machine.rs#L627-L668@59bfffaf4500" "apply_effects: keyed by fact and key tuple"
-rule ConflictOnlyInTransition on EffectsConflict { require At == Transition && !Done "conflicts arise while applying effects" }
+rule ConflictOnlyInTransition on EffectsConflict {
+  require At == Transition && !Done "conflicts arise while applying effects"
+}
 rule DoConflict on EffectsConflict when At == Transition {
   assert Conflict
   assert Outcome = ModelError
@@ -150,14 +157,18 @@ rule DetectOnlyWhenDetecting on EventDetected(e) {
   require (At == Detect || At == React) && !Done "events are detected after effects apply"
 }
 /// Edge semantics: one event instance fires at most once per transition.
-rule OncePerTransition on EventDetected(e) { deny if Fired(e) || Pending(e) "already fired this transition" }
+rule OncePerTransition on EventDetected(e) {
+  deny if Fired(e) || Pending(e) "already fired this transition"
+}
   realizes "crates/nomic/src/machine.rs#L351-L356@205680706e7f" "the implementation drops the duplicate silently rather than refusing it"
 rule DoDetect on EventDetected(e) when (At == Detect || At == React) && !Fired(e) && !Pending(e) {
   assert Pending(e)
 }
   realizes "crates/nomic/src/machine.rs#L671-L697@36116d2affdf" "detect: false in the previous state, true in the new one"
 
-rule FailOnlyInVerify on InvariantFails(i, x) { require At == Verify && !Done "invariants are checked at Verify" }
+rule FailOnlyInVerify on InvariantFails(i, x) {
+  require At == Verify && !Done "invariants are checked at Verify"
+}
 rule DoFail on InvariantFails(i, x) when At == Verify {
   assert Violated(i)
   if x { assert Excused(i) }

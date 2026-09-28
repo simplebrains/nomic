@@ -51,7 +51,8 @@ derive JumpOk(f: File, r: Rank, df: Dir, dr: Dir): Bool =
 derive CanJump(f: File, r: Rank): Bool = exists(df: Dir, dr: Dir => JumpOk(f, r, df, dr))
 derive CanStep(f: File, r: Rank): Bool = exists(df: Dir, dr: Dir => StepOk(f, r, df, dr))
 derive SideCanJump(s: Side): Bool = exists(f: File, r: Rank where Owner(f, r) == s => CanJump(f, r))
-derive HasMove(s: Side): Bool = exists(f: File, r: Rank where Owner(f, r) == s => CanJump(f, r) || CanStep(f, r))
+derive HasMove(s: Side): Bool =
+  exists(f: File, r: Rank where Owner(f, r) == s => CanJump(f, r) || CanStep(f, r))
 derive MidCapture: Bool = exists(f: File, r: Rank => Continuing(f, r))
 derive Over: Bool = Winner != none
 
@@ -63,8 +64,12 @@ action Jump(side: Side, f: File, r: Rank, df: Dir, dr: Dir)
 rule StepGameOver on Step(s, f, r, df, dr) { deny if Over "the game is over" }
 rule StepTurn on Step(s, f, r, df, dr) { require Turn == s "not your turn" }
 rule StepOwnPiece on Step(s, f, r, df, dr) { require Owner(f, r) == s "not your piece" }
-rule StepNotMidCapture on Step(s, f, r, df, dr) { deny if MidCapture "a capture in progress must be completed" }
-rule CaptureIsMandatory on Step(s, f, r, df, dr) { deny if SideCanJump(s) "a capture is available and must be taken" }
+rule StepNotMidCapture on Step(s, f, r, df, dr) {
+  deny if MidCapture "a capture in progress must be completed"
+}
+rule CaptureIsMandatory on Step(s, f, r, df, dr) {
+  deny if SideCanJump(s) "a capture is available and must be taken"
+}
 rule MakeStep on Step(s, f, r, df, dr) {
   require StepOk(f, r, df, dr) "illegal step"
   retract Owner(f, r)
@@ -112,14 +117,16 @@ rule EndTurn on JumpEnded(f, r) {
 }
 
 /// The side to move has nothing left or nothing legal: the other side wins.
-event Won(s: Side) when Turn == Other(s) && !MidCapture && (Pieces(Other(s)) == 0 || !HasMove(Other(s)))
+event Won(s: Side) when
+  Turn == Other(s) && !MidCapture && (Pieces(Other(s)) == 0 || !HasMove(Other(s)))
 rule RecordWin on Won(s) { assert Winner = s }
 
 invariant PiecesOnDarkSquares: all(f: File, r: Rank where Owner(f, r) != none => Dark(f, r))
 invariant KingsHaveOwners: all(f: File, r: Rank where King(f, r) => Owner(f, r) != none)
 invariant TwelveAtMost: Pieces(Red) <= 12 && Pieces(Black) <= 12
 invariant OneContinuingPiece: count(f: File, r: Rank => Continuing(f, r)) <= 1
-invariant ContinuingPieceIsOnTurn: all(f: File, r: Rank where Continuing(f, r) => Owner(f, r) == Turn)
+invariant ContinuingPieceIsOnTurn:
+  all(f: File, r: Rank where Continuing(f, r) => Owner(f, r) == Turn)
 invariant CrownedOnlyWhileContinuing: all(f: File, r: Rank where Crowned(f, r) => Continuing(f, r))
 
 init {
