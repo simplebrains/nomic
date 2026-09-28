@@ -23,7 +23,7 @@ type Limit = 1..5
 fact Task(id: TaskId): Status
 fact Priority(id: TaskId): Level
 /// `id` cannot start until `by` is finished or cancelled.
-fact Blocked(id: TaskId, blocker: TaskId)
+fact Blocked(id: TaskId, by: TaskId)
 fact Parent(id: TaskId): TaskId
 /// How many tasks may be in Doing at once.
 fact WipLimit: Int
@@ -40,8 +40,8 @@ action Create(id: TaskId, level: Level)
 /// Move a task forward along the lifecycle order.
 action Advance(id: TaskId, to: Status)
 action Cancel(id: TaskId)
-action Block(id: TaskId, blocker: TaskId)
-action Unblock(id: TaskId, blocker: TaskId)
+action Block(id: TaskId, by: TaskId)
+action Unblock(id: TaskId, by: TaskId)
 action Nest(child: TaskId, parent: TaskId)
 action SetWipLimit(n: Limit)
 
@@ -72,16 +72,16 @@ rule DoCancel on Cancel(id) when Open(id) {
   for ((t, b) in Blocked where t == id) { retract Blocked(t, b) }
 }
 
-rule BlockTasks on Block(id, k) {
-  require Exists(id) && Exists(k) && id != k "both must be distinct existing tasks"
+rule BlockTasks on Block(id, by) {
+  require Exists(id) && Exists(by) && id != by "both must be distinct existing tasks"
 }
-rule BlockOpen on Block(id, k) {
-  require Open(id) && Open(k) "only open tasks take part in blocking"
+rule BlockOpen on Block(id, by) {
+  require Open(id) && Open(by) "only open tasks take part in blocking"
 }
-rule DoBlock on Block(id, k) when Open(id) && Open(k) && id != k { assert Blocked(id, k) }
-rule DoUnblock on Unblock(id, k) {
-  require Blocked(id, k) "not blocked k that task"
-  retract Blocked(id, k)
+rule DoBlock on Block(id, by) when Open(id) && Open(by) && id != by { assert Blocked(id, by) }
+rule DoUnblock on Unblock(id, by) {
+  require Blocked(id, by) "not blocked by that task"
+  retract Blocked(id, by)
 }
 
 rule NestTasks on Nest(c, p) {

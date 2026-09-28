@@ -1,5 +1,5 @@
 {
-  "$comment": "Single source of truth for Nomic keywords. The Rust parser's KEYWORDS list is tested against the union of every group except `primitives`.",
+  "$comment": "Single source of truth for Nomic keywords. The Rust parser's KEYWORDS list is tested against the union of every group except `primitives`. `by` is contextual (only after `rejected`) and deliberately not listed.",
   "declarations": [
     "model",
     "type",
@@ -42,7 +42,6 @@
     "expect",
     "emits",
     "rejected",
-    "by",
     "match",
     "as",
     "in"

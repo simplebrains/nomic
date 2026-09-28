@@ -215,7 +215,7 @@
         },
         {
           "name": "keyword.control.nomic",
-          "match": "\\b(on|when|if|else|for|where|require|deny|allow|assert|retract|emit|let|given|expect|emits|rejected|by|match|as|in)\\b"
+          "match": "\\b(on|when|if|else|for|where|require|deny|allow|assert|retract|emit|let|given|expect|emits|rejected|match|as|in)\\b"
         },
         {
           "name": "support.function.builtin.nomic",

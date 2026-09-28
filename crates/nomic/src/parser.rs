@@ -97,11 +97,13 @@ struct Parser {
 }
 
 /// Every reserved word. Kept identical to `packages/syntax/keywords.json`
-/// (all groups except `primitives`) by a test.
+/// (all groups except `primitives`) by a test. `by` is deliberately absent:
+/// it is contextual, read only right after `rejected`, so it stays usable as
+/// a name (`Blocked(id, by)`).
 pub const KEYWORDS: &[&str] = &[
     "model", "type", "fact", "derive", "action", "event", "rule", "invariant", "exception", "init",
     "scenario", "on", "when", "require", "deny", "allow", "assert", "retract", "emit", "let", "if",
-    "else", "given", "expect", "emits", "rejected", "by", "match", "all", "exists", "count", "sum",
+    "else", "given", "expect", "emits", "rejected", "match", "all", "exists", "count", "sum",
     "first", "where", "true", "false", "none", "observed", "required", "expected", "assumed",
     "for", "nothing", "ensure", "legal", "cite", "import", "include", "as", "opaque", "order", "in", "unique",
     "realizes", "derives_from", "evidences", "contradicts", "configures", "documents",
@@ -1005,6 +1007,16 @@ mod tests {
         assert_eq!(m.facts[0].doc.as_deref(), Some("Whose turn."));
         assert_eq!(m.rules[0].on.args.len(), 2);
         assert_eq!(m.scenarios[0].steps.len(), 3);
+    }
+
+    #[test]
+    fn by_is_a_contextual_keyword() {
+        let m = parse(
+            "type Id = opaque\nfact Blocked(id: Id, by: Id)\naction Block(id: Id, by: Id)\nrule R on Block(id, by) { assert Blocked(id, by) }\nscenario \"s\" { Block(Id(\"a\"), Id(\"b\")) rejected by R }\n",
+        )
+        .unwrap();
+        assert_eq!(m.facts[0].keys[1].name, "by");
+        assert!(matches!(&m.scenarios[0].steps[0], Step::Act { outcome: Outcome::Rejected { by: Some(r) }, .. } if r == "R"));
     }
 
     #[test]
