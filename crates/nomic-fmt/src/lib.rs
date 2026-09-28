@@ -47,6 +47,8 @@ pub fn format(src: &str) -> Result<String, FormatError> {
 
 /// One top-level item, in source order.
 enum Item<'a> {
+    Import(&'a ImportDecl),
+    Include(&'a IncludeDecl),
     Type(&'a TypeDecl),
     Fact(&'a FactDecl),
     Derive(&'a DeriveDecl),
@@ -63,6 +65,8 @@ enum Item<'a> {
 impl Item<'_> {
     fn line(&self) -> u32 {
         match self {
+            Item::Import(d) => d.pos.line,
+            Item::Include(d) => d.pos.line,
             Item::Type(d) => d.pos.line,
             Item::Fact(d) => d.pos.line,
             Item::Derive(d) => d.pos.line,
@@ -77,6 +81,7 @@ impl Item<'_> {
     }
     fn doc(&self) -> Option<&str> {
         match self {
+            Item::Import(_) | Item::Include(_) => None,
             Item::Type(d) => d.doc.as_deref(),
             Item::Fact(d) => d.doc.as_deref(),
             Item::Derive(d) => d.doc.as_deref(),
@@ -91,6 +96,7 @@ impl Item<'_> {
     }
     fn name(&self) -> Option<&str> {
         match self {
+            Item::Import(_) | Item::Include(_) => None,
             Item::Type(d) => Some(&d.name),
             Item::Fact(d) => Some(&d.name),
             Item::Derive(d) => Some(&d.name),
@@ -166,6 +172,12 @@ impl<'a> Printer<'a> {
     fn model(&mut self) {
         let m = self.model;
         let mut items: Vec<Item> = Vec::new();
+        for d in &m.imports {
+            items.push(Item::Import(d));
+        }
+        for d in &m.includes {
+            items.push(Item::Include(d));
+        }
         for d in &m.types {
             items.push(Item::Type(d));
         }
@@ -232,6 +244,28 @@ impl<'a> Printer<'a> {
             }
             let head_idx = self.out.len();
             match item {
+                Item::Import(d) => {
+                    let names: Vec<String> = d
+                        .names
+                        .iter()
+                        .map(|n| match &n.alias {
+                            Some(a) => format!("{} as {a}", n.name),
+                            None => n.name.clone(),
+                        })
+                        .collect();
+                    let one = format!("import {} {{ {} }}", quote(&d.path), names.join(", "));
+                    if one.len() <= WIDTH {
+                        self.out.push(one);
+                    } else {
+                        self.out.push(format!("import {} {{", quote(&d.path)));
+                        for (i, n) in names.iter().enumerate() {
+                            let sep = if i + 1 < names.len() { "," } else { "" };
+                            self.out.push(format!("{INDENT}{n}{sep}"));
+                        }
+                        self.out.push("}".into());
+                    }
+                }
+                Item::Include(d) => self.out.push(format!("include {}", quote(&d.path))),
                 Item::Type(d) => self.type_decl(d),
                 Item::Fact(d) => self.fact(d),
                 Item::Derive(d) => self.derive(d),

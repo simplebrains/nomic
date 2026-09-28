@@ -103,7 +103,7 @@ pub const KEYWORDS: &[&str] = &[
     "scenario", "on", "when", "require", "deny", "allow", "assert", "retract", "emit", "let", "if",
     "else", "given", "expect", "emits", "rejected", "by", "match", "all", "exists", "count", "sum",
     "first", "where", "true", "false", "none", "observed", "required", "expected", "assumed",
-    "for", "nothing", "ensure", "legal", "cite",
+    "for", "nothing", "ensure", "legal", "cite", "import", "include", "as",
     "realizes", "derives_from", "evidences", "contradicts", "configures", "documents",
 ];
 
@@ -344,6 +344,32 @@ impl Parser {
                 m.scenarios.push(ScenarioDecl { name: name.clone(), doc, steps, pos });
                 Some(name)
             }
+            "import" => {
+                self.bump();
+                let path = self.string()?;
+                self.expect(Tok::LBrace)?;
+                let mut names = Vec::new();
+                while !self.eat(Tok::RBrace) {
+                    let name = self.ident()?;
+                    let alias = if self.eat_kw("as") { Some(self.ident()?) } else { None };
+                    names.push(ImportName { name, alias });
+                    if !self.eat(Tok::Comma) {
+                        self.expect(Tok::RBrace)?;
+                        break;
+                    }
+                }
+                if names.is_empty() {
+                    return self.err("`import` needs at least one name; use `include` for a whole module");
+                }
+                m.imports.push(ImportDecl { path, names, pos });
+                None
+            }
+            "include" => {
+                self.bump();
+                let path = self.string()?;
+                m.includes.push(IncludeDecl { path, pos });
+                None
+            }
             "cite" => {
                 // Standalone form: `cite Target relation "locator" ["note"]`.
                 self.bump();
@@ -362,7 +388,7 @@ impl Parser {
             }
             other => {
                 return self.err(format!(
-                    "expected a declaration (type, fact, derive, action, event, rule, invariant, ensure, exception, init, scenario, cite), found `{other}`"
+                    "expected a declaration (import, include, type, fact, derive, action, event, rule, invariant, ensure, exception, init, scenario, cite), found `{other}`"
                 ))
             }
         };

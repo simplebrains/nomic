@@ -6,7 +6,7 @@ use nomic::ast::Model;
 use nomic::eval::{Env, Evaluator};
 use nomic::machine::{Disposition, Machine, MachineError, Occurrence, Outcome, Transition};
 use nomic::value::State;
-use nomic::{check, explore, fixture, parse, parse_expr, parse_occurrence, run_all, ExploreOptions};
+use nomic::{check, explore, fixture, parse_expr, parse_occurrence, run_all, ExploreOptions};
 
 const USAGE: &str = "\
 nomic — Nomic Core 0.1 reference machine
@@ -44,8 +44,7 @@ fn main() -> ExitCode {
 }
 
 fn load(path: &str) -> Result<Model, String> {
-    let src = std::fs::read_to_string(path).map_err(|e| format!("cannot read {path}: {e}"))?;
-    let model = parse(&src).map_err(|e| format!("{path}:{e}"))?;
+    let model = nomic::load_file(path).map_err(|e| e.to_string())?;
     let diags = check(&model);
     let mut errors = false;
     for d in &diags {

@@ -215,7 +215,7 @@
         },
         {
           "name": "keyword.control.nomic",
-          "match": "\\b(on|when|if|else|for|where|require|deny|allow|assert|retract|emit|let|given|expect|emits|rejected|by|match)\\b"
+          "match": "\\b(on|when|if|else|for|where|require|deny|allow|assert|retract|emit|let|given|expect|emits|rejected|by|match|as)\\b"
         },
         {
           "name": "support.function.builtin.nomic",
@@ -227,7 +227,7 @@
         },
         {
           "name": "storage.type.declaration.nomic",
-          "match": "\\b(model|type|fact|derive|action|event|rule|invariant|ensure|exception|init|scenario|cite)\\b"
+          "match": "\\b(model|type|fact|derive|action|event|rule|invariant|ensure|exception|init|scenario|cite|import|include)\\b"
         }
       ]
     },

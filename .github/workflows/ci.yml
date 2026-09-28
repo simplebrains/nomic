@@ -17,9 +17,9 @@ jobs:
       - run: cargo test --locked
       - name: models, fixtures, citations
         run: |
-          for m in examples/*.nom; do ./target/release/nomic check "$m"; done
-          ./target/release/nomic fmt --check examples/*.nom
-          ./target/release/nomic cite examples/nomic.nom
+          for m in examples/*/*.nom; do ./target/release/nomic check "$m"; done
+          ./target/release/nomic fmt --check examples/*/*.nom
+          ./target/release/nomic cite examples/nomic/nomic.nom
 
   packages:
     name: editor packages (pnpm)

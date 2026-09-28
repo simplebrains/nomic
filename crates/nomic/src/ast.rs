@@ -388,8 +388,38 @@ pub struct Citation {
     pub pos: Pos,
 }
 
+/// `import "path" { Name [as Alias], ... }`: bring named declarations (and
+/// what they depend on) from another file. Paths are relative to the
+/// importing file.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct ImportDecl {
+    pub path: String,
+    pub names: Vec<ImportName>,
+    pub pos: Pos,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct ImportName {
+    pub name: String,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub alias: Option<String>,
+}
+
+/// `include "path"`: bring a whole module's declarations and behavior
+/// (rules, invariants, ensures, exceptions, init) into this model.
+/// Scenarios are not included; they are the included module's own claims.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct IncludeDecl {
+    pub path: String,
+    pub pos: Pos,
+}
+
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, Default)]
 pub struct Model {
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub imports: Vec<ImportDecl>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub includes: Vec<IncludeDecl>,
     pub name: Option<String>,
     pub doc: Option<String>,
     pub types: Vec<TypeDecl>,

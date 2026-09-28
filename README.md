@@ -12,13 +12,13 @@ claims about all of it (scenarios). The machine runs the model
 deterministically and explains every transition.
 
 ```
-$ nomic run examples/connect_four.nom
+$ nomic run examples/connect_four/connect_four.nom
 PASS "vertical win is emitted exactly once and ends the game"
 PASS "horizontal win"
 ...
 6/6 scenario(s) passed
 
-$ nomic explore examples/tic_tac_toe.nom
+$ nomic explore examples/tic_tac_toe/tic_tac_toe.nom
 explored 5478 state(s), 16167 transition(s), 82437 rejected attempt(s), 958 terminal, max depth 9
 exhaustive: yes
 ```
@@ -32,7 +32,7 @@ crates/nomic-cli    the `nomic` command line, over both
 packages/syntax     editor support: TextMate grammar, Monaco Monarch tokenizer,
                     language configuration, shared keyword list (TypeScript)
 packages/vscode     VS Code extension wrapping the grammar
-examples/           eight example models
+examples/           eight example models, one folder each; `<name>/<name>.nom` is the entry
 fixtures/           generated conformance fixtures, one per model
 ```
 
@@ -121,7 +121,28 @@ Other constructs, each introduced by one of the example models:
 - `observed | expected | assumed` status prefixes on declarations, and `exception Name on Invariant when cond` naming a known departure from a normative invariant. The verifier reports when an exception is exercised instead of failing (inventory audits, the ship's red-alert power overdraw).
 - `given nothing` / `given Fact(k) = v` scenario steps to start from a constructed state.
 - `rule R on A(p) when cond { ... }`: an applicability guard. False means the rule does not match, unlike `require`, which means the occurrence is forbidden. Needed for anything that dispatches on state, such as a stage machine.
-- **Citations.** Any declaration (or the model) may carry trailing `realizes | derives_from | evidences | contradicts | configures | documents "path#Lstart-Lend[@pin]" ["note"]` clauses grounding it in a file. `nomic cite` resolves them and detects drift by content hash; `contradicts` records a known gap between intent and code. `examples/nomic.nom` describes this machine's own pipeline with 22 citations into `src/`.
+- **Citations.** Any declaration (or the model) may carry trailing `realizes | derives_from | evidences | contradicts | configures | documents "path#Lstart-Lend[@pin]" ["note"]` clauses grounding it in a file. `nomic cite` resolves them and detects drift by content hash; `contradicts` records a known gap between intent and code. `examples/nomic/nomic.nom` describes this machine's own pipeline with 22 citations into `src/`.
+
+## Modules
+
+A model may span files. Paths are relative to the importing file, `..` included;
+one file reached by two routes is one module, and cycles are errors.
+
+```nomic
+include "board.nom"                                   // the board's vocabulary and behavior
+import "players.nom" { Player, Other as Opponent }    // named declarations, with aliases
+```
+
+`include` takes a module's declarations and behavior: rules, invariants,
+ensures, exceptions, and `init`. Its scenarios stay its own. `import` takes
+named types, facts, derives, actions, or events, plus whatever they depend on
+(importing `Height` brings `Cell`). `as` renames the imported declaration and
+every reference to it in what came with it; other names keep theirs. The same
+declaration arriving twice from the same origin is one declaration; two
+different declarations with one name are a collision, fixed with `as`. Rules
+and invariants cannot be imported by name: they are behavior, so `include`.
+Linking produces an ordinary flat model, which is what every tool sees.
+`examples/connect_four/` is the worked example: players, board, game.
 
 ## Formatting
 

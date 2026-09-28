@@ -49,9 +49,11 @@ const find = (toks, text, scope) => toks.find((t) => t.text === text && has(t, s
 
 test("connect four tokenizes with the intended scopes", async () => {
   const grammar = await (await registry()).loadGrammar("source.nomic");
-  const toks = tokenize(grammar, readFileSync(join(root, "examples", "connect_four.nom"), "utf8"));
+  const toks = tokenize(grammar, readFileSync(join(root, "examples", "connect_four", "connect_four.nom"), "utf8"));
 
   assert.ok(find(toks, "rule", "storage.type.declaration.nomic"), "`rule` is a declaration keyword");
+  assert.ok(find(toks, "include", "storage.type.declaration.nomic"), "`include` is a declaration keyword");
+  assert.ok(find(toks, "as", "keyword.control.nomic"), "`as` in an import");
   assert.ok(find(toks, "Place", "entity.name.function.rule.nomic"), "rule name");
   assert.ok(find(toks, "Drop", "entity.name.function.occurrence.nomic"), "occurrence in a rule head");
   assert.ok(find(toks, "Player", "entity.name.type.nomic"), "declared type name");
@@ -71,7 +73,7 @@ test("connect four tokenizes with the intended scopes", async () => {
 
 test("the meta model's citations tokenize as locators", async () => {
   const grammar = await (await registry()).loadGrammar("source.nomic");
-  const toks = tokenize(grammar, readFileSync(join(root, "examples", "nomic.nom"), "utf8"));
+  const toks = tokenize(grammar, readFileSync(join(root, "examples", "nomic", "nomic.nom"), "utf8"));
   assert.ok(find(toks, "realizes", "keyword.other.relation.nomic"), "relation keyword");
   assert.ok(find(toks, "contradicts", "keyword.other.relation.nomic"), "contradicts relation");
   assert.ok(toks.some((t) => has(t, "string.other.link.locator.nomic") && t.text.includes("machine.rs")), "locator path");
@@ -82,7 +84,10 @@ test("the meta model's citations tokenize as locators", async () => {
 
 test("every example tokenizes without leaving text unscoped", async () => {
   const grammar = await (await registry()).loadGrammar("source.nomic");
-  for (const name of readdirSync(join(root, "examples")).filter((n) => n.endsWith(".nom"))) {
+  const files = readdirSync(join(root, "examples"), { withFileTypes: true })
+    .filter((d) => d.isDirectory())
+    .flatMap((d) => readdirSync(join(root, "examples", d.name)).filter((n) => n.endsWith(".nom")).map((n) => join(d.name, n)));
+  for (const name of files) {
     const toks = tokenize(grammar, readFileSync(join(root, "examples", name), "utf8"));
     // Everything non-blank should carry a scope beyond the root `source.nomic`,
     // except lowercase identifiers (parameters and bindings), which the grammar

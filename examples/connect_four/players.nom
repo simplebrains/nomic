@@ -1,0 +1,7 @@
+/// The two players and who moves after whom. Shared by the board and the
+/// game; knows nothing about either.
+model Players
+
+type Player = Red | Yellow
+
+derive Other(p: Player): Player = match p { Red => Yellow, Yellow => Red }

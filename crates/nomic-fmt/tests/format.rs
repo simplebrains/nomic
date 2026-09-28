@@ -10,12 +10,15 @@ fn repo_root() -> PathBuf {
 
 fn examples() -> Vec<(String, String)> {
     let dir = repo_root().join("examples");
-    let mut out: Vec<(String, String)> = std::fs::read_dir(dir)
-        .unwrap()
-        .filter_map(|e| e.ok())
-        .filter(|e| e.path().extension().is_some_and(|x| x == "nom"))
-        .map(|e| (e.file_name().to_string_lossy().to_string(), std::fs::read_to_string(e.path()).unwrap()))
-        .collect();
+    let mut out: Vec<(String, String)> = Vec::new();
+    for folder in std::fs::read_dir(dir).unwrap().filter_map(|e| e.ok()).filter(|e| e.path().is_dir()) {
+        for e in std::fs::read_dir(folder.path()).unwrap().filter_map(|e| e.ok()) {
+            if e.path().extension().is_some_and(|x| x == "nom") {
+                let rel = e.path().strip_prefix(repo_root()).unwrap().display().to_string();
+                out.push((rel, std::fs::read_to_string(e.path()).unwrap()));
+            }
+        }
+    }
     out.sort();
     out
 }
@@ -63,7 +66,7 @@ fn formatting_is_idempotent_on_every_example() {
 fn every_example_is_already_formatted() {
     for (name, src) in examples() {
         let formatted = nomic_fmt::format(&src).unwrap();
-        assert_eq!(src, formatted, "{name} is not formatted; run `nomic fmt examples/{name}`");
+        assert_eq!(src, formatted, "{name} is not formatted; run `nomic fmt {name}`");
     }
 }
 
