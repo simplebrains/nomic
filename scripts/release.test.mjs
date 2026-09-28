@@ -12,6 +12,7 @@ import { parseFrontmatter, parseNote, loadNotes } from "./lib/notes.mjs";
 import { foldLevel, bumpVersion, computePlan, renderPlan } from "./lib/plan.mjs";
 import { bumpCargoToml, bumpPackageJson, rewriteCargoPins, renderChangelogSection, prependChangelogSection, bodyAsBullet, applyPlan } from "./lib/apply.mjs";
 import { isAlreadyPublished } from "./lib/registry.mjs";
+import { otpRejected } from "./lib/publish.mjs";
 
 const cargo = (name, version, deps = {}, bin = null) => {
   const dep = ([k, v]) => `${k} = { path = "../${k}", version = "${v}" }`;
@@ -145,4 +146,11 @@ test("apply helpers", () => {
   assert.ok(isAlreadyPublished("error: crate version `0.1.0` is already uploaded", "0.1.0"));
   assert.ok(isAlreadyPublished("403 You cannot publish over the previously published versions: 0.1.0.", "0.1.0"));
   assert.ok(!isAlreadyPublished("network error", "0.1.0"));
+});
+
+test("otpRejected recognizes npm's one-time-password refusals and nothing else", () => {
+  assert.equal(otpRejected("npm error code EOTP\nnpm error This operation requires a one-time password from your authenticator."), true);
+  assert.equal(otpRejected("npm ERR! 401 Unauthorized - PUT https://registry.npmjs.org/@omgbase%2fcore - You must provide a one-time pass. Upgrade your client to npm@latest in order to use 2FA."), true);
+  assert.equal(otpRejected('Failed to publish package @omgbase/sync@0.4.1 (status 403 Forbidden):\n{"success":false,"error":"You cannot publish over the previously published versions: 0.4.1."}'), false);
+  assert.equal(otpRejected("npm error code E404"), false);
 });
