@@ -4,6 +4,9 @@ version.workspace = true
 edition.workspace = true
 license.workspace = true
 repository.workspace = true
+readme = "../../README.md"
+keywords = ["specification", "modeling", "rules", "verification", "dsl"]
+categories = ["compilers", "development-tools"]
 description = "The `nomic` command line: check, run, explore, cite, and format Nomic models"
 
 [[bin]]
@@ -11,6 +14,6 @@ name = "nomic"
 path = "src/main.rs"
 
 [dependencies]
-nomic = { path = "../nomic" }
-nomic-fmt = { path = "../nomic-fmt" }
+nomic = { path = "../nomic", version = "0.1.0" }
+nomic-fmt = { path = "../nomic-fmt", version = "0.1.0" }
 serde_json = "1"

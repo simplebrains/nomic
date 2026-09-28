@@ -4,6 +4,9 @@ version.workspace = true
 edition.workspace = true
 license.workspace = true
 repository.workspace = true
+readme = "../../README.md"
+keywords = ["specification", "modeling", "rules", "verification", "dsl"]
+categories = ["compilers", "development-tools"]
 description = "Nomic Core 0.1 reference machine: a deterministic executable specification language"
 
 [lib]

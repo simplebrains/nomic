@@ -4,10 +4,13 @@ version.workspace = true
 edition.workspace = true
 license.workspace = true
 repository.workspace = true
+readme = "../../README.md"
+keywords = ["specification", "modeling", "rules", "verification", "dsl"]
+categories = ["compilers", "development-tools"]
 description = "Canonical formatter for Nomic models"
 
 [dependencies]
-nomic = { path = "../nomic" }
+nomic = { path = "../nomic", version = "0.1.0" }
 
 [dev-dependencies]
 serde_json = "1"
