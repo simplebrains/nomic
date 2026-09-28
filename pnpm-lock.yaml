@@ -24,7 +24,14 @@ importers:
         specifier: ^9.3.2
         version: 9.3.2
 
-  packages/vscode: {}
+  packages/vscode:
+    dependencies:
+      vscode-oniguruma:
+        specifier: ^2.0.1
+        version: 2.0.1
+      vscode-textmate:
+        specifier: ^9.3.2
+        version: 9.3.2
 
 packages:
 

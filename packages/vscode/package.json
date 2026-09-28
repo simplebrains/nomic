@@ -1,7 +1,7 @@
 {
   "name": "nomic-vscode",
   "displayName": "Nomic",
-  "description": "Syntax highlighting for Nomic models (.nomic)",
+  "description": "Syntax highlighting for Nomic models (.nom), in the editor and in markdown previews",
   "version": "0.1.0",
   "publisher": "simplebrains",
   "license": "MIT",
@@ -44,17 +44,27 @@
           "meta.embedded.block.nomic": "nomic"
         }
       }
-    ]
+    ],
+    "markdown.markdownItPlugins": true
   },
   "scripts": {
     "build": "node scripts/sync.mjs",
     "dev:link": "node scripts/sync.mjs && node scripts/link.mjs",
     "dev:unlink": "node scripts/link.mjs --remove",
-    "package": "node scripts/sync.mjs && npx --yes @vscode/vsce package --no-dependencies"
+    "package": "node scripts/sync.mjs && npx --yes @vscode/vsce package --no-dependencies",
+    "test": "node --test test/*.test.mjs"
   },
   "repository": {
     "type": "git",
     "url": "https://github.com/simplebrains/nomic",
     "directory": "packages/vscode"
+  },
+  "main": "./extension.js",
+  "activationEvents": [
+    "onLanguage:markdown"
+  ],
+  "dependencies": {
+    "vscode-oniguruma": "^2.0.1",
+    "vscode-textmate": "^9.3.2"
   }
 }
