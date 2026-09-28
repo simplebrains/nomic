@@ -1,0 +1,107 @@
+/// Connect Four: the Nomic Core 0.1 conformance model.
+/// Two players alternately drop discs into a 7x6 grid. A disc falls to the
+/// lowest empty row of its column. Four in a line wins; a full board draws.
+model ConnectFour
+
+type Player = Red | Yellow
+type Column = 0..6
+type Row = 0..5
+
+/// The owner of the disc at (col, row), if any.
+fact Cell(col: Column, row: Row): Player
+/// Whose turn it is to move.
+fact Turn: Player
+/// The player who has won, once someone has.
+fact Winner: Player
+/// The game ended without a winner.
+fact Drawn
+
+/// Number of discs in a column; also the row the next disc lands on.
+derive Height(c: Column): Int = count(r: Row => Cell(c, r) != none)
+derive Other(p: Player): Player = match p { Red => Yellow, Yellow => Red }
+derive Discs(p: Player): Int = count(c: Column, r: Row => Cell(c, r) == p)
+/// Four discs of `p` starting at (c, r) stepping by (dc, dr). Lookups off the
+/// board are `none`, so no bounds arithmetic is needed.
+derive Line(p: Player, c: Int, r: Int, dc: Int, dr: Int): Bool =
+  all(i: 0..3 => Cell(c + i * dc, r + i * dr) == p)
+derive FourInARow(p: Player): Bool =
+  exists(c: Column, r: Row =>
+    Line(p, c, r, 1, 0) || Line(p, c, r, 0, 1) || Line(p, c, r, 1, 1) || Line(p, c, r, 1, -1))
+derive Full: Bool = all(c: Column => Height(c) == 6)
+derive Over: Bool = Winner != none || Drawn
+
+/// Drop a disc for `player` into `col`.
+action Drop(player: Player, col: Column)
+
+rule GameOver on Drop(p, c) {
+  deny if Over "the game is over"
+}
+rule TurnOrder on Drop(p, c) {
+  require Turn == p "not your turn"
+}
+rule Place on Drop(p, c) {
+  require Height(c) < 6 "column is full"
+  assert Cell(c, Height(c)) = p
+  assert Turn = Other(p)
+}
+
+/// `p` has connected four. Edge-triggered: emitted once, when it becomes true.
+event Win(p: Player) when FourInARow(p)
+/// The board filled with no winner.
+event Draw when Full && !FourInARow(Red) && !FourInARow(Yellow)
+
+rule RecordWinner on Win(p) {
+  assert Winner = p
+}
+rule RecordDraw on Draw {
+  assert Drawn
+}
+
+invariant NoFloatingDiscs:
+  all(c: Column, r: Row where r > 0 && Cell(c, r) != none => Cell(c, r - 1) != none)
+invariant TurnMatchesDiscs:
+  Turn == Red ? Discs(Red) == Discs(Yellow) : Discs(Red) == Discs(Yellow) + 1
+invariant WinnerHasLine: Winner == none || FourInARow(Winner)
+invariant NotBothEnded: !(Winner != none && Drawn)
+
+init { assert Turn = Red }
+
+scenario "vertical win is emitted exactly once and ends the game" {
+  Drop(Red, 0); Drop(Yellow, 1); Drop(Red, 0); Drop(Yellow, 1); Drop(Red, 0); Drop(Yellow, 1)
+  expect Height(0) == 3 && Winner == none
+  Drop(Red, 0) emits Win(Red)
+  expect Winner == Red && Over
+  Drop(Yellow, 2) rejected by GameOver
+}
+
+scenario "horizontal win" {
+  Drop(Red, 0); Drop(Yellow, 0); Drop(Red, 1); Drop(Yellow, 1); Drop(Red, 2); Drop(Yellow, 2)
+  Drop(Red, 3) emits Win(Red)
+}
+
+scenario "diagonal win" {
+  Drop(Red, 0)
+  Drop(Yellow, 1); Drop(Red, 1)
+  Drop(Yellow, 2); Drop(Red, 3); Drop(Yellow, 2); Drop(Red, 2)
+  Drop(Yellow, 3); Drop(Red, 4); Drop(Yellow, 3)
+  Drop(Red, 3) emits Win(Red)
+}
+
+scenario "moves out of turn are rejected" {
+  Drop(Yellow, 3) rejected by TurnOrder
+  Drop(Red, 3)
+  Drop(Red, 3) rejected by TurnOrder
+  expect Turn == Yellow
+}
+
+scenario "a full column rejects further drops" {
+  Drop(Red, 0); Drop(Yellow, 0); Drop(Red, 0); Drop(Yellow, 0); Drop(Red, 0); Drop(Yellow, 0)
+  expect Height(0) == 6
+  Drop(Red, 0) rejected by Place
+  Drop(Red, 1)
+}
+
+scenario "a move that does not win emits nothing" {
+  Drop(Red, 3) emits nothing
+  expect Cell(3, 0) == Red && Turn == Yellow
+}

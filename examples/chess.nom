@@ -1,0 +1,327 @@
+/// Chess. Files a..h are 0..7 and ranks 1..8 are 0..7, so e4 is (4, 3).
+///
+/// Everything that makes chess awkward to specify is here: sliding pieces
+/// with blocked paths, pawns whose capture geometry differs from their move
+/// geometry, en passant, castling with its four preconditions, promotion as a
+/// distinct action, and the rule that a move may not leave one's own king
+/// attacked. The last is expressed as an `ensure` postcondition rather than a
+/// precondition: the machine applies the move's effects, evaluates
+/// `KingSafe` on the result, and rejects the move if it fails. Checkmate and
+/// stalemate then fall out as edge-triggered events over `legal(...)`.
+///
+/// Not modeled: the fifty-move and threefold-repetition draw claims (the
+/// half-move clock is tracked and `FiftyMoves` is announced, but nothing acts
+/// on it), draw by agreement, and insufficient material.
+model Chess
+
+type Side = White | Black
+type Kind = Pawn | Knight | Bishop | Rook | Queen | King
+type File = 0..7
+type Rank = 0..7
+type Wing = Kingside | Queenside
+type Result = WhiteWins | BlackWins | Draw
+
+fact Piece(f: File, r: Rank): Kind
+fact Color(f: File, r: Rank): Side
+fact Turn: Side
+/// The side still may castle on this wing (king and that rook unmoved).
+fact CastleRight(s: Side, w: Wing)
+/// File of the pawn that just advanced two squares; capturable en passant this move only.
+fact EnPassant: File
+fact Outcome: Result
+/// Half-moves since the last capture or pawn move.
+fact HalfmoveClock: Int
+
+derive Other(s: Side): Side = match s { White => Black, Black => White }
+derive Forward(s: Side): Int = match s { White => 1, Black => -1 }
+derive PawnRank(s: Side): Int = match s { White => 1, Black => 6 }
+derive BackRank(s: Side): Int = match s { White => 0, Black => 7 }
+derive LastRank(s: Side): Int = match s { White => 7, Black => 0 }
+/// The rank a pawn must stand on to capture en passant.
+derive EpRank(s: Side): Int = match s { White => 4, Black => 3 }
+derive Abs(x: Int): Int = x < 0 ? -x : x
+derive Sign(x: Int): Int = x < 0 ? -1 : (x > 0 ? 1 : 0)
+derive Max(a: Int, b: Int): Int = a > b ? a : b
+derive Min(a: Int, b: Int): Int = a < b ? a : b
+derive OnBoard(f: Int, r: Int): Bool = f >= 0 && f <= 7 && r >= 0 && r <= 7
+derive Empty(f: Int, r: Int): Bool = OnBoard(f, r) && Piece(f, r) == none
+derive Own(s: Side, f: Int, r: Int): Bool = Color(f, r) == s
+derive Enemy(s: Side, f: Int, r: Int): Bool = Color(f, r) == Other(s)
+derive Over: Bool = Outcome != none
+derive Count(s: Side): Int = count(f: File, r: Rank => Color(f, r) == s)
+
+derive Steps(f1: Int, r1: Int, f2: Int, r2: Int): Int = Max(Abs(f2 - f1), Abs(r2 - r1))
+derive Straight(f1: Int, r1: Int, f2: Int, r2: Int): Bool = (f1 == f2) != (r1 == r2)
+derive Diagonal(f1: Int, r1: Int, f2: Int, r2: Int): Bool = f1 != f2 && Abs(f2 - f1) == Abs(r2 - r1)
+/// Every square strictly between the ends of a straight or diagonal line is empty.
+derive Clear(f1: Int, r1: Int, f2: Int, r2: Int): Bool =
+  all(k: 1..6 where k < Steps(f1, r1, f2, r2) => Empty(f1 + k * Sign(f2 - f1), r1 + k * Sign(r2 - r1)))
+
+/// Capture geometry of a piece of kind `k` belonging to `s`, ignoring turn and check.
+derive Reach(k: Kind, s: Side, f1: Int, r1: Int, f2: Int, r2: Int): Bool =
+  match k {
+    Pawn => Abs(f2 - f1) == 1 && r2 - r1 == Forward(s),
+    Knight => (Abs(f2 - f1) == 1 && Abs(r2 - r1) == 2) || (Abs(f2 - f1) == 2 && Abs(r2 - r1) == 1),
+    Bishop => Diagonal(f1, r1, f2, r2) && Clear(f1, r1, f2, r2),
+    Rook => Straight(f1, r1, f2, r2) && Clear(f1, r1, f2, r2),
+    Queen => (Straight(f1, r1, f2, r2) || Diagonal(f1, r1, f2, r2)) && Clear(f1, r1, f2, r2),
+    King => Steps(f1, r1, f2, r2) == 1
+  }
+/// Some piece of the opponent of `s` could capture on (f, r).
+derive Attacked(s: Side, f: Int, r: Int): Bool =
+  exists(af: File, ar: Rank where Color(af, ar) == Other(s) => Reach(Piece(af, ar) ?? Pawn, Other(s), af, ar, f, r))
+derive KingFile(s: Side): Int = first(f: File, r: Rank where Piece(f, r) == King && Color(f, r) == s => f) ?? -1
+derive KingRank(s: Side): Int = first(f: File, r: Rank where Piece(f, r) == King && Color(f, r) == s => r) ?? -1
+derive InCheck(s: Side): Bool = Attacked(s, KingFile(s), KingRank(s))
+
+/// A pawn's single push, double push from its home rank, capture, or en passant capture.
+derive PawnMove(s: Side, f1: Int, r1: Int, f2: Int, r2: Int): Bool =
+  (f1 == f2 && r2 - r1 == Forward(s) && Empty(f2, r2))
+  || (f1 == f2 && r1 == PawnRank(s) && r2 - r1 == 2 * Forward(s) && Empty(f1, r1 + Forward(s)) && Empty(f2, r2))
+  || (Abs(f2 - f1) == 1 && r2 - r1 == Forward(s)
+      && (Enemy(s, f2, r2) || (r1 == EpRank(s) && EnPassant == f2 && Empty(f2, r2))))
+derive IsEnPassant(f1: File, r1: Rank, f2: File, r2: Rank): Bool =
+  Piece(f1, r1) == Pawn && f1 != f2 && Empty(f2, r2)
+
+/// The piece on (f1, r1) can geometrically go to (f2, r2), ignoring check.
+derive Movable(f1: File, r1: Rank, f2: File, r2: Rank): Bool =
+  Color(f1, r1) != none && !(f1 == f2 && r1 == r2) && !Own(Color(f1, r1) ?? White, f2, r2)
+  && (Piece(f1, r1) == Pawn
+        ? PawnMove(Color(f1, r1) ?? White, f1, r1, f2, r2)
+        : Reach(Piece(f1, r1) ?? Pawn, Color(f1, r1) ?? White, f1, r1, f2, r2))
+
+derive RookFile(w: Wing): Int = match w { Kingside => 7, Queenside => 0 }
+derive KingTo(w: Wing): Int = match w { Kingside => 6, Queenside => 2 }
+derive RookTo(w: Wing): Int = match w { Kingside => 5, Queenside => 3 }
+derive CastlePathClear(s: Side, w: Wing): Bool =
+  all(f: File where f > Min(4, RookFile(w)) && f < Max(4, RookFile(w)) => Empty(f, BackRank(s)))
+/// Not castling out of, through, or into check.
+derive CastleSafe(s: Side, w: Wing): Bool =
+  !InCheck(s) && !Attacked(s, (4 + KingTo(w)) / 2, BackRank(s)) && !Attacked(s, KingTo(w), BackRank(s))
+
+/// Does the side to move have any legal move? Meaningful only for `Turn`,
+/// since legality includes whose turn it is.
+derive HasLegalMove(s: Side): Bool =
+  exists(f1: File, r1: Rank where Color(f1, r1) == s =>
+    exists(f2: File, r2: Rank where Movable(f1, r1, f2, r2) =>
+      legal(Move(f1, r1, f2, r2)) || legal(Promote(f1, r1, f2, r2, Queen))))
+  || legal(Castle(Kingside)) || legal(Castle(Queenside))
+
+derive HomePiece(f: File): Kind =
+  match f { 0 => Rook, 7 => Rook, 1 => Knight, 6 => Knight, 2 => Bishop, 5 => Bishop, 3 => Queen, _ => King }
+
+/// Move the piece on (f1, r1) to (f2, r2). A pawn reaching the last rank must use Promote.
+action Move(f1: File, r1: Rank, f2: File, r2: Rank)
+action Promote(f1: File, r1: Rank, f2: File, r2: Rank, to: Kind)
+action Castle(wing: Wing)
+action Resign(side: Side)
+
+rule MoveGameOver on Move(f1, r1, f2, r2) { deny if Over "the game is over" }
+rule MoveOwnPiece on Move(f1, r1, f2, r2) { require Color(f1, r1) == Turn "no piece of the side to move there" }
+rule MoveGeometry on Move(f1, r1, f2, r2) { require Movable(f1, r1, f2, r2) "that piece cannot move there" }
+rule MoveMustPromote on Move(f1, r1, f2, r2) {
+  deny if Piece(f1, r1) == Pawn && r2 == LastRank(Turn) "a pawn reaching the last rank must promote"
+}
+rule MakeMove on Move(f1, r1, f2, r2) {
+  require Color(f1, r1) == Turn && Movable(f1, r1, f2, r2)
+  let s = Turn
+  let k = Piece(f1, r1) ?? Pawn
+  let capture = Piece(f2, r2) != none || IsEnPassant(f1, r1, f2, r2)
+  retract Piece(f1, r1)
+  retract Color(f1, r1)
+  assert Piece(f2, r2) = k
+  assert Color(f2, r2) = s
+  if IsEnPassant(f1, r1, f2, r2) {
+    retract Piece(f2, r1)
+    retract Color(f2, r1)
+  }
+  if k == Pawn && Abs(r2 - r1) == 2 { assert EnPassant = f2 } else { retract EnPassant }
+  if k == King {
+    retract CastleRight(s, Kingside)
+    retract CastleRight(s, Queenside)
+  }
+  if k == Rook && r1 == BackRank(s) && f1 == 7 { retract CastleRight(s, Kingside) }
+  if k == Rook && r1 == BackRank(s) && f1 == 0 { retract CastleRight(s, Queenside) }
+  if Piece(f2, r2) == Rook && r2 == BackRank(Other(s)) && f2 == 7 { retract CastleRight(Other(s), Kingside) }
+  if Piece(f2, r2) == Rook && r2 == BackRank(Other(s)) && f2 == 0 { retract CastleRight(Other(s), Queenside) }
+  assert HalfmoveClock = (capture || k == Pawn) ? 0 : (HalfmoveClock ?? 0) + 1
+  assert Turn = Other(s)
+}
+
+rule PromoteGameOver on Promote(f1, r1, f2, r2, to) { deny if Over "the game is over" }
+rule PromoteOwnPawn on Promote(f1, r1, f2, r2, to) {
+  require Color(f1, r1) == Turn && Piece(f1, r1) == Pawn "only a pawn of the side to move can promote"
+}
+rule PromoteGeometry on Promote(f1, r1, f2, r2, to) {
+  require Movable(f1, r1, f2, r2) && r2 == LastRank(Turn) "the pawn must move onto the last rank"
+}
+rule PromotePiece on Promote(f1, r1, f2, r2, to) {
+  require to == Knight || to == Bishop || to == Rook || to == Queen "promote to a knight, bishop, rook, or queen"
+}
+rule MakePromotion on Promote(f1, r1, f2, r2, to) {
+  require Color(f1, r1) == Turn && Piece(f1, r1) == Pawn && Movable(f1, r1, f2, r2) && r2 == LastRank(Turn)
+  let s = Turn
+  retract Piece(f1, r1)
+  retract Color(f1, r1)
+  assert Piece(f2, r2) = to
+  assert Color(f2, r2) = s
+  retract EnPassant
+  if Piece(f2, r2) == Rook && f2 == 7 { retract CastleRight(Other(s), Kingside) }
+  if Piece(f2, r2) == Rook && f2 == 0 { retract CastleRight(Other(s), Queenside) }
+  assert HalfmoveClock = 0
+  assert Turn = Other(s)
+}
+
+rule CastleGameOver on Castle(w) { deny if Over "the game is over" }
+rule CastleRights on Castle(w) { require CastleRight(Turn, w) "castling rights on that wing are gone" }
+rule CastlePieces on Castle(w) {
+  require Piece(4, BackRank(Turn)) == King && Color(4, BackRank(Turn)) == Turn
+    && Piece(RookFile(w), BackRank(Turn)) == Rook && Color(RookFile(w), BackRank(Turn)) == Turn
+    "king and rook must be on their home squares"
+}
+rule CastlePath on Castle(w) { require CastlePathClear(Turn, w) "the squares between king and rook must be empty" }
+rule CastleNotThroughCheck on Castle(w) { require CastleSafe(Turn, w) "may not castle out of, through, or into check" }
+rule MakeCastle on Castle(w) {
+  require CastleRight(Turn, w) && CastlePathClear(Turn, w)
+  let s = Turn
+  let r = BackRank(s)
+  retract Piece(4, r)
+  retract Color(4, r)
+  retract Piece(RookFile(w), r)
+  retract Color(RookFile(w), r)
+  assert Piece(KingTo(w), r) = King
+  assert Color(KingTo(w), r) = s
+  assert Piece(RookTo(w), r) = Rook
+  assert Color(RookTo(w), r) = s
+  retract CastleRight(s, Kingside)
+  retract CastleRight(s, Queenside)
+  retract EnPassant
+  assert HalfmoveClock = (HalfmoveClock ?? 0) + 1
+  assert Turn = Other(s)
+}
+
+rule ResignGameOver on Resign(s) { deny if Over "the game is over" }
+rule MakeResign on Resign(s) { assert Outcome = (s == White ? BlackWins : WhiteWins) }
+
+/// The side that just moved may not leave its own king attacked.
+ensure KingSafe: !InCheck(Other(Turn))
+
+event Check(s: Side) when Turn == s && InCheck(s)
+event Checkmate(s: Side) when !Over && Turn == s && InCheck(s) && !HasLegalMove(s)
+/// Only while the game is in progress: after a resignation no move is legal either.
+event Stalemate(s: Side) when !Over && Turn == s && !InCheck(s) && !HasLegalMove(s)
+/// Fifty moves without capture or pawn move: a draw may be claimed (not modeled).
+event FiftyMoves when (HalfmoveClock ?? 0) >= 100
+
+rule RecordCheckmate on Checkmate(s) { assert Outcome = (s == White ? BlackWins : WhiteWins) }
+rule RecordStalemate on Stalemate(s) { assert Outcome = Draw }
+
+invariant OneKingEach:
+  count(f: File, r: Rank => Piece(f, r) == King && Color(f, r) == White) == 1
+  && count(f: File, r: Rank => Piece(f, r) == King && Color(f, r) == Black) == 1
+invariant PiecesHaveColors: all(f: File, r: Rank => (Piece(f, r) == none) == (Color(f, r) == none))
+invariant NoPawnsOnEndRanks: all(f: File => Piece(f, 0) != Pawn && Piece(f, 7) != Pawn)
+invariant SixteenAtMost: Count(White) <= 16 && Count(Black) <= 16
+/// The side that just moved is never left in check (the ensure guarantees it).
+invariant SideNotToMoveIsSafe: !InCheck(Other(Turn))
+
+init {
+  for (f: File, s: Side) {
+    assert Piece(f, BackRank(s)) = HomePiece(f)
+    assert Color(f, BackRank(s)) = s
+    assert Piece(f, PawnRank(s)) = Pawn
+    assert Color(f, PawnRank(s)) = s
+  }
+  for (s: Side, w: Wing) { assert CastleRight(s, w) }
+  assert Turn = White
+  assert HalfmoveClock = 0
+}
+
+scenario "scholar's mate" {
+  Move(4, 1, 4, 3); Move(4, 6, 4, 4)
+  Move(3, 0, 7, 4); Move(1, 7, 2, 5)
+  Move(5, 0, 2, 3); Move(6, 7, 5, 5)
+  Move(7, 4, 5, 6) emits Check(Black), Checkmate(Black)
+  expect Outcome == WhiteWins && Over
+  Move(4, 7, 3, 6) rejected by MoveGameOver
+}
+
+scenario "a check must be answered and the king may not walk into attack" {
+  Move(4, 1, 4, 3); Move(3, 6, 3, 4)
+  Move(5, 0, 1, 4) emits Check(Black)
+  expect InCheck(Black) && Turn == Black
+  Move(0, 6, 0, 5) rejected by KingSafe
+  Move(1, 7, 2, 5)
+  expect !InCheck(Black) && Turn == White
+}
+
+scenario "the king cannot step into a rook's line" {
+  given nothing
+  given Turn = White
+  given Piece(4, 0) = King;  given Color(4, 0) = White
+  given Piece(4, 7) = King;  given Color(4, 7) = Black
+  given Piece(0, 1) = Rook;  given Color(0, 1) = Black
+  Move(4, 0, 4, 1) rejected by KingSafe
+  Move(4, 0, 5, 0)
+  expect Piece(5, 0) == King && Turn == Black
+}
+
+scenario "castling kingside and its preconditions" {
+  Move(4, 1, 4, 3); Move(4, 6, 4, 4)
+  Move(6, 0, 5, 2); Move(1, 7, 2, 5)
+  Move(5, 0, 2, 3); Move(5, 7, 2, 4)
+  expect CastleRight(White, Kingside) && CastlePathClear(White, Kingside)
+  Castle(Kingside)
+  expect Piece(6, 0) == King && Piece(5, 0) == Rook && Piece(4, 0) == none && Piece(7, 0) == none
+  expect !CastleRight(White, Kingside) && !CastleRight(White, Queenside)
+  Castle(Queenside) rejected by CastlePath
+  Castle(Kingside) rejected by CastlePath
+}
+
+scenario "en passant" {
+  Move(4, 1, 4, 3); Move(0, 6, 0, 5)
+  Move(4, 3, 4, 4); Move(3, 6, 3, 4)
+  expect EnPassant == 3
+  Move(4, 4, 3, 5)
+  expect Piece(3, 4) == none && Piece(3, 5) == Pawn && Color(3, 5) == White && EnPassant == none
+  expect Count(Black) == 15
+}
+
+scenario "promotion" {
+  given nothing
+  given Turn = White
+  given Piece(4, 0) = King;  given Color(4, 0) = White
+  given Piece(4, 7) = King;  given Color(4, 7) = Black
+  given Piece(0, 6) = Pawn;  given Color(0, 6) = White
+  Move(0, 6, 0, 7) rejected by MoveMustPromote
+  Promote(0, 6, 0, 7, King) rejected by PromotePiece
+  Promote(0, 6, 0, 7, Pawn) rejected by PromotePiece
+  Promote(0, 6, 0, 7, Queen) emits Check(Black)
+  expect Piece(0, 7) == Queen && Color(0, 7) == White && Turn == Black
+}
+
+scenario "stalemate is a draw" {
+  given nothing
+  given Turn = White
+  given Piece(1, 5) = King;  given Color(1, 5) = White
+  given Piece(2, 0) = Queen; given Color(2, 0) = White
+  given Piece(0, 7) = King;  given Color(0, 7) = Black
+  Move(2, 0, 2, 6) emits Stalemate(Black)
+  expect Outcome == Draw && !InCheck(Black)
+}
+
+scenario "resignation ends the game" {
+  Move(4, 1, 4, 3)
+  Resign(Black)
+  expect Outcome == WhiteWins
+  Move(4, 6, 4, 4) rejected by MoveGameOver
+}
+
+scenario "pieces obey their geometry" {
+  Move(0, 0, 0, 2) rejected by MoveGeometry
+  Move(1, 0, 3, 1) rejected by MoveGeometry
+  Move(1, 0, 2, 2)
+  Move(4, 6, 4, 4)
+  Move(2, 2, 4, 3)
+  expect Piece(4, 3) == Knight && HalfmoveClock == 1
+}

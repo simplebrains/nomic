@@ -1,0 +1,327 @@
+/// A starship's main computer: chain of command, alert status, power
+/// allocation against a reactor budget, shields, weapons, warp, damage and
+/// repair, automatic responses, and a two-officer self-destruct sequence.
+///
+/// Two things this model shows. First, the ordered enum `Officer` gives
+/// seniority for free: `officer <= FirstOfficer` means "captain or first officer".
+/// Second, the descriptive channel: the power budget is a strong invariant,
+/// but the logs show engineering exceeding it during red alert, so that is an
+/// `observed exception`, not a loosened rule. The report command lists what
+/// is required, observed, expected, and assumed.
+model ShipsComputer
+
+/// Seniority order: earlier is senior.
+type Officer = Captain | FirstOfficer | ChiefEngineer | Doctor | Ensign
+type System = LifeSupport | Shields | Warp | Impulse | Phasers | Torpedoes | Sensors | Transporter | Holodeck
+type Alert = Green | Yellow | Red
+type Units = 0..10
+type WarpFactor = 1..9
+type Hit = 1..40
+
+fact AlertStatus: Alert
+/// Power units allocated to a system.
+fact Allocation(s: System): Int
+fact Damaged(s: System)
+fact ShieldsUp
+fact WarpSpeed: Int
+fact TorpedoCount: Int
+fact HullIntegrity: Int
+/// Reactor rating in power units.
+fact ReactorOutput: Int
+fact OnBridge(o: Officer)
+/// Officers who have entered their self-destruct authorization.
+fact SelfDestructArmedBy(o: Officer)
+/// Seconds remaining, once armed.
+fact Countdown: Int
+fact Destroyed
+
+derive Senior(o: Officer): Bool = o <= FirstOfficer
+derive CanCommand(o: Officer): Bool = Senior(o) && OnBridge(o)
+derive Engineering(o: Officer): Bool = o == ChiefEngineer || Senior(o)
+derive Draw(s: System): Int = Allocation(s) ?? 0
+derive TotalDraw: Int = sum(s: System => Draw(s))
+derive Reactor: Int = ReactorOutput ?? 0
+/// Minimum power for a system to function. From the technical manual; unverified.
+assumed derive MinPower(s: System): Int =
+  match s { LifeSupport => 2, Shields => 3, Warp => 4, Impulse => 1, Phasers => 2, Torpedoes => 1, Sensors => 1, Transporter => 1, Holodeck => 1 }
+derive Operational(s: System): Bool = !Damaged(s) && Draw(s) >= MinPower(s)
+derive Hull: Int = HullIntegrity ?? 0
+derive TorpedoStock: Int = TorpedoCount ?? 0
+derive Speed: Int = WarpSpeed ?? 0
+derive Armed: Int = count(o: Officer => SelfDestructArmedBy(o))
+derive Max(a: Int, b: Int): Int = a > b ? a : b
+derive Dead: Bool = Destroyed
+
+action SetAlert(officer: Officer, level: Alert)
+action AllocatePower(officer: Officer, system: System, units: Units)
+action RaiseShields(officer: Officer)
+action LowerShields(officer: Officer)
+action EngageWarp(officer: Officer, factor: WarpFactor)
+action AllStop(officer: Officer)
+action FireTorpedo(officer: Officer)
+action FirePhasers(officer: Officer)
+/// Incoming fire, reported by the environment.
+action TakeHit(damage: Hit)
+/// Damage control reports a system failure.
+action ReportDamage(system: System)
+action Repair(officer: Officer, system: System)
+action AuthorizeSelfDestruct(officer: Officer)
+action CancelSelfDestruct(officer: Officer)
+/// One second of the countdown passes.
+action Tick
+
+rule AlertCommand on SetAlert(o, l) { require !Dead && CanCommand(o) "only a senior officer on the bridge can change alert status" }
+rule StandDownWithinBudget on SetAlert(o, l) {
+  require l == Red || TotalDraw <= Reactor "trim power to the reactor rating before standing down from red alert"
+}
+rule DoSetAlert on SetAlert(o, l) {
+  require CanCommand(o)
+  assert AlertStatus = l
+}
+
+rule PowerAuthority on AllocatePower(o, s, u) { require !Dead && Engineering(o) "only engineering or command can reallocate power" }
+/// The budget is the reactor rating, plus the two-unit overdraw engineering
+/// takes during red alert (see exception RedAlertOverdraw).
+rule PowerBudget on AllocatePower(o, s, u) {
+  require TotalDraw - Draw(s) + u <= Reactor + (AlertStatus == Red ? 2 : 0) "that allocation exceeds the reactor budget"
+}
+rule DoAllocate on AllocatePower(o, s, u) {
+  require Engineering(o)
+  assert Allocation(s) = u
+}
+
+rule ShieldsCommand on RaiseShields(o) { require !Dead && CanCommand(o) "not authorized" }
+rule ShieldsOperational on RaiseShields(o) { require Operational(Shields) "shield generators are not operational" }
+rule DoRaise on RaiseShields(o) {
+  require CanCommand(o) && Operational(Shields)
+  assert ShieldsUp
+}
+rule LowerCommand on LowerShields(o) { require !Dead && CanCommand(o) "not authorized" }
+rule DoLower on LowerShields(o) {
+  require CanCommand(o)
+  retract ShieldsUp
+}
+
+rule WarpCommand on EngageWarp(o, f) { require !Dead && CanCommand(o) "not authorized" }
+rule WarpOperational on EngageWarp(o, f) { require Operational(Warp) "warp drive is not operational" }
+rule WarpPower on EngageWarp(o, f) { require Draw(Warp) >= f "insufficient power to the warp coils for that factor" }
+rule DoWarp on EngageWarp(o, f) {
+  require CanCommand(o) && Operational(Warp) && Draw(Warp) >= f
+  assert WarpSpeed = f
+}
+rule StopCommand on AllStop(o) { require !Dead && CanCommand(o) "not authorized" }
+rule DoStop on AllStop(o) {
+  require CanCommand(o)
+  retract WarpSpeed
+}
+
+rule TorpedoCommand on FireTorpedo(o) { require !Dead && CanCommand(o) "not authorized" }
+rule TorpedoRedAlert on FireTorpedo(o) { require AlertStatus == Red "weapons are locked outside red alert" }
+rule TorpedoReady on FireTorpedo(o) { require Operational(Torpedoes) && TorpedoStock > 0 "torpedo launcher not ready" }
+rule DoFireTorpedo on FireTorpedo(o) {
+  require CanCommand(o) && AlertStatus == Red && Operational(Torpedoes) && TorpedoStock > 0
+  assert TorpedoCount = TorpedoStock - 1
+}
+rule PhaserCommand on FirePhasers(o) { require !Dead && CanCommand(o) "not authorized" }
+rule PhaserRedAlert on FirePhasers(o) { require AlertStatus == Red "weapons are locked outside red alert" }
+rule PhaserReady on FirePhasers(o) { require Operational(Phasers) "phaser banks not operational" }
+rule DoFirePhasers on FirePhasers(o) { require CanCommand(o) && AlertStatus == Red && Operational(Phasers) }
+
+/// Shields absorb three points per power unit allocated; the rest reaches the hull.
+rule DoTakeHit on TakeHit(d) {
+  require !Dead
+  let absorbed = (ShieldsUp && Operational(Shields)) ? Draw(Shields) * 3 : 0
+  assert HullIntegrity = Max(0, Hull - Max(0, d - absorbed))
+}
+
+rule DoReportDamage on ReportDamage(s) {
+  require !Dead && !Damaged(s) "already reported"
+  assert Damaged(s)
+}
+rule RepairAuthority on Repair(o, s) { require !Dead && Engineering(o) "only engineering can clear a damage report" }
+rule RepairNeeded on Repair(o, s) { require Damaged(s) "nothing to repair" }
+rule DoRepair on Repair(o, s) {
+  require Engineering(o) && Damaged(s)
+  retract Damaged(s)
+}
+
+rule DestructAuthority on AuthorizeSelfDestruct(o) { require !Dead && CanCommand(o) "self-destruct needs a senior officer on the bridge" }
+rule DestructOnce on AuthorizeSelfDestruct(o) { require !SelfDestructArmedBy(o) "already authorized" }
+rule DoAuthorize on AuthorizeSelfDestruct(o) {
+  require CanCommand(o) && !SelfDestructArmedBy(o)
+  assert SelfDestructArmedBy(o)
+}
+rule CancelIsCaptains on CancelSelfDestruct(o) { require !Dead && o == Captain && OnBridge(o) "only the captain can cancel" }
+rule DoCancel on CancelSelfDestruct(o) {
+  require o == Captain && OnBridge(o)
+  for (x: Officer) { retract SelfDestructArmedBy(x) }
+  retract Countdown
+}
+rule DoTick on Tick {
+  require !Dead && Countdown != none && (Countdown ?? 0) > 0 "no countdown running"
+  assert Countdown = (Countdown ?? 0) - 1
+}
+
+/// Two senior officers have authorized: the countdown starts.
+event SelfDestructArmed when Armed >= 2 && Countdown == none
+rule StartCountdown on SelfDestructArmed { assert Countdown = 3 }
+event Detonation when Countdown == 0
+rule DoDetonate on Detonation { assert Destroyed }
+
+/// Life support has dropped below minimum: the computer goes to red alert on its own.
+expected event LifeSupportFailing when !Dead && !Operational(LifeSupport)
+rule AutoRedAlert on LifeSupportFailing { assert AlertStatus = Red }
+event HullBreach when !Dead && Hull < 30
+rule BreachAlert on HullBreach { assert AlertStatus = Red }
+event ShipLost when Hull <= 0 && !Destroyed
+rule DoLose on ShipLost { assert Destroyed }
+
+/// Total allocation may not exceed the reactor rating.
+invariant PowerWithinReactor: TotalDraw <= Reactor
+invariant HullBounded: Hull >= 0 && Hull <= 100
+invariant CountdownNeedsAuthorization: Countdown == none || Armed >= 2 || Destroyed
+/// Engineering routinely runs the reactor two units over rating during red
+/// alert. It is in the logs of every engagement and in no manual.
+observed exception RedAlertOverdraw on PowerWithinReactor
+  when AlertStatus == Red && TotalDraw <= Reactor + 2
+
+/// Reallocation may not starve raised shields or life support.
+ensure ShieldsStayPowered: !ShieldsUp || Draw(Shields) >= MinPower(Shields)
+ensure LifeSupportMinimum: Draw(LifeSupport) >= MinPower(LifeSupport) || Destroyed
+ensure WarpNeedsPower: Speed <= Draw(Warp)
+
+init {
+  assert AlertStatus = Green
+  assert ReactorOutput = 12
+  assert Allocation(LifeSupport) = 2
+  assert Allocation(Impulse) = 1
+  assert Allocation(Sensors) = 1
+  assert Allocation(Shields) = 3
+  assert Allocation(Warp) = 4
+  assert Allocation(Torpedoes) = 1
+  assert HullIntegrity = 100
+  assert TorpedoCount = 4
+  assert OnBridge(Captain)
+  assert OnBridge(FirstOfficer)
+  assert OnBridge(Ensign)
+}
+
+scenario "chain of command" {
+  SetAlert(Ensign, Red) rejected by AlertCommand
+  SetAlert(Doctor, Red) rejected by AlertCommand
+  SetAlert(FirstOfficer, Yellow)
+  expect AlertStatus == Yellow
+  AllocatePower(Ensign, Sensors, 0) rejected by PowerAuthority
+  AllocatePower(ChiefEngineer, Sensors, 0)
+  expect TotalDraw == 11
+}
+
+scenario "the power budget is a hard limit, except for the observed red-alert overdraw" {
+  AllocatePower(ChiefEngineer, Phasers, 2) rejected by PowerBudget
+  SetAlert(Captain, Red)
+  AllocatePower(ChiefEngineer, Phasers, 2)
+  expect TotalDraw == 14 && TotalDraw > Reactor
+  AllocatePower(ChiefEngineer, Torpedoes, 2) rejected by PowerBudget
+  SetAlert(Captain, Green) rejected by StandDownWithinBudget
+  AllocatePower(ChiefEngineer, Phasers, 0)
+  SetAlert(Captain, Green)
+  expect TotalDraw == 12
+}
+
+scenario "shields absorb fire and a breach raises the alarm" {
+  RaiseShields(Ensign) rejected by ShieldsCommand
+  RaiseShields(Captain)
+  TakeHit(20)
+  expect Hull == 89
+  LowerShields(Captain)
+  TakeHit(20)
+  expect Hull == 69
+  TakeHit(40) emits HullBreach
+  expect Hull == 29 && AlertStatus == Red
+}
+
+scenario "reallocation may not starve raised shields or life support" {
+  RaiseShields(Captain)
+  AllocatePower(ChiefEngineer, Shields, 1) rejected by ShieldsStayPowered
+  AllocatePower(ChiefEngineer, LifeSupport, 1) rejected by LifeSupportMinimum
+  LowerShields(Captain)
+  AllocatePower(ChiefEngineer, Shields, 1)
+  RaiseShields(Captain) rejected by ShieldsOperational
+}
+
+scenario "damage reports and repairs" {
+  ReportDamage(Shields)
+  ReportDamage(Shields) rejected by DoReportDamage
+  RaiseShields(Captain) rejected by ShieldsOperational
+  Repair(Ensign, Shields) rejected by RepairAuthority
+  Repair(ChiefEngineer, Shields)
+  Repair(ChiefEngineer, Shields) rejected by RepairNeeded
+  RaiseShields(Captain)
+  expect ShieldsUp
+}
+
+scenario "warp needs coils powered for the factor" {
+  EngageWarp(Captain, 5) rejected by WarpPower
+  EngageWarp(Captain, 4)
+  expect Speed == 4
+  AllocatePower(ChiefEngineer, Warp, 2) rejected by WarpNeedsPower
+  AllStop(Captain)
+  AllocatePower(ChiefEngineer, Warp, 2)
+  EngageWarp(Captain, 2) rejected by WarpOperational
+  AllocatePower(ChiefEngineer, Warp, 5) rejected by PowerBudget
+  AllocatePower(ChiefEngineer, Sensors, 0)
+  AllocatePower(ChiefEngineer, Warp, 5)
+  EngageWarp(Captain, 5)
+  expect Speed == 5 && TotalDraw == 12 && AlertStatus == Green
+}
+
+scenario "weapons are locked outside red alert" {
+  FireTorpedo(Captain) rejected by TorpedoRedAlert
+  SetAlert(Captain, Red)
+  FireTorpedo(Captain)
+  expect TorpedoStock == 3
+  FirePhasers(Captain) rejected by PhaserReady
+  AllocatePower(ChiefEngineer, Phasers, 2)
+  FirePhasers(Captain)
+  ReportDamage(Torpedoes)
+  FireTorpedo(Captain) rejected by TorpedoReady
+}
+
+scenario "self-destruct needs two senior officers and only the captain cancels" {
+  AuthorizeSelfDestruct(Ensign) rejected by DestructAuthority
+  AuthorizeSelfDestruct(Captain) emits nothing
+  AuthorizeSelfDestruct(Captain) rejected by DestructOnce
+  Tick rejected by DoTick
+  AuthorizeSelfDestruct(FirstOfficer) emits SelfDestructArmed
+  expect Countdown == 3
+  Tick; Tick
+  expect Countdown == 1
+  CancelSelfDestruct(FirstOfficer) rejected by CancelIsCaptains
+  CancelSelfDestruct(Captain)
+  expect Countdown == none && Armed == 0
+}
+
+scenario "detonation" {
+  AuthorizeSelfDestruct(Captain)
+  AuthorizeSelfDestruct(FirstOfficer) emits SelfDestructArmed
+  Tick; Tick
+  Tick emits Detonation
+  expect Destroyed
+  SetAlert(Captain, Green) rejected by AlertCommand
+  Tick rejected by DoTick
+}
+
+scenario "the computer goes to red alert on its own when life support fails" {
+  ReportDamage(LifeSupport) emits LifeSupportFailing
+  expect AlertStatus == Red && !Operational(LifeSupport)
+  Repair(ChiefEngineer, LifeSupport) emits nothing
+  expect Operational(LifeSupport) && AlertStatus == Red
+}
+
+scenario "the ship can be lost" {
+  TakeHit(40); TakeHit(40) emits HullBreach
+  expect Hull == 20
+  TakeHit(40) emits ShipLost
+  expect Destroyed && Hull == 0
+  TakeHit(5) rejected by DoTakeHit
+}

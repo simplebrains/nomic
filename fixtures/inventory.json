@@ -1,0 +1,543 @@
+{
+  "nomic_core": "0.1",
+  "model": "Inventory",
+  "cases": [
+    {
+      "scenario": "receive, order, reserve, ship",
+      "steps": [
+        {
+          "description": "Receive(StoreSouth, Gizmo, 10) accepted",
+          "passed": true,
+          "accepted": true,
+          "effects": [
+            "assert OnHand(StoreSouth, Gizmo) = 10"
+          ]
+        },
+        {
+          "description": "PlaceOrder(1, Warehouse) accepted",
+          "passed": true,
+          "accepted": true,
+          "effects": [
+            "assert Order(1) = Open",
+            "assert OrderSite(1) = Warehouse"
+          ]
+        },
+        {
+          "description": "AddLine(1, Widget, 12) accepted",
+          "passed": true,
+          "accepted": true,
+          "effects": [
+            "assert Line(1, Widget) = 12"
+          ]
+        },
+        {
+          "description": "AddLine(1, Gadget, 4) accepted",
+          "passed": true,
+          "accepted": true,
+          "effects": [
+            "assert Line(1, Gadget) = 4"
+          ]
+        },
+        {
+          "description": "Reserve(1) accepted with events",
+          "passed": true,
+          "accepted": true,
+          "events": [
+            "LowStock(Warehouse, Gadget)"
+          ],
+          "effects": [
+            "assert Order(1) = Reserved",
+            "assert Reservation(Warehouse, Gadget) = 4",
+            "assert Reservation(Warehouse, Widget) = 12"
+          ]
+        },
+        {
+          "description": "expect",
+          "passed": true
+        },
+        {
+          "description": "Ship(1) accepted with events",
+          "passed": true,
+          "accepted": true,
+          "events": [
+            "OrderShipped(1)"
+          ],
+          "effects": [
+            "assert OnHand(Warehouse, Gadget) = 4",
+            "assert OnHand(Warehouse, Widget) = 8",
+            "assert Order(1) = Shipped",
+            "assert Reservation(Warehouse, Gadget) = 0",
+            "assert Reservation(Warehouse, Widget) = 0",
+            "emit OrderShipped(1)"
+          ]
+        },
+        {
+          "description": "expect",
+          "passed": true
+        },
+        {
+          "description": "expect",
+          "passed": true
+        },
+        {
+          "description": "Ship(1) rejected by ShipReserved",
+          "passed": true,
+          "accepted": false,
+          "denied_by": [
+            "ShipReserved",
+            "DoShip"
+          ]
+        }
+      ],
+      "final_state": [
+        "Line(1, Gadget) = 4",
+        "Line(1, Widget) = 12",
+        "OnHand(StoreNorth, Widget) = 6",
+        "OnHand(StoreSouth, Gizmo) = 10",
+        "OnHand(Warehouse, Gadget) = 4",
+        "OnHand(Warehouse, Widget) = 8",
+        "Order(1) = Shipped",
+        "OrderSite(1) = Warehouse",
+        "ReorderPoint(StoreNorth, Gadget) = 5",
+        "ReorderPoint(StoreNorth, Gizmo) = 5",
+        "ReorderPoint(StoreNorth, Widget) = 5",
+        "ReorderPoint(StoreSouth, Gadget) = 5",
+        "ReorderPoint(StoreSouth, Gizmo) = 5",
+        "ReorderPoint(StoreSouth, Widget) = 5",
+        "ReorderPoint(Warehouse, Gadget) = 5",
+        "ReorderPoint(Warehouse, Gizmo) = 5",
+        "ReorderPoint(Warehouse, Widget) = 5",
+        "Reservation(Warehouse, Gadget) = 0",
+        "Reservation(Warehouse, Widget) = 0"
+      ]
+    },
+    {
+      "scenario": "reservation is all or nothing",
+      "steps": [
+        {
+          "description": "PlaceOrder(1, StoreNorth) accepted",
+          "passed": true,
+          "accepted": true,
+          "effects": [
+            "assert Order(1) = Open",
+            "assert OrderSite(1) = StoreNorth"
+          ]
+        },
+        {
+          "description": "AddLine(1, Widget, 4) accepted",
+          "passed": true,
+          "accepted": true,
+          "effects": [
+            "assert Line(1, Widget) = 4"
+          ]
+        },
+        {
+          "description": "AddLine(1, Gadget, 1) accepted",
+          "passed": true,
+          "accepted": true,
+          "effects": [
+            "assert Line(1, Gadget) = 1"
+          ]
+        },
+        {
+          "description": "Reserve(1) rejected by ReserveStock",
+          "passed": true,
+          "accepted": false,
+          "denied_by": [
+            "ReserveStock",
+            "DoReserve"
+          ]
+        },
+        {
+          "description": "expect",
+          "passed": true
+        },
+        {
+          "description": "Transfer(Warehouse, StoreNorth, Gadget, 2) accepted",
+          "passed": true,
+          "accepted": true,
+          "effects": [
+            "assert OnHand(StoreNorth, Gadget) = 2",
+            "assert OnHand(Warehouse, Gadget) = 6"
+          ]
+        },
+        {
+          "description": "Reserve(1) accepted",
+          "passed": true,
+          "accepted": true,
+          "events": [
+            "LowStock(StoreNorth, Widget)"
+          ],
+          "effects": [
+            "assert Order(1) = Reserved",
+            "assert Reservation(StoreNorth, Gadget) = 1",
+            "assert Reservation(StoreNorth, Widget) = 4"
+          ]
+        },
+        {
+          "description": "expect",
+          "passed": true
+        }
+      ],
+      "final_state": [
+        "Line(1, Gadget) = 1",
+        "Line(1, Widget) = 4",
+        "OnHand(StoreNorth, Gadget) = 2",
+        "OnHand(StoreNorth, Widget) = 6",
+        "OnHand(Warehouse, Gadget) = 6",
+        "OnHand(Warehouse, Widget) = 20",
+        "Order(1) = Reserved",
+        "OrderSite(1) = StoreNorth",
+        "ReorderPoint(StoreNorth, Gadget) = 5",
+        "ReorderPoint(StoreNorth, Gizmo) = 5",
+        "ReorderPoint(StoreNorth, Widget) = 5",
+        "ReorderPoint(StoreSouth, Gadget) = 5",
+        "ReorderPoint(StoreSouth, Gizmo) = 5",
+        "ReorderPoint(StoreSouth, Widget) = 5",
+        "ReorderPoint(Warehouse, Gadget) = 5",
+        "ReorderPoint(Warehouse, Gizmo) = 5",
+        "ReorderPoint(Warehouse, Widget) = 5",
+        "Reservation(StoreNorth, Gadget) = 1",
+        "Reservation(StoreNorth, Widget) = 4"
+      ]
+    },
+    {
+      "scenario": "cancelling a reserved order releases its stock",
+      "steps": [
+        {
+          "description": "PlaceOrder(2, Warehouse) accepted",
+          "passed": true,
+          "accepted": true,
+          "effects": [
+            "assert Order(2) = Open",
+            "assert OrderSite(2) = Warehouse"
+          ]
+        },
+        {
+          "description": "AddLine(2, Widget, 20) accepted",
+          "passed": true,
+          "accepted": true,
+          "effects": [
+            "assert Line(2, Widget) = 20"
+          ]
+        },
+        {
+          "description": "Reserve(2) accepted with events",
+          "passed": true,
+          "accepted": true,
+          "events": [
+            "LowStock(Warehouse, Widget)"
+          ],
+          "effects": [
+            "assert Order(2) = Reserved",
+            "assert Reservation(Warehouse, Widget) = 20"
+          ]
+        },
+        {
+          "description": "expect",
+          "passed": true
+        },
+        {
+          "description": "Transfer(Warehouse, StoreSouth, Widget, 1) rejected by TransferAvailable",
+          "passed": true,
+          "accepted": false,
+          "denied_by": [
+            "TransferAvailable",
+            "DoTransfer"
+          ]
+        },
+        {
+          "description": "Cancel(2) accepted",
+          "passed": true,
+          "accepted": true,
+          "effects": [
+            "assert Order(2) = Cancelled",
+            "assert Reservation(Warehouse, Widget) = 0"
+          ]
+        },
+        {
+          "description": "expect",
+          "passed": true
+        },
+        {
+          "description": "Cancel(2) rejected by CancelLive",
+          "passed": true,
+          "accepted": false,
+          "denied_by": [
+            "CancelLive",
+            "DoCancel"
+          ]
+        },
+        {
+          "description": "AddLine(2, Gadget, 1) rejected by LineOnOpenOrder",
+          "passed": true,
+          "accepted": false,
+          "denied_by": [
+            "LineOnOpenOrder"
+          ]
+        }
+      ],
+      "final_state": [
+        "Line(2, Widget) = 20",
+        "OnHand(StoreNorth, Widget) = 6",
+        "OnHand(Warehouse, Gadget) = 8",
+        "OnHand(Warehouse, Widget) = 20",
+        "Order(2) = Cancelled",
+        "OrderSite(2) = Warehouse",
+        "ReorderPoint(StoreNorth, Gadget) = 5",
+        "ReorderPoint(StoreNorth, Gizmo) = 5",
+        "ReorderPoint(StoreNorth, Widget) = 5",
+        "ReorderPoint(StoreSouth, Gadget) = 5",
+        "ReorderPoint(StoreSouth, Gizmo) = 5",
+        "ReorderPoint(StoreSouth, Widget) = 5",
+        "ReorderPoint(Warehouse, Gadget) = 5",
+        "ReorderPoint(Warehouse, Gizmo) = 5",
+        "ReorderPoint(Warehouse, Widget) = 5",
+        "Reservation(Warehouse, Widget) = 0"
+      ]
+    },
+    {
+      "scenario": "order ids are single use and lines need an open order",
+      "steps": [
+        {
+          "description": "PlaceOrder(3, StoreSouth) accepted",
+          "passed": true,
+          "accepted": true,
+          "effects": [
+            "assert Order(3) = Open",
+            "assert OrderSite(3) = StoreSouth"
+          ]
+        },
+        {
+          "description": "PlaceOrder(3, Warehouse) rejected by OrderIdFree",
+          "passed": true,
+          "accepted": false,
+          "denied_by": [
+            "OrderIdFree"
+          ]
+        },
+        {
+          "description": "Reserve(3) rejected by ReserveNonEmpty",
+          "passed": true,
+          "accepted": false,
+          "denied_by": [
+            "ReserveNonEmpty",
+            "DoReserve"
+          ]
+        },
+        {
+          "description": "Reserve(4) rejected by ReserveOpen",
+          "passed": true,
+          "accepted": false,
+          "denied_by": [
+            "ReserveOpen",
+            "ReserveNonEmpty",
+            "DoReserve"
+          ]
+        },
+        {
+          "description": "Transfer(Warehouse, Warehouse, Widget, 1) rejected by TransferSites",
+          "passed": true,
+          "accepted": false,
+          "denied_by": [
+            "TransferSites",
+            "DoTransfer"
+          ]
+        }
+      ],
+      "final_state": [
+        "OnHand(StoreNorth, Widget) = 6",
+        "OnHand(Warehouse, Gadget) = 8",
+        "OnHand(Warehouse, Widget) = 20",
+        "Order(3) = Open",
+        "OrderSite(3) = StoreSouth",
+        "ReorderPoint(StoreNorth, Gadget) = 5",
+        "ReorderPoint(StoreNorth, Gizmo) = 5",
+        "ReorderPoint(StoreNorth, Widget) = 5",
+        "ReorderPoint(StoreSouth, Gadget) = 5",
+        "ReorderPoint(StoreSouth, Gizmo) = 5",
+        "ReorderPoint(StoreSouth, Widget) = 5",
+        "ReorderPoint(Warehouse, Gadget) = 5",
+        "ReorderPoint(Warehouse, Gizmo) = 5",
+        "ReorderPoint(Warehouse, Widget) = 5"
+      ]
+    },
+    {
+      "scenario": "adjustments happen under audit and may go negative until reconciled",
+      "steps": [
+        {
+          "description": "Adjust(Warehouse, Gadget, -3) rejected by AdjustUnderAudit",
+          "passed": true,
+          "accepted": false,
+          "denied_by": [
+            "AdjustUnderAudit",
+            "DoAdjust"
+          ]
+        },
+        {
+          "description": "BeginAudit(Warehouse) accepted",
+          "passed": true,
+          "accepted": true,
+          "effects": [
+            "assert Auditing(Warehouse) = true"
+          ]
+        },
+        {
+          "description": "BeginAudit(Warehouse) rejected by DoBeginAudit",
+          "passed": true,
+          "accepted": false,
+          "denied_by": [
+            "DoBeginAudit"
+          ]
+        },
+        {
+          "description": "Adjust(Warehouse, Gadget, -10) accepted with events",
+          "passed": true,
+          "accepted": true,
+          "events": [
+            "LowStock(Warehouse, Gadget)"
+          ],
+          "effects": [
+            "assert OnHand(Warehouse, Gadget) = -2"
+          ]
+        },
+        {
+          "description": "expect",
+          "passed": true
+        },
+        {
+          "description": "EndAudit(Warehouse) rejected by EndAuditReconciled",
+          "passed": true,
+          "accepted": false,
+          "denied_by": [
+            "EndAuditReconciled"
+          ]
+        },
+        {
+          "description": "Receive(Warehouse, Gadget, 2) accepted with events",
+          "passed": true,
+          "accepted": true,
+          "events": [
+            "StockOut(Warehouse, Gadget)"
+          ],
+          "effects": [
+            "assert OnHand(Warehouse, Gadget) = 0"
+          ]
+        },
+        {
+          "description": "EndAudit(Warehouse) accepted",
+          "passed": true,
+          "accepted": true,
+          "effects": [
+            "retract Auditing(Warehouse)"
+          ]
+        },
+        {
+          "description": "expect",
+          "passed": true
+        }
+      ],
+      "final_state": [
+        "OnHand(StoreNorth, Widget) = 6",
+        "OnHand(Warehouse, Gadget) = 0",
+        "OnHand(Warehouse, Widget) = 20",
+        "ReorderPoint(StoreNorth, Gadget) = 5",
+        "ReorderPoint(StoreNorth, Gizmo) = 5",
+        "ReorderPoint(StoreNorth, Widget) = 5",
+        "ReorderPoint(StoreSouth, Gadget) = 5",
+        "ReorderPoint(StoreSouth, Gizmo) = 5",
+        "ReorderPoint(StoreSouth, Widget) = 5",
+        "ReorderPoint(Warehouse, Gadget) = 5",
+        "ReorderPoint(Warehouse, Gizmo) = 5",
+        "ReorderPoint(Warehouse, Widget) = 5"
+      ]
+    },
+    {
+      "scenario": "stock-out and low-stock are announced once each",
+      "steps": [
+        {
+          "description": "PlaceOrder(1, StoreNorth) accepted",
+          "passed": true,
+          "accepted": true,
+          "effects": [
+            "assert Order(1) = Open",
+            "assert OrderSite(1) = StoreNorth"
+          ]
+        },
+        {
+          "description": "AddLine(1, Widget, 6) accepted",
+          "passed": true,
+          "accepted": true,
+          "effects": [
+            "assert Line(1, Widget) = 6"
+          ]
+        },
+        {
+          "description": "Reserve(1) accepted with events",
+          "passed": true,
+          "accepted": true,
+          "events": [
+            "LowStock(StoreNorth, Widget)"
+          ],
+          "effects": [
+            "assert Order(1) = Reserved",
+            "assert Reservation(StoreNorth, Widget) = 6"
+          ]
+        },
+        {
+          "description": "Ship(1) accepted with events",
+          "passed": true,
+          "accepted": true,
+          "events": [
+            "OrderShipped(1)",
+            "StockOut(StoreNorth, Widget)"
+          ],
+          "effects": [
+            "assert OnHand(StoreNorth, Widget) = 0",
+            "assert Order(1) = Shipped",
+            "assert Reservation(StoreNorth, Widget) = 0",
+            "emit OrderShipped(1)"
+          ]
+        },
+        {
+          "description": "Receive(StoreNorth, Widget, 1) accepted with events",
+          "passed": true,
+          "accepted": true,
+          "effects": [
+            "assert OnHand(StoreNorth, Widget) = 1"
+          ]
+        },
+        {
+          "description": "Receive(StoreNorth, Widget, 4) accepted with events",
+          "passed": true,
+          "accepted": true,
+          "effects": [
+            "assert OnHand(StoreNorth, Widget) = 5"
+          ]
+        },
+        {
+          "description": "expect",
+          "passed": true
+        }
+      ],
+      "final_state": [
+        "Line(1, Widget) = 6",
+        "OnHand(StoreNorth, Widget) = 5",
+        "OnHand(Warehouse, Gadget) = 8",
+        "OnHand(Warehouse, Widget) = 20",
+        "Order(1) = Shipped",
+        "OrderSite(1) = StoreNorth",
+        "ReorderPoint(StoreNorth, Gadget) = 5",
+        "ReorderPoint(StoreNorth, Gizmo) = 5",
+        "ReorderPoint(StoreNorth, Widget) = 5",
+        "ReorderPoint(StoreSouth, Gadget) = 5",
+        "ReorderPoint(StoreSouth, Gizmo) = 5",
+        "ReorderPoint(StoreSouth, Widget) = 5",
+        "ReorderPoint(Warehouse, Gadget) = 5",
+        "ReorderPoint(Warehouse, Gizmo) = 5",
+        "ReorderPoint(Warehouse, Widget) = 5",
+        "Reservation(StoreNorth, Widget) = 0"
+      ]
+    }
+  ]
+}

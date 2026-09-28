@@ -1,0 +1,45 @@
+{
+  "name": "@simplebrains/nomic-syntax",
+  "version": "0.1.0",
+  "description": "Editor support for the Nomic language: TextMate grammar, Monaco Monarch tokenizer, language configuration, keyword lists",
+  "license": "MIT",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./monarch": {
+      "types": "./dist/monarch.d.ts",
+      "default": "./dist/monarch.js"
+    },
+    "./grammar": "./grammars/nomic.tmLanguage.json",
+    "./language-configuration": "./language-configuration.json",
+    "./keywords": "./keywords.json",
+    "./grammar/markdown": "./grammars/nomic.markdown.tmLanguage.json"
+  },
+  "files": [
+    "dist",
+    "grammars",
+    "language-configuration.json",
+    "keywords.json",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "test": "node --test test/*.test.mjs",
+    "clean": "rm -rf dist"
+  },
+  "devDependencies": {
+    "typescript": "^5.6.0",
+    "vscode-oniguruma": "^2.0.1",
+    "vscode-textmate": "^9.3.2"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/simplebrains/nomic",
+    "directory": "packages/syntax"
+  }
+}

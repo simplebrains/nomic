@@ -1,0 +1,60 @@
+{
+  "name": "nomic-vscode",
+  "displayName": "Nomic",
+  "description": "Syntax highlighting for Nomic models (.nomic)",
+  "version": "0.1.0",
+  "publisher": "simplebrains",
+  "license": "MIT",
+  "private": true,
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": [
+    "Programming Languages"
+  ],
+  "contributes": {
+    "languages": [
+      {
+        "id": "nomic",
+        "aliases": [
+          "Nomic",
+          "nomic",
+          "nom"
+        ],
+        "extensions": [
+          ".nom",
+          ".nomic"
+        ],
+        "configuration": "./language-configuration.json"
+      }
+    ],
+    "grammars": [
+      {
+        "language": "nomic",
+        "scopeName": "source.nomic",
+        "path": "./syntaxes/nomic.tmLanguage.json"
+      },
+      {
+        "scopeName": "markdown.nomic.codeblock",
+        "path": "./syntaxes/nomic.markdown.tmLanguage.json",
+        "injectTo": [
+          "text.html.markdown"
+        ],
+        "embeddedLanguages": {
+          "meta.embedded.block.nomic": "nomic"
+        }
+      }
+    ]
+  },
+  "scripts": {
+    "build": "node scripts/sync.mjs",
+    "dev:link": "node scripts/sync.mjs && node scripts/link.mjs",
+    "dev:unlink": "node scripts/link.mjs --remove",
+    "package": "node scripts/sync.mjs && npx --yes @vscode/vsce package --no-dependencies"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/simplebrains/nomic",
+    "directory": "packages/vscode"
+  }
+}

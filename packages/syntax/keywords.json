@@ -1,0 +1,17 @@
+{
+  "$comment": "Single source of truth for Nomic keywords. The Rust parser's KEYWORDS list is tested against the union of every group except `primitives`.",
+  "declarations": [
+    "model", "type", "fact", "derive", "action", "event", "rule", "invariant",
+    "ensure", "exception", "init", "scenario", "cite"
+  ],
+  "modifiers": ["observed", "required", "expected", "assumed"],
+  "control": [
+    "on", "when", "if", "else", "for", "where", "require", "deny", "allow",
+    "assert", "retract", "emit", "let", "given", "expect", "emits", "rejected",
+    "by", "match"
+  ],
+  "builtins": ["all", "exists", "count", "sum", "first", "legal"],
+  "relations": ["realizes", "derives_from", "evidences", "contradicts", "configures", "documents"],
+  "literals": ["true", "false", "none", "nothing"],
+  "primitives": ["Int", "Bool", "Text"]
+}

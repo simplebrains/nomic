@@ -1,0 +1,1210 @@
+{
+  "nomic_core": "0.1",
+  "model": "Chess",
+  "cases": [
+    {
+      "scenario": "scholar's mate",
+      "steps": [
+        {
+          "description": "Move(4, 1, 4, 3) accepted",
+          "passed": true,
+          "accepted": true,
+          "effects": [
+            "retract Color(4, 1)",
+            "assert Color(4, 3) = White",
+            "assert EnPassant = 4",
+            "assert HalfmoveClock = 0",
+            "retract Piece(4, 1)",
+            "assert Piece(4, 3) = Pawn",
+            "assert Turn = Black"
+          ]
+        },
+        {
+          "description": "Move(4, 6, 4, 4) accepted",
+          "passed": true,
+          "accepted": true,
+          "effects": [
+            "assert Color(4, 4) = Black",
+            "retract Color(4, 6)",
+            "assert EnPassant = 4",
+            "assert HalfmoveClock = 0",
+            "assert Piece(4, 4) = Pawn",
+            "retract Piece(4, 6)",
+            "assert Turn = White"
+          ]
+        },
+        {
+          "description": "Move(3, 0, 7, 4) accepted",
+          "passed": true,
+          "accepted": true,
+          "effects": [
+            "retract Color(3, 0)",
+            "assert Color(7, 4) = White",
+            "retract EnPassant",
+            "assert HalfmoveClock = 1",
+            "retract Piece(3, 0)",
+            "assert Piece(7, 4) = Queen",
+            "assert Turn = Black"
+          ]
+        },
+        {
+          "description": "Move(1, 7, 2, 5) accepted",
+          "passed": true,
+          "accepted": true,
+          "effects": [
+            "retract Color(1, 7)",
+            "assert Color(2, 5) = Black",
+            "retract EnPassant",
+            "assert HalfmoveClock = 2",
+            "retract Piece(1, 7)",
+            "assert Piece(2, 5) = Knight",
+            "assert Turn = White"
+          ]
+        },
+        {
+          "description": "Move(5, 0, 2, 3) accepted",
+          "passed": true,
+          "accepted": true,
+          "effects": [
+            "assert Color(2, 3) = White",
+            "retract Color(5, 0)",
+            "retract EnPassant",
+            "assert HalfmoveClock = 3",
+            "assert Piece(2, 3) = Bishop",
+            "retract Piece(5, 0)",
+            "assert Turn = Black"
+          ]
+        },
+        {
+          "description": "Move(6, 7, 5, 5) accepted",
+          "passed": true,
+          "accepted": true,
+          "effects": [
+            "assert Color(5, 5) = Black",
+            "retract Color(6, 7)",
+            "retract EnPassant",
+            "assert HalfmoveClock = 4",
+            "assert Piece(5, 5) = Knight",
+            "retract Piece(6, 7)",
+            "assert Turn = White"
+          ]
+        },
+        {
+          "description": "Move(7, 4, 5, 6) accepted with events",
+          "passed": true,
+          "accepted": true,
+          "events": [
+            "Check(Black)",
+            "Checkmate(Black)"
+          ],
+          "effects": [
+            "assert Color(5, 6) = White",
+            "retract Color(7, 4)",
+            "retract EnPassant",
+            "assert HalfmoveClock = 0",
+            "assert Piece(5, 6) = Queen",
+            "retract Piece(7, 4)",
+            "assert Turn = Black",
+            "assert Outcome = WhiteWins"
+          ]
+        },
+        {
+          "description": "expect",
+          "passed": true
+        },
+        {
+          "description": "Move(4, 7, 3, 6) rejected by MoveGameOver",
+          "passed": true,
+          "accepted": false,
+          "denied_by": [
+            "MoveGameOver",
+            "MoveGeometry",
+            "MakeMove"
+          ]
+        }
+      ],
+      "final_state": [
+        "CastleRight(Black, Kingside)",
+        "CastleRight(Black, Queenside)",
+        "CastleRight(White, Kingside)",
+        "CastleRight(White, Queenside)",
+        "Color(0, 0) = White",
+        "Color(0, 1) = White",
+        "Color(0, 6) = Black",
+        "Color(0, 7) = Black",
+        "Color(1, 0) = White",
+        "Color(1, 1) = White",
+        "Color(1, 6) = Black",
+        "Color(2, 0) = White",
+        "Color(2, 1) = White",
+        "Color(2, 3) = White",
+        "Color(2, 5) = Black",
+        "Color(2, 6) = Black",
+        "Color(2, 7) = Black",
+        "Color(3, 1) = White",
+        "Color(3, 6) = Black",
+        "Color(3, 7) = Black",
+        "Color(4, 0) = White",
+        "Color(4, 3) = White",
+        "Color(4, 4) = Black",
+        "Color(4, 7) = Black",
+        "Color(5, 1) = White",
+        "Color(5, 5) = Black",
+        "Color(5, 6) = White",
+        "Color(5, 7) = Black",
+        "Color(6, 0) = White",
+        "Color(6, 1) = White",
+        "Color(6, 6) = Black",
+        "Color(7, 0) = White",
+        "Color(7, 1) = White",
+        "Color(7, 6) = Black",
+        "Color(7, 7) = Black",
+        "HalfmoveClock = 0",
+        "Outcome = WhiteWins",
+        "Piece(0, 0) = Rook",
+        "Piece(0, 1) = Pawn",
+        "Piece(0, 6) = Pawn",
+        "Piece(0, 7) = Rook",
+        "Piece(1, 0) = Knight",
+        "Piece(1, 1) = Pawn",
+        "Piece(1, 6) = Pawn",
+        "Piece(2, 0) = Bishop",
+        "Piece(2, 1) = Pawn",
+        "Piece(2, 3) = Bishop",
+        "Piece(2, 5) = Knight",
+        "Piece(2, 6) = Pawn",
+        "Piece(2, 7) = Bishop",
+        "Piece(3, 1) = Pawn",
+        "Piece(3, 6) = Pawn",
+        "Piece(3, 7) = Queen",
+        "Piece(4, 0) = King",
+        "Piece(4, 3) = Pawn",
+        "Piece(4, 4) = Pawn",
+        "Piece(4, 7) = King",
+        "Piece(5, 1) = Pawn",
+        "Piece(5, 5) = Knight",
+        "Piece(5, 6) = Queen",
+        "Piece(5, 7) = Bishop",
+        "Piece(6, 0) = Knight",
+        "Piece(6, 1) = Pawn",
+        "Piece(6, 6) = Pawn",
+        "Piece(7, 0) = Rook",
+        "Piece(7, 1) = Pawn",
+        "Piece(7, 6) = Pawn",
+        "Piece(7, 7) = Rook",
+        "Turn = Black"
+      ]
+    },
+    {
+      "scenario": "a check must be answered and the king may not walk into attack",
+      "steps": [
+        {
+          "description": "Move(4, 1, 4, 3) accepted",
+          "passed": true,
+          "accepted": true,
+          "effects": [
+            "retract Color(4, 1)",
+            "assert Color(4, 3) = White",
+            "assert EnPassant = 4",
+            "assert HalfmoveClock = 0",
+            "retract Piece(4, 1)",
+            "assert Piece(4, 3) = Pawn",
+            "assert Turn = Black"
+          ]
+        },
+        {
+          "description": "Move(3, 6, 3, 4) accepted",
+          "passed": true,
+          "accepted": true,
+          "effects": [
+            "assert Color(3, 4) = Black",
+            "retract Color(3, 6)",
+            "assert EnPassant = 3",
+            "assert HalfmoveClock = 0",
+            "assert Piece(3, 4) = Pawn",
+            "retract Piece(3, 6)",
+            "assert Turn = White"
+          ]
+        },
+        {
+          "description": "Move(5, 0, 1, 4) accepted with events",
+          "passed": true,
+          "accepted": true,
+          "events": [
+            "Check(Black)"
+          ],
+          "effects": [
+            "assert Color(1, 4) = White",
+            "retract Color(5, 0)",
+            "retract EnPassant",
+            "assert HalfmoveClock = 1",
+            "assert Piece(1, 4) = Bishop",
+            "retract Piece(5, 0)",
+            "assert Turn = Black"
+          ]
+        },
+        {
+          "description": "expect",
+          "passed": true
+        },
+        {
+          "description": "Move(0, 6, 0, 5) rejected by KingSafe",
+          "passed": true,
+          "accepted": false,
+          "denied_by": [
+            "KingSafe"
+          ]
+        },
+        {
+          "description": "Move(1, 7, 2, 5) accepted",
+          "passed": true,
+          "accepted": true,
+          "effects": [
+            "retract Color(1, 7)",
+            "assert Color(2, 5) = Black",
+            "retract EnPassant",
+            "assert HalfmoveClock = 2",
+            "retract Piece(1, 7)",
+            "assert Piece(2, 5) = Knight",
+            "assert Turn = White"
+          ]
+        },
+        {
+          "description": "expect",
+          "passed": true
+        }
+      ],
+      "final_state": [
+        "CastleRight(Black, Kingside)",
+        "CastleRight(Black, Queenside)",
+        "CastleRight(White, Kingside)",
+        "CastleRight(White, Queenside)",
+        "Color(0, 0) = White",
+        "Color(0, 1) = White",
+        "Color(0, 6) = Black",
+        "Color(0, 7) = Black",
+        "Color(1, 0) = White",
+        "Color(1, 1) = White",
+        "Color(1, 4) = White",
+        "Color(1, 6) = Black",
+        "Color(2, 0) = White",
+        "Color(2, 1) = White",
+        "Color(2, 5) = Black",
+        "Color(2, 6) = Black",
+        "Color(2, 7) = Black",
+        "Color(3, 0) = White",
+        "Color(3, 1) = White",
+        "Color(3, 4) = Black",
+        "Color(3, 7) = Black",
+        "Color(4, 0) = White",
+        "Color(4, 3) = White",
+        "Color(4, 6) = Black",
+        "Color(4, 7) = Black",
+        "Color(5, 1) = White",
+        "Color(5, 6) = Black",
+        "Color(5, 7) = Black",
+        "Color(6, 0) = White",
+        "Color(6, 1) = White",
+        "Color(6, 6) = Black",
+        "Color(6, 7) = Black",
+        "Color(7, 0) = White",
+        "Color(7, 1) = White",
+        "Color(7, 6) = Black",
+        "Color(7, 7) = Black",
+        "HalfmoveClock = 2",
+        "Piece(0, 0) = Rook",
+        "Piece(0, 1) = Pawn",
+        "Piece(0, 6) = Pawn",
+        "Piece(0, 7) = Rook",
+        "Piece(1, 0) = Knight",
+        "Piece(1, 1) = Pawn",
+        "Piece(1, 4) = Bishop",
+        "Piece(1, 6) = Pawn",
+        "Piece(2, 0) = Bishop",
+        "Piece(2, 1) = Pawn",
+        "Piece(2, 5) = Knight",
+        "Piece(2, 6) = Pawn",
+        "Piece(2, 7) = Bishop",
+        "Piece(3, 0) = Queen",
+        "Piece(3, 1) = Pawn",
+        "Piece(3, 4) = Pawn",
+        "Piece(3, 7) = Queen",
+        "Piece(4, 0) = King",
+        "Piece(4, 3) = Pawn",
+        "Piece(4, 6) = Pawn",
+        "Piece(4, 7) = King",
+        "Piece(5, 1) = Pawn",
+        "Piece(5, 6) = Pawn",
+        "Piece(5, 7) = Bishop",
+        "Piece(6, 0) = Knight",
+        "Piece(6, 1) = Pawn",
+        "Piece(6, 6) = Pawn",
+        "Piece(6, 7) = Knight",
+        "Piece(7, 0) = Rook",
+        "Piece(7, 1) = Pawn",
+        "Piece(7, 6) = Pawn",
+        "Piece(7, 7) = Rook",
+        "Turn = White"
+      ]
+    },
+    {
+      "scenario": "the king cannot step into a rook's line",
+      "steps": [
+        {
+          "description": "given nothing",
+          "passed": true
+        },
+        {
+          "description": "given Turn",
+          "passed": true
+        },
+        {
+          "description": "given Piece",
+          "passed": true
+        },
+        {
+          "description": "given Color",
+          "passed": true
+        },
+        {
+          "description": "given Piece",
+          "passed": true
+        },
+        {
+          "description": "given Color",
+          "passed": true
+        },
+        {
+          "description": "given Piece",
+          "passed": true
+        },
+        {
+          "description": "given Color",
+          "passed": true
+        },
+        {
+          "description": "Move(4, 0, 4, 1) rejected by KingSafe",
+          "passed": true,
+          "accepted": false,
+          "denied_by": [
+            "KingSafe"
+          ]
+        },
+        {
+          "description": "Move(4, 0, 5, 0) accepted",
+          "passed": true,
+          "accepted": true,
+          "effects": [
+            "retract CastleRight(White, Kingside)",
+            "retract CastleRight(White, Queenside)",
+            "retract Color(4, 0)",
+            "assert Color(5, 0) = White",
+            "retract EnPassant",
+            "assert HalfmoveClock = 1",
+            "retract Piece(4, 0)",
+            "assert Piece(5, 0) = King",
+            "assert Turn = Black"
+          ]
+        },
+        {
+          "description": "expect",
+          "passed": true
+        }
+      ],
+      "final_state": [
+        "Color(0, 1) = Black",
+        "Color(4, 7) = Black",
+        "Color(5, 0) = White",
+        "HalfmoveClock = 1",
+        "Piece(0, 1) = Rook",
+        "Piece(4, 7) = King",
+        "Piece(5, 0) = King",
+        "Turn = Black"
+      ]
+    },
+    {
+      "scenario": "castling kingside and its preconditions",
+      "steps": [
+        {
+          "description": "Move(4, 1, 4, 3) accepted",
+          "passed": true,
+          "accepted": true,
+          "effects": [
+            "retract Color(4, 1)",
+            "assert Color(4, 3) = White",
+            "assert EnPassant = 4",
+            "assert HalfmoveClock = 0",
+            "retract Piece(4, 1)",
+            "assert Piece(4, 3) = Pawn",
+            "assert Turn = Black"
+          ]
+        },
+        {
+          "description": "Move(4, 6, 4, 4) accepted",
+          "passed": true,
+          "accepted": true,
+          "effects": [
+            "assert Color(4, 4) = Black",
+            "retract Color(4, 6)",
+            "assert EnPassant = 4",
+            "assert HalfmoveClock = 0",
+            "assert Piece(4, 4) = Pawn",
+            "retract Piece(4, 6)",
+            "assert Turn = White"
+          ]
+        },
+        {
+          "description": "Move(6, 0, 5, 2) accepted",
+          "passed": true,
+          "accepted": true,
+          "effects": [
+            "assert Color(5, 2) = White",
+            "retract Color(6, 0)",
+            "retract EnPassant",
+            "assert HalfmoveClock = 1",
+            "assert Piece(5, 2) = Knight",
+            "retract Piece(6, 0)",
+            "assert Turn = Black"
+          ]
+        },
+        {
+          "description": "Move(1, 7, 2, 5) accepted",
+          "passed": true,
+          "accepted": true,
+          "effects": [
+            "retract Color(1, 7)",
+            "assert Color(2, 5) = Black",
+            "retract EnPassant",
+            "assert HalfmoveClock = 2",
+            "retract Piece(1, 7)",
+            "assert Piece(2, 5) = Knight",
+            "assert Turn = White"
+          ]
+        },
+        {
+          "description": "Move(5, 0, 2, 3) accepted",
+          "passed": true,
+          "accepted": true,
+          "effects": [
+            "assert Color(2, 3) = White",
+            "retract Color(5, 0)",
+            "retract EnPassant",
+            "assert HalfmoveClock = 3",
+            "assert Piece(2, 3) = Bishop",
+            "retract Piece(5, 0)",
+            "assert Turn = Black"
+          ]
+        },
+        {
+          "description": "Move(5, 7, 2, 4) accepted",
+          "passed": true,
+          "accepted": true,
+          "effects": [
+            "assert Color(2, 4) = Black",
+            "retract Color(5, 7)",
+            "retract EnPassant",
+            "assert HalfmoveClock = 4",
+            "assert Piece(2, 4) = Bishop",
+            "retract Piece(5, 7)",
+            "assert Turn = White"
+          ]
+        },
+        {
+          "description": "expect",
+          "passed": true
+        },
+        {
+          "description": "Castle(Kingside) accepted",
+          "passed": true,
+          "accepted": true,
+          "effects": [
+            "retract CastleRight(White, Kingside)",
+            "retract CastleRight(White, Queenside)",
+            "retract Color(4, 0)",
+            "assert Color(5, 0) = White",
+            "assert Color(6, 0) = White",
+            "retract Color(7, 0)",
+            "retract EnPassant",
+            "assert HalfmoveClock = 5",
+            "retract Piece(4, 0)",
+            "assert Piece(5, 0) = Rook",
+            "assert Piece(6, 0) = King",
+            "retract Piece(7, 0)",
+            "assert Turn = Black"
+          ]
+        },
+        {
+          "description": "expect",
+          "passed": true
+        },
+        {
+          "description": "expect",
+          "passed": true
+        },
+        {
+          "description": "Castle(Queenside) rejected by CastlePath",
+          "passed": true,
+          "accepted": false,
+          "denied_by": [
+            "CastlePath",
+            "MakeCastle"
+          ]
+        },
+        {
+          "description": "Castle(Kingside) rejected by CastlePath",
+          "passed": true,
+          "accepted": false,
+          "denied_by": [
+            "CastlePath",
+            "MakeCastle"
+          ]
+        }
+      ],
+      "final_state": [
+        "CastleRight(Black, Kingside)",
+        "CastleRight(Black, Queenside)",
+        "Color(0, 0) = White",
+        "Color(0, 1) = White",
+        "Color(0, 6) = Black",
+        "Color(0, 7) = Black",
+        "Color(1, 0) = White",
+        "Color(1, 1) = White",
+        "Color(1, 6) = Black",
+        "Color(2, 0) = White",
+        "Color(2, 1) = White",
+        "Color(2, 3) = White",
+        "Color(2, 4) = Black",
+        "Color(2, 5) = Black",
+        "Color(2, 6) = Black",
+        "Color(2, 7) = Black",
+        "Color(3, 0) = White",
+        "Color(3, 1) = White",
+        "Color(3, 6) = Black",
+        "Color(3, 7) = Black",
+        "Color(4, 3) = White",
+        "Color(4, 4) = Black",
+        "Color(4, 7) = Black",
+        "Color(5, 0) = White",
+        "Color(5, 1) = White",
+        "Color(5, 2) = White",
+        "Color(5, 6) = Black",
+        "Color(6, 0) = White",
+        "Color(6, 1) = White",
+        "Color(6, 6) = Black",
+        "Color(6, 7) = Black",
+        "Color(7, 1) = White",
+        "Color(7, 6) = Black",
+        "Color(7, 7) = Black",
+        "HalfmoveClock = 5",
+        "Piece(0, 0) = Rook",
+        "Piece(0, 1) = Pawn",
+        "Piece(0, 6) = Pawn",
+        "Piece(0, 7) = Rook",
+        "Piece(1, 0) = Knight",
+        "Piece(1, 1) = Pawn",
+        "Piece(1, 6) = Pawn",
+        "Piece(2, 0) = Bishop",
+        "Piece(2, 1) = Pawn",
+        "Piece(2, 3) = Bishop",
+        "Piece(2, 4) = Bishop",
+        "Piece(2, 5) = Knight",
+        "Piece(2, 6) = Pawn",
+        "Piece(2, 7) = Bishop",
+        "Piece(3, 0) = Queen",
+        "Piece(3, 1) = Pawn",
+        "Piece(3, 6) = Pawn",
+        "Piece(3, 7) = Queen",
+        "Piece(4, 3) = Pawn",
+        "Piece(4, 4) = Pawn",
+        "Piece(4, 7) = King",
+        "Piece(5, 0) = Rook",
+        "Piece(5, 1) = Pawn",
+        "Piece(5, 2) = Knight",
+        "Piece(5, 6) = Pawn",
+        "Piece(6, 0) = King",
+        "Piece(6, 1) = Pawn",
+        "Piece(6, 6) = Pawn",
+        "Piece(6, 7) = Knight",
+        "Piece(7, 1) = Pawn",
+        "Piece(7, 6) = Pawn",
+        "Piece(7, 7) = Rook",
+        "Turn = Black"
+      ]
+    },
+    {
+      "scenario": "en passant",
+      "steps": [
+        {
+          "description": "Move(4, 1, 4, 3) accepted",
+          "passed": true,
+          "accepted": true,
+          "effects": [
+            "retract Color(4, 1)",
+            "assert Color(4, 3) = White",
+            "assert EnPassant = 4",
+            "assert HalfmoveClock = 0",
+            "retract Piece(4, 1)",
+            "assert Piece(4, 3) = Pawn",
+            "assert Turn = Black"
+          ]
+        },
+        {
+          "description": "Move(0, 6, 0, 5) accepted",
+          "passed": true,
+          "accepted": true,
+          "effects": [
+            "assert Color(0, 5) = Black",
+            "retract Color(0, 6)",
+            "retract EnPassant",
+            "assert HalfmoveClock = 0",
+            "assert Piece(0, 5) = Pawn",
+            "retract Piece(0, 6)",
+            "assert Turn = White"
+          ]
+        },
+        {
+          "description": "Move(4, 3, 4, 4) accepted",
+          "passed": true,
+          "accepted": true,
+          "effects": [
+            "retract Color(4, 3)",
+            "assert Color(4, 4) = White",
+            "retract EnPassant",
+            "assert HalfmoveClock = 0",
+            "retract Piece(4, 3)",
+            "assert Piece(4, 4) = Pawn",
+            "assert Turn = Black"
+          ]
+        },
+        {
+          "description": "Move(3, 6, 3, 4) accepted",
+          "passed": true,
+          "accepted": true,
+          "effects": [
+            "assert Color(3, 4) = Black",
+            "retract Color(3, 6)",
+            "assert EnPassant = 3",
+            "assert HalfmoveClock = 0",
+            "assert Piece(3, 4) = Pawn",
+            "retract Piece(3, 6)",
+            "assert Turn = White"
+          ]
+        },
+        {
+          "description": "expect",
+          "passed": true
+        },
+        {
+          "description": "Move(4, 4, 3, 5) accepted",
+          "passed": true,
+          "accepted": true,
+          "effects": [
+            "retract Color(3, 4)",
+            "assert Color(3, 5) = White",
+            "retract Color(4, 4)",
+            "retract EnPassant",
+            "assert HalfmoveClock = 0",
+            "retract Piece(3, 4)",
+            "assert Piece(3, 5) = Pawn",
+            "retract Piece(4, 4)",
+            "assert Turn = Black"
+          ]
+        },
+        {
+          "description": "expect",
+          "passed": true
+        },
+        {
+          "description": "expect",
+          "passed": true
+        }
+      ],
+      "final_state": [
+        "CastleRight(Black, Kingside)",
+        "CastleRight(Black, Queenside)",
+        "CastleRight(White, Kingside)",
+        "CastleRight(White, Queenside)",
+        "Color(0, 0) = White",
+        "Color(0, 1) = White",
+        "Color(0, 5) = Black",
+        "Color(0, 7) = Black",
+        "Color(1, 0) = White",
+        "Color(1, 1) = White",
+        "Color(1, 6) = Black",
+        "Color(1, 7) = Black",
+        "Color(2, 0) = White",
+        "Color(2, 1) = White",
+        "Color(2, 6) = Black",
+        "Color(2, 7) = Black",
+        "Color(3, 0) = White",
+        "Color(3, 1) = White",
+        "Color(3, 5) = White",
+        "Color(3, 7) = Black",
+        "Color(4, 0) = White",
+        "Color(4, 6) = Black",
+        "Color(4, 7) = Black",
+        "Color(5, 0) = White",
+        "Color(5, 1) = White",
+        "Color(5, 6) = Black",
+        "Color(5, 7) = Black",
+        "Color(6, 0) = White",
+        "Color(6, 1) = White",
+        "Color(6, 6) = Black",
+        "Color(6, 7) = Black",
+        "Color(7, 0) = White",
+        "Color(7, 1) = White",
+        "Color(7, 6) = Black",
+        "Color(7, 7) = Black",
+        "HalfmoveClock = 0",
+        "Piece(0, 0) = Rook",
+        "Piece(0, 1) = Pawn",
+        "Piece(0, 5) = Pawn",
+        "Piece(0, 7) = Rook",
+        "Piece(1, 0) = Knight",
+        "Piece(1, 1) = Pawn",
+        "Piece(1, 6) = Pawn",
+        "Piece(1, 7) = Knight",
+        "Piece(2, 0) = Bishop",
+        "Piece(2, 1) = Pawn",
+        "Piece(2, 6) = Pawn",
+        "Piece(2, 7) = Bishop",
+        "Piece(3, 0) = Queen",
+        "Piece(3, 1) = Pawn",
+        "Piece(3, 5) = Pawn",
+        "Piece(3, 7) = Queen",
+        "Piece(4, 0) = King",
+        "Piece(4, 6) = Pawn",
+        "Piece(4, 7) = King",
+        "Piece(5, 0) = Bishop",
+        "Piece(5, 1) = Pawn",
+        "Piece(5, 6) = Pawn",
+        "Piece(5, 7) = Bishop",
+        "Piece(6, 0) = Knight",
+        "Piece(6, 1) = Pawn",
+        "Piece(6, 6) = Pawn",
+        "Piece(6, 7) = Knight",
+        "Piece(7, 0) = Rook",
+        "Piece(7, 1) = Pawn",
+        "Piece(7, 6) = Pawn",
+        "Piece(7, 7) = Rook",
+        "Turn = Black"
+      ]
+    },
+    {
+      "scenario": "promotion",
+      "steps": [
+        {
+          "description": "given nothing",
+          "passed": true
+        },
+        {
+          "description": "given Turn",
+          "passed": true
+        },
+        {
+          "description": "given Piece",
+          "passed": true
+        },
+        {
+          "description": "given Color",
+          "passed": true
+        },
+        {
+          "description": "given Piece",
+          "passed": true
+        },
+        {
+          "description": "given Color",
+          "passed": true
+        },
+        {
+          "description": "given Piece",
+          "passed": true
+        },
+        {
+          "description": "given Color",
+          "passed": true
+        },
+        {
+          "description": "Move(0, 6, 0, 7) rejected by MoveMustPromote",
+          "passed": true,
+          "accepted": false,
+          "denied_by": [
+            "MoveMustPromote"
+          ]
+        },
+        {
+          "description": "Promote(0, 6, 0, 7, King) rejected by PromotePiece",
+          "passed": true,
+          "accepted": false,
+          "denied_by": [
+            "PromotePiece"
+          ]
+        },
+        {
+          "description": "Promote(0, 6, 0, 7, Pawn) rejected by PromotePiece",
+          "passed": true,
+          "accepted": false,
+          "denied_by": [
+            "PromotePiece"
+          ]
+        },
+        {
+          "description": "Promote(0, 6, 0, 7, Queen) accepted with events",
+          "passed": true,
+          "accepted": true,
+          "events": [
+            "Check(Black)"
+          ],
+          "effects": [
+            "retract Color(0, 6)",
+            "assert Color(0, 7) = White",
+            "retract EnPassant",
+            "assert HalfmoveClock = 0",
+            "retract Piece(0, 6)",
+            "assert Piece(0, 7) = Queen",
+            "assert Turn = Black"
+          ]
+        },
+        {
+          "description": "expect",
+          "passed": true
+        }
+      ],
+      "final_state": [
+        "Color(0, 7) = White",
+        "Color(4, 0) = White",
+        "Color(4, 7) = Black",
+        "HalfmoveClock = 0",
+        "Piece(0, 7) = Queen",
+        "Piece(4, 0) = King",
+        "Piece(4, 7) = King",
+        "Turn = Black"
+      ]
+    },
+    {
+      "scenario": "stalemate is a draw",
+      "steps": [
+        {
+          "description": "given nothing",
+          "passed": true
+        },
+        {
+          "description": "given Turn",
+          "passed": true
+        },
+        {
+          "description": "given Piece",
+          "passed": true
+        },
+        {
+          "description": "given Color",
+          "passed": true
+        },
+        {
+          "description": "given Piece",
+          "passed": true
+        },
+        {
+          "description": "given Color",
+          "passed": true
+        },
+        {
+          "description": "given Piece",
+          "passed": true
+        },
+        {
+          "description": "given Color",
+          "passed": true
+        },
+        {
+          "description": "Move(2, 0, 2, 6) accepted with events",
+          "passed": true,
+          "accepted": true,
+          "events": [
+            "Stalemate(Black)"
+          ],
+          "effects": [
+            "retract Color(2, 0)",
+            "assert Color(2, 6) = White",
+            "retract EnPassant",
+            "assert HalfmoveClock = 1",
+            "retract Piece(2, 0)",
+            "assert Piece(2, 6) = Queen",
+            "assert Turn = Black",
+            "assert Outcome = Draw"
+          ]
+        },
+        {
+          "description": "expect",
+          "passed": true
+        }
+      ],
+      "final_state": [
+        "Color(0, 7) = Black",
+        "Color(1, 5) = White",
+        "Color(2, 6) = White",
+        "HalfmoveClock = 1",
+        "Outcome = Draw",
+        "Piece(0, 7) = King",
+        "Piece(1, 5) = King",
+        "Piece(2, 6) = Queen",
+        "Turn = Black"
+      ]
+    },
+    {
+      "scenario": "resignation ends the game",
+      "steps": [
+        {
+          "description": "Move(4, 1, 4, 3) accepted",
+          "passed": true,
+          "accepted": true,
+          "effects": [
+            "retract Color(4, 1)",
+            "assert Color(4, 3) = White",
+            "assert EnPassant = 4",
+            "assert HalfmoveClock = 0",
+            "retract Piece(4, 1)",
+            "assert Piece(4, 3) = Pawn",
+            "assert Turn = Black"
+          ]
+        },
+        {
+          "description": "Resign(Black) accepted",
+          "passed": true,
+          "accepted": true,
+          "effects": [
+            "assert Outcome = WhiteWins"
+          ]
+        },
+        {
+          "description": "expect",
+          "passed": true
+        },
+        {
+          "description": "Move(4, 6, 4, 4) rejected by MoveGameOver",
+          "passed": true,
+          "accepted": false,
+          "denied_by": [
+            "MoveGameOver"
+          ]
+        }
+      ],
+      "final_state": [
+        "CastleRight(Black, Kingside)",
+        "CastleRight(Black, Queenside)",
+        "CastleRight(White, Kingside)",
+        "CastleRight(White, Queenside)",
+        "Color(0, 0) = White",
+        "Color(0, 1) = White",
+        "Color(0, 6) = Black",
+        "Color(0, 7) = Black",
+        "Color(1, 0) = White",
+        "Color(1, 1) = White",
+        "Color(1, 6) = Black",
+        "Color(1, 7) = Black",
+        "Color(2, 0) = White",
+        "Color(2, 1) = White",
+        "Color(2, 6) = Black",
+        "Color(2, 7) = Black",
+        "Color(3, 0) = White",
+        "Color(3, 1) = White",
+        "Color(3, 6) = Black",
+        "Color(3, 7) = Black",
+        "Color(4, 0) = White",
+        "Color(4, 3) = White",
+        "Color(4, 6) = Black",
+        "Color(4, 7) = Black",
+        "Color(5, 0) = White",
+        "Color(5, 1) = White",
+        "Color(5, 6) = Black",
+        "Color(5, 7) = Black",
+        "Color(6, 0) = White",
+        "Color(6, 1) = White",
+        "Color(6, 6) = Black",
+        "Color(6, 7) = Black",
+        "Color(7, 0) = White",
+        "Color(7, 1) = White",
+        "Color(7, 6) = Black",
+        "Color(7, 7) = Black",
+        "EnPassant = 4",
+        "HalfmoveClock = 0",
+        "Outcome = WhiteWins",
+        "Piece(0, 0) = Rook",
+        "Piece(0, 1) = Pawn",
+        "Piece(0, 6) = Pawn",
+        "Piece(0, 7) = Rook",
+        "Piece(1, 0) = Knight",
+        "Piece(1, 1) = Pawn",
+        "Piece(1, 6) = Pawn",
+        "Piece(1, 7) = Knight",
+        "Piece(2, 0) = Bishop",
+        "Piece(2, 1) = Pawn",
+        "Piece(2, 6) = Pawn",
+        "Piece(2, 7) = Bishop",
+        "Piece(3, 0) = Queen",
+        "Piece(3, 1) = Pawn",
+        "Piece(3, 6) = Pawn",
+        "Piece(3, 7) = Queen",
+        "Piece(4, 0) = King",
+        "Piece(4, 3) = Pawn",
+        "Piece(4, 6) = Pawn",
+        "Piece(4, 7) = King",
+        "Piece(5, 0) = Bishop",
+        "Piece(5, 1) = Pawn",
+        "Piece(5, 6) = Pawn",
+        "Piece(5, 7) = Bishop",
+        "Piece(6, 0) = Knight",
+        "Piece(6, 1) = Pawn",
+        "Piece(6, 6) = Pawn",
+        "Piece(6, 7) = Knight",
+        "Piece(7, 0) = Rook",
+        "Piece(7, 1) = Pawn",
+        "Piece(7, 6) = Pawn",
+        "Piece(7, 7) = Rook",
+        "Turn = Black"
+      ]
+    },
+    {
+      "scenario": "pieces obey their geometry",
+      "steps": [
+        {
+          "description": "Move(0, 0, 0, 2) rejected by MoveGeometry",
+          "passed": true,
+          "accepted": false,
+          "denied_by": [
+            "MoveGeometry",
+            "MakeMove"
+          ]
+        },
+        {
+          "description": "Move(1, 0, 3, 1) rejected by MoveGeometry",
+          "passed": true,
+          "accepted": false,
+          "denied_by": [
+            "MoveGeometry",
+            "MakeMove"
+          ]
+        },
+        {
+          "description": "Move(1, 0, 2, 2) accepted",
+          "passed": true,
+          "accepted": true,
+          "effects": [
+            "retract Color(1, 0)",
+            "assert Color(2, 2) = White",
+            "retract EnPassant",
+            "assert HalfmoveClock = 1",
+            "retract Piece(1, 0)",
+            "assert Piece(2, 2) = Knight",
+            "assert Turn = Black"
+          ]
+        },
+        {
+          "description": "Move(4, 6, 4, 4) accepted",
+          "passed": true,
+          "accepted": true,
+          "effects": [
+            "assert Color(4, 4) = Black",
+            "retract Color(4, 6)",
+            "assert EnPassant = 4",
+            "assert HalfmoveClock = 0",
+            "assert Piece(4, 4) = Pawn",
+            "retract Piece(4, 6)",
+            "assert Turn = White"
+          ]
+        },
+        {
+          "description": "Move(2, 2, 4, 3) accepted",
+          "passed": true,
+          "accepted": true,
+          "effects": [
+            "retract Color(2, 2)",
+            "assert Color(4, 3) = White",
+            "retract EnPassant",
+            "assert HalfmoveClock = 1",
+            "retract Piece(2, 2)",
+            "assert Piece(4, 3) = Knight",
+            "assert Turn = Black"
+          ]
+        },
+        {
+          "description": "expect",
+          "passed": true
+        }
+      ],
+      "final_state": [
+        "CastleRight(Black, Kingside)",
+        "CastleRight(Black, Queenside)",
+        "CastleRight(White, Kingside)",
+        "CastleRight(White, Queenside)",
+        "Color(0, 0) = White",
+        "Color(0, 1) = White",
+        "Color(0, 6) = Black",
+        "Color(0, 7) = Black",
+        "Color(1, 1) = White",
+        "Color(1, 6) = Black",
+        "Color(1, 7) = Black",
+        "Color(2, 0) = White",
+        "Color(2, 1) = White",
+        "Color(2, 6) = Black",
+        "Color(2, 7) = Black",
+        "Color(3, 0) = White",
+        "Color(3, 1) = White",
+        "Color(3, 6) = Black",
+        "Color(3, 7) = Black",
+        "Color(4, 0) = White",
+        "Color(4, 1) = White",
+        "Color(4, 3) = White",
+        "Color(4, 4) = Black",
+        "Color(4, 7) = Black",
+        "Color(5, 0) = White",
+        "Color(5, 1) = White",
+        "Color(5, 6) = Black",
+        "Color(5, 7) = Black",
+        "Color(6, 0) = White",
+        "Color(6, 1) = White",
+        "Color(6, 6) = Black",
+        "Color(6, 7) = Black",
+        "Color(7, 0) = White",
+        "Color(7, 1) = White",
+        "Color(7, 6) = Black",
+        "Color(7, 7) = Black",
+        "HalfmoveClock = 1",
+        "Piece(0, 0) = Rook",
+        "Piece(0, 1) = Pawn",
+        "Piece(0, 6) = Pawn",
+        "Piece(0, 7) = Rook",
+        "Piece(1, 1) = Pawn",
+        "Piece(1, 6) = Pawn",
+        "Piece(1, 7) = Knight",
+        "Piece(2, 0) = Bishop",
+        "Piece(2, 1) = Pawn",
+        "Piece(2, 6) = Pawn",
+        "Piece(2, 7) = Bishop",
+        "Piece(3, 0) = Queen",
+        "Piece(3, 1) = Pawn",
+        "Piece(3, 6) = Pawn",
+        "Piece(3, 7) = Queen",
+        "Piece(4, 0) = King",
+        "Piece(4, 1) = Pawn",
+        "Piece(4, 3) = Knight",
+        "Piece(4, 4) = Pawn",
+        "Piece(4, 7) = King",
+        "Piece(5, 0) = Bishop",
+        "Piece(5, 1) = Pawn",
+        "Piece(5, 6) = Pawn",
+        "Piece(5, 7) = Bishop",
+        "Piece(6, 0) = Knight",
+        "Piece(6, 1) = Pawn",
+        "Piece(6, 6) = Pawn",
+        "Piece(6, 7) = Knight",
+        "Piece(7, 0) = Rook",
+        "Piece(7, 1) = Pawn",
+        "Piece(7, 6) = Pawn",
+        "Piece(7, 7) = Rook",
+        "Turn = Black"
+      ]
+    }
+  ]
+}

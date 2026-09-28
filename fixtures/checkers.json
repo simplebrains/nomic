@@ -1,0 +1,548 @@
+{
+  "nomic_core": "0.1",
+  "model": "Checkers",
+  "cases": [
+    {
+      "scenario": "opening steps alternate turns",
+      "steps": [
+        {
+          "description": "expect",
+          "passed": true
+        },
+        {
+          "description": "Step(Red, 1, 2, 1, 1) accepted",
+          "passed": true,
+          "accepted": true,
+          "effects": [
+            "retract Owner(1, 2)",
+            "assert Owner(2, 3) = Red",
+            "assert Turn = Black"
+          ]
+        },
+        {
+          "description": "expect",
+          "passed": true
+        },
+        {
+          "description": "Step(Black, 4, 5, -1, -1) accepted",
+          "passed": true,
+          "accepted": true,
+          "effects": [
+            "assert Owner(3, 4) = Black",
+            "retract Owner(4, 5)",
+            "assert Turn = Red"
+          ]
+        },
+        {
+          "description": "expect",
+          "passed": true
+        },
+        {
+          "description": "Step(Red, 3, 2, 1, 1) rejected by CaptureIsMandatory",
+          "passed": true,
+          "accepted": false,
+          "denied_by": [
+            "CaptureIsMandatory"
+          ]
+        }
+      ],
+      "final_state": [
+        "Owner(0, 1) = Red",
+        "Owner(0, 5) = Black",
+        "Owner(0, 7) = Black",
+        "Owner(1, 0) = Red",
+        "Owner(1, 6) = Black",
+        "Owner(2, 1) = Red",
+        "Owner(2, 3) = Red",
+        "Owner(2, 5) = Black",
+        "Owner(2, 7) = Black",
+        "Owner(3, 0) = Red",
+        "Owner(3, 2) = Red",
+        "Owner(3, 4) = Black",
+        "Owner(3, 6) = Black",
+        "Owner(4, 1) = Red",
+        "Owner(4, 7) = Black",
+        "Owner(5, 0) = Red",
+        "Owner(5, 2) = Red",
+        "Owner(5, 6) = Black",
+        "Owner(6, 1) = Red",
+        "Owner(6, 5) = Black",
+        "Owner(6, 7) = Black",
+        "Owner(7, 0) = Red",
+        "Owner(7, 2) = Red",
+        "Owner(7, 6) = Black",
+        "Turn = Red"
+      ]
+    },
+    {
+      "scenario": "a single jump captures and hands over the turn",
+      "steps": [
+        {
+          "description": "Step(Red, 1, 2, 1, 1) accepted",
+          "passed": true,
+          "accepted": true,
+          "effects": [
+            "retract Owner(1, 2)",
+            "assert Owner(2, 3) = Red",
+            "assert Turn = Black"
+          ]
+        },
+        {
+          "description": "Step(Black, 4, 5, -1, -1) accepted",
+          "passed": true,
+          "accepted": true,
+          "effects": [
+            "assert Owner(3, 4) = Black",
+            "retract Owner(4, 5)",
+            "assert Turn = Red"
+          ]
+        },
+        {
+          "description": "Jump(Red, 2, 3, 1, 1) accepted with events",
+          "passed": true,
+          "accepted": true,
+          "events": [
+            "JumpEnded(4, 5)"
+          ],
+          "effects": [
+            "retract Continuing(2, 3)",
+            "assert Continuing(4, 5) = true",
+            "retract King(3, 4)",
+            "retract Owner(2, 3)",
+            "retract Owner(3, 4)",
+            "assert Owner(4, 5) = Red",
+            "retract Continuing(4, 5)",
+            "retract Crowned(4, 5)",
+            "assert Turn = Black"
+          ]
+        },
+        {
+          "description": "expect",
+          "passed": true
+        },
+        {
+          "description": "expect",
+          "passed": true
+        }
+      ],
+      "final_state": [
+        "Owner(0, 1) = Red",
+        "Owner(0, 5) = Black",
+        "Owner(0, 7) = Black",
+        "Owner(1, 0) = Red",
+        "Owner(1, 6) = Black",
+        "Owner(2, 1) = Red",
+        "Owner(2, 5) = Black",
+        "Owner(2, 7) = Black",
+        "Owner(3, 0) = Red",
+        "Owner(3, 2) = Red",
+        "Owner(3, 6) = Black",
+        "Owner(4, 1) = Red",
+        "Owner(4, 5) = Red",
+        "Owner(4, 7) = Black",
+        "Owner(5, 0) = Red",
+        "Owner(5, 2) = Red",
+        "Owner(5, 6) = Black",
+        "Owner(6, 1) = Red",
+        "Owner(6, 5) = Black",
+        "Owner(6, 7) = Black",
+        "Owner(7, 0) = Red",
+        "Owner(7, 2) = Red",
+        "Owner(7, 6) = Black",
+        "Turn = Black"
+      ]
+    },
+    {
+      "scenario": "men only move forward and only onto empty dark squares",
+      "steps": [
+        {
+          "description": "Step(Red, 1, 2, 1, -1) rejected by MakeStep",
+          "passed": true,
+          "accepted": false,
+          "denied_by": [
+            "MakeStep"
+          ]
+        },
+        {
+          "description": "Step(Red, 1, 2, 0, 1) rejected by MakeStep",
+          "passed": true,
+          "accepted": false,
+          "denied_by": [
+            "MakeStep"
+          ]
+        },
+        {
+          "description": "Step(Red, 0, 1, 1, 1) rejected by MakeStep",
+          "passed": true,
+          "accepted": false,
+          "denied_by": [
+            "MakeStep"
+          ]
+        },
+        {
+          "description": "Step(Black, 4, 5, -1, -1) rejected by StepTurn",
+          "passed": true,
+          "accepted": false,
+          "denied_by": [
+            "StepTurn"
+          ]
+        },
+        {
+          "description": "Step(Red, 4, 5, -1, -1) rejected by StepOwnPiece",
+          "passed": true,
+          "accepted": false,
+          "denied_by": [
+            "StepOwnPiece"
+          ]
+        }
+      ],
+      "final_state": [
+        "Owner(0, 1) = Red",
+        "Owner(0, 5) = Black",
+        "Owner(0, 7) = Black",
+        "Owner(1, 0) = Red",
+        "Owner(1, 2) = Red",
+        "Owner(1, 6) = Black",
+        "Owner(2, 1) = Red",
+        "Owner(2, 5) = Black",
+        "Owner(2, 7) = Black",
+        "Owner(3, 0) = Red",
+        "Owner(3, 2) = Red",
+        "Owner(3, 6) = Black",
+        "Owner(4, 1) = Red",
+        "Owner(4, 5) = Black",
+        "Owner(4, 7) = Black",
+        "Owner(5, 0) = Red",
+        "Owner(5, 2) = Red",
+        "Owner(5, 6) = Black",
+        "Owner(6, 1) = Red",
+        "Owner(6, 5) = Black",
+        "Owner(6, 7) = Black",
+        "Owner(7, 0) = Red",
+        "Owner(7, 2) = Red",
+        "Owner(7, 6) = Black",
+        "Turn = Red"
+      ]
+    },
+    {
+      "scenario": "a double jump continues within the turn",
+      "steps": [
+        {
+          "description": "given nothing",
+          "passed": true
+        },
+        {
+          "description": "given Turn",
+          "passed": true
+        },
+        {
+          "description": "given Owner",
+          "passed": true
+        },
+        {
+          "description": "given Owner",
+          "passed": true
+        },
+        {
+          "description": "given Owner",
+          "passed": true
+        },
+        {
+          "description": "given Owner",
+          "passed": true
+        },
+        {
+          "description": "given Owner",
+          "passed": true
+        },
+        {
+          "description": "Step(Red, 1, 0, 1, 1) rejected by CaptureIsMandatory",
+          "passed": true,
+          "accepted": false,
+          "denied_by": [
+            "CaptureIsMandatory",
+            "MakeStep"
+          ]
+        },
+        {
+          "description": "Jump(Red, 1, 0, 1, 1) accepted with events",
+          "passed": true,
+          "accepted": true,
+          "effects": [
+            "retract Continuing(1, 0)",
+            "assert Continuing(3, 2) = true",
+            "retract King(2, 1)",
+            "retract Owner(1, 0)",
+            "retract Owner(2, 1)",
+            "assert Owner(3, 2) = Red"
+          ]
+        },
+        {
+          "description": "expect",
+          "passed": true
+        },
+        {
+          "description": "Jump(Red, 7, 0, -1, 1) rejected by JumpSamePiece",
+          "passed": true,
+          "accepted": false,
+          "denied_by": [
+            "JumpSamePiece"
+          ]
+        },
+        {
+          "description": "Step(Red, 3, 2, -1, 1) rejected by StepNotMidCapture",
+          "passed": true,
+          "accepted": false,
+          "denied_by": [
+            "StepNotMidCapture",
+            "CaptureIsMandatory"
+          ]
+        },
+        {
+          "description": "Jump(Red, 3, 2, 1, 1) accepted with events",
+          "passed": true,
+          "accepted": true,
+          "events": [
+            "JumpEnded(5, 4)"
+          ],
+          "effects": [
+            "retract Continuing(3, 2)",
+            "assert Continuing(5, 4) = true",
+            "retract King(4, 3)",
+            "retract Owner(3, 2)",
+            "retract Owner(4, 3)",
+            "assert Owner(5, 4) = Red",
+            "retract Continuing(5, 4)",
+            "retract Crowned(5, 4)",
+            "assert Turn = Black"
+          ]
+        },
+        {
+          "description": "expect",
+          "passed": true
+        }
+      ],
+      "final_state": [
+        "Owner(5, 4) = Red",
+        "Owner(6, 1) = Black",
+        "Owner(7, 0) = Red",
+        "Turn = Black"
+      ]
+    },
+    {
+      "scenario": "crowning ends the turn even if another jump exists",
+      "steps": [
+        {
+          "description": "given nothing",
+          "passed": true
+        },
+        {
+          "description": "given Turn",
+          "passed": true
+        },
+        {
+          "description": "given Owner",
+          "passed": true
+        },
+        {
+          "description": "given Owner",
+          "passed": true
+        },
+        {
+          "description": "given Owner",
+          "passed": true
+        },
+        {
+          "description": "Jump(Red, 2, 5, 1, 1) accepted with events",
+          "passed": true,
+          "accepted": true,
+          "events": [
+            "JumpEnded(4, 7)"
+          ],
+          "effects": [
+            "retract Continuing(2, 5)",
+            "assert Continuing(4, 7) = true",
+            "assert Crowned(4, 7) = true",
+            "retract King(3, 6)",
+            "assert King(4, 7) = true",
+            "retract Owner(2, 5)",
+            "retract Owner(3, 6)",
+            "assert Owner(4, 7) = Red",
+            "retract Continuing(4, 7)",
+            "retract Crowned(4, 7)",
+            "assert Turn = Black"
+          ]
+        },
+        {
+          "description": "expect",
+          "passed": true
+        },
+        {
+          "description": "expect",
+          "passed": true
+        }
+      ],
+      "final_state": [
+        "King(4, 7)",
+        "Owner(4, 7) = Red",
+        "Owner(5, 6) = Black",
+        "Turn = Black"
+      ]
+    },
+    {
+      "scenario": "kings move backward",
+      "steps": [
+        {
+          "description": "given nothing",
+          "passed": true
+        },
+        {
+          "description": "given Turn",
+          "passed": true
+        },
+        {
+          "description": "given Owner",
+          "passed": true
+        },
+        {
+          "description": "given King",
+          "passed": true
+        },
+        {
+          "description": "given Owner",
+          "passed": true
+        },
+        {
+          "description": "Step(Black, 3, 4, 1, 1) accepted",
+          "passed": true,
+          "accepted": true,
+          "effects": [
+            "retract King(3, 4)",
+            "assert King(4, 5) = true",
+            "retract Owner(3, 4)",
+            "assert Owner(4, 5) = Black",
+            "assert Turn = Red"
+          ]
+        },
+        {
+          "description": "expect",
+          "passed": true
+        }
+      ],
+      "final_state": [
+        "King(4, 5)",
+        "Owner(1, 0) = Red",
+        "Owner(4, 5) = Black",
+        "Turn = Red"
+      ]
+    },
+    {
+      "scenario": "capturing the last piece wins",
+      "steps": [
+        {
+          "description": "given nothing",
+          "passed": true
+        },
+        {
+          "description": "given Turn",
+          "passed": true
+        },
+        {
+          "description": "given Owner",
+          "passed": true
+        },
+        {
+          "description": "given Owner",
+          "passed": true
+        },
+        {
+          "description": "Jump(Red, 2, 3, 1, 1) accepted with events",
+          "passed": true,
+          "accepted": true,
+          "events": [
+            "JumpEnded(4, 5)",
+            "Won(Red)"
+          ],
+          "effects": [
+            "retract Continuing(2, 3)",
+            "assert Continuing(4, 5) = true",
+            "retract King(3, 4)",
+            "retract Owner(2, 3)",
+            "retract Owner(3, 4)",
+            "assert Owner(4, 5) = Red",
+            "retract Continuing(4, 5)",
+            "retract Crowned(4, 5)",
+            "assert Turn = Black",
+            "assert Winner = Red"
+          ]
+        },
+        {
+          "description": "expect",
+          "passed": true
+        },
+        {
+          "description": "Step(Red, 4, 5, 1, 1) rejected by StepGameOver",
+          "passed": true,
+          "accepted": false,
+          "denied_by": [
+            "StepGameOver",
+            "StepTurn"
+          ]
+        }
+      ],
+      "final_state": [
+        "Owner(4, 5) = Red",
+        "Turn = Black",
+        "Winner = Red"
+      ]
+    },
+    {
+      "scenario": "a side with no legal move has lost",
+      "steps": [
+        {
+          "description": "given nothing",
+          "passed": true
+        },
+        {
+          "description": "given Turn",
+          "passed": true
+        },
+        {
+          "description": "given Owner",
+          "passed": true
+        },
+        {
+          "description": "given Owner",
+          "passed": true
+        },
+        {
+          "description": "given Owner",
+          "passed": true
+        },
+        {
+          "description": "given Owner",
+          "passed": true
+        },
+        {
+          "description": "Step(Red, 1, 0, 1, 1) rejected by MakeStep",
+          "passed": true,
+          "accepted": false,
+          "denied_by": [
+            "MakeStep"
+          ]
+        },
+        {
+          "description": "expect",
+          "passed": true
+        }
+      ],
+      "final_state": [
+        "Owner(0, 1) = Black",
+        "Owner(1, 0) = Red",
+        "Owner(2, 1) = Black",
+        "Owner(3, 2) = Black",
+        "Turn = Red"
+      ]
+    }
+  ]
+}

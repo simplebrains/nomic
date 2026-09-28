@@ -1,0 +1,905 @@
+{
+  "nomic_core": "0.1",
+  "model": "NomicMachine",
+  "cases": [
+    {
+      "scenario": "an accepted transition passes through every stage in order",
+      "steps": [
+        {
+          "description": "Begin accepted",
+          "passed": true,
+          "accepted": true,
+          "effects": [
+            "assert At = Typecheck",
+            "assert Round = 0"
+          ]
+        },
+        {
+          "description": "expect",
+          "passed": true
+        },
+        {
+          "description": "Advance accepted",
+          "passed": true,
+          "accepted": true,
+          "effects": [
+            "assert At = Match"
+          ]
+        },
+        {
+          "description": "expect",
+          "passed": true
+        },
+        {
+          "description": "RuleMatches(1, Allow, true) accepted",
+          "passed": true,
+          "accepted": true,
+          "effects": [
+            "assert HasEffects(1) = true",
+            "assert Matched(1) = true",
+            "assert Ruled(1) = Allow"
+          ]
+        },
+        {
+          "description": "RuleMatches(2, Allow, false) accepted",
+          "passed": true,
+          "accepted": true,
+          "effects": [
+            "assert Matched(2) = true",
+            "assert Ruled(2) = Allow"
+          ]
+        },
+        {
+          "description": "Advance accepted",
+          "passed": true,
+          "accepted": true,
+          "effects": [
+            "assert At = Check"
+          ]
+        },
+        {
+          "description": "expect",
+          "passed": true
+        },
+        {
+          "description": "Advance accepted",
+          "passed": true,
+          "accepted": true,
+          "effects": [
+            "assert At = Resolve"
+          ]
+        },
+        {
+          "description": "expect",
+          "passed": true
+        },
+        {
+          "description": "Advance accepted",
+          "passed": true,
+          "accepted": true,
+          "effects": [
+            "assert At = Transition"
+          ]
+        },
+        {
+          "description": "expect",
+          "passed": true
+        },
+        {
+          "description": "Advance accepted",
+          "passed": true,
+          "accepted": true,
+          "effects": [
+            "assert Applied",
+            "assert At = Detect"
+          ]
+        },
+        {
+          "description": "expect",
+          "passed": true
+        },
+        {
+          "description": "Advance accepted",
+          "passed": true,
+          "accepted": true,
+          "effects": [
+            "assert At = React"
+          ]
+        },
+        {
+          "description": "expect",
+          "passed": true
+        },
+        {
+          "description": "Advance accepted",
+          "passed": true,
+          "accepted": true,
+          "effects": [
+            "assert At = Verify"
+          ]
+        },
+        {
+          "description": "expect",
+          "passed": true
+        },
+        {
+          "description": "Advance accepted with events",
+          "passed": true,
+          "accepted": true,
+          "events": [
+            "TransitionCommitted"
+          ],
+          "effects": [
+            "assert At = Commit",
+            "assert Outcome = Accepted"
+          ]
+        },
+        {
+          "description": "expect",
+          "passed": true
+        },
+        {
+          "description": "Advance rejected by AdvanceNotDone",
+          "passed": true,
+          "accepted": false,
+          "denied_by": [
+            "AdvanceNotDone"
+          ]
+        }
+      ],
+      "final_state": [
+        "Applied",
+        "At = Commit",
+        "HasEffects(1)",
+        "Matched(1)",
+        "Matched(2)",
+        "Outcome = Accepted",
+        "Round = 0",
+        "Ruled(1) = Allow",
+        "Ruled(2) = Allow"
+      ]
+    },
+    {
+      "scenario": "no matching rule rejects",
+      "steps": [
+        {
+          "description": "Begin accepted",
+          "passed": true,
+          "accepted": true,
+          "effects": [
+            "assert At = Typecheck",
+            "assert Round = 0"
+          ]
+        },
+        {
+          "description": "Advance accepted",
+          "passed": true,
+          "accepted": true,
+          "effects": [
+            "assert At = Match"
+          ]
+        },
+        {
+          "description": "Advance accepted",
+          "passed": true,
+          "accepted": true,
+          "effects": [
+            "assert At = Check"
+          ]
+        },
+        {
+          "description": "Advance accepted",
+          "passed": true,
+          "accepted": true,
+          "effects": [
+            "assert At = Resolve"
+          ]
+        },
+        {
+          "description": "expect",
+          "passed": true
+        },
+        {
+          "description": "Advance accepted with events",
+          "passed": true,
+          "accepted": true,
+          "events": [
+            "TransitionRejected"
+          ],
+          "effects": [
+            "assert Outcome = Rejected"
+          ]
+        },
+        {
+          "description": "expect",
+          "passed": true
+        }
+      ],
+      "final_state": [
+        "At = Resolve",
+        "Outcome = Rejected",
+        "Round = 0"
+      ]
+    },
+    {
+      "scenario": "any denial rejects, whatever the other rules say",
+      "steps": [
+        {
+          "description": "Begin accepted",
+          "passed": true,
+          "accepted": true,
+          "effects": [
+            "assert At = Typecheck",
+            "assert Round = 0"
+          ]
+        },
+        {
+          "description": "Advance accepted",
+          "passed": true,
+          "accepted": true,
+          "effects": [
+            "assert At = Match"
+          ]
+        },
+        {
+          "description": "RuleMatches(1, Allow, true) accepted",
+          "passed": true,
+          "accepted": true,
+          "effects": [
+            "assert HasEffects(1) = true",
+            "assert Matched(1) = true",
+            "assert Ruled(1) = Allow"
+          ]
+        },
+        {
+          "description": "RuleMatches(2, Deny, false) accepted",
+          "passed": true,
+          "accepted": true,
+          "effects": [
+            "assert Matched(2) = true",
+            "assert Ruled(2) = Deny"
+          ]
+        },
+        {
+          "description": "RuleMatches(2, Allow, true) rejected by MatchOnce",
+          "passed": true,
+          "accepted": false,
+          "denied_by": [
+            "MatchOnce"
+          ]
+        },
+        {
+          "description": "Advance accepted",
+          "passed": true,
+          "accepted": true,
+          "effects": [
+            "assert At = Check"
+          ]
+        },
+        {
+          "description": "Advance accepted",
+          "passed": true,
+          "accepted": true,
+          "effects": [
+            "assert At = Resolve"
+          ]
+        },
+        {
+          "description": "expect",
+          "passed": true
+        },
+        {
+          "description": "Advance accepted with events",
+          "passed": true,
+          "accepted": true,
+          "events": [
+            "TransitionRejected"
+          ],
+          "effects": [
+            "assert Outcome = Rejected"
+          ]
+        },
+        {
+          "description": "expect",
+          "passed": true
+        }
+      ],
+      "final_state": [
+        "At = Resolve",
+        "HasEffects(1)",
+        "Matched(1)",
+        "Matched(2)",
+        "Outcome = Rejected",
+        "Round = 0",
+        "Ruled(1) = Allow",
+        "Ruled(2) = Deny"
+      ]
+    },
+    {
+      "scenario": "conflicting effects are a model error, not a resolution",
+      "steps": [
+        {
+          "description": "Begin accepted",
+          "passed": true,
+          "accepted": true,
+          "effects": [
+            "assert At = Typecheck",
+            "assert Round = 0"
+          ]
+        },
+        {
+          "description": "Advance accepted",
+          "passed": true,
+          "accepted": true,
+          "effects": [
+            "assert At = Match"
+          ]
+        },
+        {
+          "description": "RuleMatches(1, Allow, true) accepted",
+          "passed": true,
+          "accepted": true,
+          "effects": [
+            "assert HasEffects(1) = true",
+            "assert Matched(1) = true",
+            "assert Ruled(1) = Allow"
+          ]
+        },
+        {
+          "description": "RuleMatches(3, Allow, true) accepted",
+          "passed": true,
+          "accepted": true,
+          "effects": [
+            "assert HasEffects(3) = true",
+            "assert Matched(3) = true",
+            "assert Ruled(3) = Allow"
+          ]
+        },
+        {
+          "description": "Advance accepted",
+          "passed": true,
+          "accepted": true,
+          "effects": [
+            "assert At = Check"
+          ]
+        },
+        {
+          "description": "Advance accepted",
+          "passed": true,
+          "accepted": true,
+          "effects": [
+            "assert At = Resolve"
+          ]
+        },
+        {
+          "description": "Advance accepted",
+          "passed": true,
+          "accepted": true,
+          "effects": [
+            "assert At = Transition"
+          ]
+        },
+        {
+          "description": "expect",
+          "passed": true
+        },
+        {
+          "description": "EffectsConflict accepted with events",
+          "passed": true,
+          "accepted": true,
+          "events": [
+            "ModelDefect"
+          ],
+          "effects": [
+            "assert Conflict",
+            "assert Outcome = ModelError"
+          ]
+        },
+        {
+          "description": "expect",
+          "passed": true
+        },
+        {
+          "description": "Advance rejected by AdvanceNotDone",
+          "passed": true,
+          "accepted": false,
+          "denied_by": [
+            "AdvanceNotDone"
+          ]
+        }
+      ],
+      "final_state": [
+        "At = Transition",
+        "Conflict",
+        "HasEffects(1)",
+        "HasEffects(3)",
+        "Matched(1)",
+        "Matched(3)",
+        "Outcome = ModelError",
+        "Round = 0",
+        "Ruled(1) = Allow",
+        "Ruled(3) = Allow"
+      ]
+    },
+    {
+      "scenario": "reactions cascade in rounds and each event fires once",
+      "steps": [
+        {
+          "description": "Begin accepted",
+          "passed": true,
+          "accepted": true,
+          "effects": [
+            "assert At = Typecheck",
+            "assert Round = 0"
+          ]
+        },
+        {
+          "description": "Advance accepted",
+          "passed": true,
+          "accepted": true,
+          "effects": [
+            "assert At = Match"
+          ]
+        },
+        {
+          "description": "RuleMatches(1, Allow, true) accepted",
+          "passed": true,
+          "accepted": true,
+          "effects": [
+            "assert HasEffects(1) = true",
+            "assert Matched(1) = true",
+            "assert Ruled(1) = Allow"
+          ]
+        },
+        {
+          "description": "Advance accepted",
+          "passed": true,
+          "accepted": true,
+          "effects": [
+            "assert At = Check"
+          ]
+        },
+        {
+          "description": "Advance accepted",
+          "passed": true,
+          "accepted": true,
+          "effects": [
+            "assert At = Resolve"
+          ]
+        },
+        {
+          "description": "Advance accepted",
+          "passed": true,
+          "accepted": true,
+          "effects": [
+            "assert At = Transition"
+          ]
+        },
+        {
+          "description": "Advance accepted",
+          "passed": true,
+          "accepted": true,
+          "effects": [
+            "assert Applied",
+            "assert At = Detect"
+          ]
+        },
+        {
+          "description": "expect",
+          "passed": true
+        },
+        {
+          "description": "EventDetected(1) accepted",
+          "passed": true,
+          "accepted": true,
+          "effects": [
+            "assert Pending(1) = true"
+          ]
+        },
+        {
+          "description": "Advance accepted",
+          "passed": true,
+          "accepted": true,
+          "effects": [
+            "assert At = React"
+          ]
+        },
+        {
+          "description": "expect",
+          "passed": true
+        },
+        {
+          "description": "Advance accepted",
+          "passed": true,
+          "accepted": true,
+          "effects": [
+            "assert Fired(1) = true",
+            "retract Pending(1)",
+            "assert Round = 1"
+          ]
+        },
+        {
+          "description": "expect",
+          "passed": true
+        },
+        {
+          "description": "EventDetected(1) rejected by OncePerTransition",
+          "passed": true,
+          "accepted": false,
+          "denied_by": [
+            "OncePerTransition"
+          ]
+        },
+        {
+          "description": "EventDetected(2) accepted",
+          "passed": true,
+          "accepted": true,
+          "effects": [
+            "assert Pending(2) = true"
+          ]
+        },
+        {
+          "description": "Advance accepted",
+          "passed": true,
+          "accepted": true,
+          "effects": [
+            "assert Fired(2) = true",
+            "retract Pending(2)",
+            "assert Round = 2"
+          ]
+        },
+        {
+          "description": "expect",
+          "passed": true
+        },
+        {
+          "description": "Advance accepted",
+          "passed": true,
+          "accepted": true,
+          "effects": [
+            "assert At = Verify"
+          ]
+        },
+        {
+          "description": "expect",
+          "passed": true
+        },
+        {
+          "description": "Advance accepted with events",
+          "passed": true,
+          "accepted": true,
+          "events": [
+            "TransitionCommitted"
+          ],
+          "effects": [
+            "assert At = Commit",
+            "assert Outcome = Accepted"
+          ]
+        }
+      ],
+      "final_state": [
+        "Applied",
+        "At = Commit",
+        "Fired(1)",
+        "Fired(2)",
+        "HasEffects(1)",
+        "Matched(1)",
+        "Outcome = Accepted",
+        "Round = 2",
+        "Ruled(1) = Allow"
+      ]
+    },
+    {
+      "scenario": "an excused invariant failure still commits; an unexcused one is a defect",
+      "steps": [
+        {
+          "description": "Begin accepted",
+          "passed": true,
+          "accepted": true,
+          "effects": [
+            "assert At = Typecheck",
+            "assert Round = 0"
+          ]
+        },
+        {
+          "description": "Advance accepted",
+          "passed": true,
+          "accepted": true,
+          "effects": [
+            "assert At = Match"
+          ]
+        },
+        {
+          "description": "RuleMatches(1, Allow, true) accepted",
+          "passed": true,
+          "accepted": true,
+          "effects": [
+            "assert HasEffects(1) = true",
+            "assert Matched(1) = true",
+            "assert Ruled(1) = Allow"
+          ]
+        },
+        {
+          "description": "Advance accepted",
+          "passed": true,
+          "accepted": true,
+          "effects": [
+            "assert At = Check"
+          ]
+        },
+        {
+          "description": "Advance accepted",
+          "passed": true,
+          "accepted": true,
+          "effects": [
+            "assert At = Resolve"
+          ]
+        },
+        {
+          "description": "Advance accepted",
+          "passed": true,
+          "accepted": true,
+          "effects": [
+            "assert At = Transition"
+          ]
+        },
+        {
+          "description": "Advance accepted",
+          "passed": true,
+          "accepted": true,
+          "effects": [
+            "assert Applied",
+            "assert At = Detect"
+          ]
+        },
+        {
+          "description": "Advance accepted",
+          "passed": true,
+          "accepted": true,
+          "effects": [
+            "assert At = React"
+          ]
+        },
+        {
+          "description": "Advance accepted",
+          "passed": true,
+          "accepted": true,
+          "effects": [
+            "assert At = Verify"
+          ]
+        },
+        {
+          "description": "expect",
+          "passed": true
+        },
+        {
+          "description": "InvariantFails(1, true) accepted",
+          "passed": true,
+          "accepted": true,
+          "effects": [
+            "assert Excused(1) = true",
+            "assert Violated(1) = true"
+          ]
+        },
+        {
+          "description": "Advance accepted with events",
+          "passed": true,
+          "accepted": true,
+          "events": [
+            "TransitionCommitted"
+          ],
+          "effects": [
+            "assert At = Commit",
+            "assert Outcome = Accepted"
+          ]
+        },
+        {
+          "description": "expect",
+          "passed": true
+        }
+      ],
+      "final_state": [
+        "Applied",
+        "At = Commit",
+        "Excused(1)",
+        "HasEffects(1)",
+        "Matched(1)",
+        "Outcome = Accepted",
+        "Round = 0",
+        "Ruled(1) = Allow",
+        "Violated(1)"
+      ]
+    },
+    {
+      "scenario": "an unexcused invariant failure is a model error",
+      "steps": [
+        {
+          "description": "Begin accepted",
+          "passed": true,
+          "accepted": true,
+          "effects": [
+            "assert At = Typecheck",
+            "assert Round = 0"
+          ]
+        },
+        {
+          "description": "Advance accepted",
+          "passed": true,
+          "accepted": true,
+          "effects": [
+            "assert At = Match"
+          ]
+        },
+        {
+          "description": "RuleMatches(1, Allow, true) accepted",
+          "passed": true,
+          "accepted": true,
+          "effects": [
+            "assert HasEffects(1) = true",
+            "assert Matched(1) = true",
+            "assert Ruled(1) = Allow"
+          ]
+        },
+        {
+          "description": "Advance accepted",
+          "passed": true,
+          "accepted": true,
+          "effects": [
+            "assert At = Check"
+          ]
+        },
+        {
+          "description": "Advance accepted",
+          "passed": true,
+          "accepted": true,
+          "effects": [
+            "assert At = Resolve"
+          ]
+        },
+        {
+          "description": "Advance accepted",
+          "passed": true,
+          "accepted": true,
+          "effects": [
+            "assert At = Transition"
+          ]
+        },
+        {
+          "description": "Advance accepted",
+          "passed": true,
+          "accepted": true,
+          "effects": [
+            "assert Applied",
+            "assert At = Detect"
+          ]
+        },
+        {
+          "description": "Advance accepted",
+          "passed": true,
+          "accepted": true,
+          "effects": [
+            "assert At = React"
+          ]
+        },
+        {
+          "description": "Advance accepted",
+          "passed": true,
+          "accepted": true,
+          "effects": [
+            "assert At = Verify"
+          ]
+        },
+        {
+          "description": "InvariantFails(1, true) accepted",
+          "passed": true,
+          "accepted": true,
+          "effects": [
+            "assert Excused(1) = true",
+            "assert Violated(1) = true"
+          ]
+        },
+        {
+          "description": "InvariantFails(2, false) accepted",
+          "passed": true,
+          "accepted": true,
+          "effects": [
+            "assert Violated(2) = true"
+          ]
+        },
+        {
+          "description": "Advance accepted with events",
+          "passed": true,
+          "accepted": true,
+          "events": [
+            "ModelDefect"
+          ],
+          "effects": [
+            "assert Outcome = ModelError"
+          ]
+        },
+        {
+          "description": "expect",
+          "passed": true
+        }
+      ],
+      "final_state": [
+        "Applied",
+        "At = Verify",
+        "Excused(1)",
+        "HasEffects(1)",
+        "Matched(1)",
+        "Outcome = ModelError",
+        "Round = 0",
+        "Ruled(1) = Allow",
+        "Violated(1)",
+        "Violated(2)"
+      ]
+    },
+    {
+      "scenario": "inputs are only accepted in their stage",
+      "steps": [
+        {
+          "description": "RuleMatches(1, Allow, true) rejected by MatchOnlyDuringMatch",
+          "passed": true,
+          "accepted": false,
+          "denied_by": [
+            "MatchOnlyDuringMatch"
+          ]
+        },
+        {
+          "description": "EventDetected(1) rejected by DetectOnlyWhenDetecting",
+          "passed": true,
+          "accepted": false,
+          "denied_by": [
+            "DetectOnlyWhenDetecting"
+          ]
+        },
+        {
+          "description": "InvariantFails(1, false) rejected by FailOnlyInVerify",
+          "passed": true,
+          "accepted": false,
+          "denied_by": [
+            "FailOnlyInVerify"
+          ]
+        },
+        {
+          "description": "EffectsConflict rejected by ConflictOnlyInTransition",
+          "passed": true,
+          "accepted": false,
+          "denied_by": [
+            "ConflictOnlyInTransition"
+          ]
+        },
+        {
+          "description": "Advance rejected by AdvanceNotIdle",
+          "passed": true,
+          "accepted": false,
+          "denied_by": [
+            "AdvanceNotIdle"
+          ]
+        },
+        {
+          "description": "Begin accepted",
+          "passed": true,
+          "accepted": true,
+          "effects": [
+            "assert At = Typecheck",
+            "assert Round = 0"
+          ]
+        },
+        {
+          "description": "Begin rejected by DoBegin",
+          "passed": true,
+          "accepted": false,
+          "denied_by": [
+            "DoBegin"
+          ]
+        }
+      ],
+      "final_state": [
+        "At = Typecheck",
+        "Round = 0"
+      ]
+    }
+  ]
+}

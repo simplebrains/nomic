@@ -1,0 +1,19 @@
+[package]
+name = "nomic"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "Nomic Core 0.1 reference machine: a deterministic executable specification language"
+
+[[bin]]
+name = "nomic"
+path = "src/main.rs"
+
+[lib]
+name = "nomic"
+path = "src/lib.rs"
+
+[dependencies]
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"

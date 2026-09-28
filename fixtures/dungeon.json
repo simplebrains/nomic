@@ -1,0 +1,840 @@
+{
+  "nomic_core": "0.1",
+  "model": "DungeonCrawl",
+  "cases": [
+    {
+      "scenario": "initiative cycles through the living",
+      "steps": [
+        {
+          "description": "expect",
+          "passed": true
+        },
+        {
+          "description": "Move(Hero, Hall) accepted",
+          "passed": true,
+          "accepted": true,
+          "effects": [
+            "assert Location(Hero) = Hall",
+            "assert Turn = Goblin"
+          ]
+        },
+        {
+          "description": "expect",
+          "passed": true
+        },
+        {
+          "description": "Wait(Goblin) accepted",
+          "passed": true,
+          "accepted": true,
+          "effects": [
+            "assert Turn = Orc"
+          ]
+        },
+        {
+          "description": "expect",
+          "passed": true
+        },
+        {
+          "description": "Wait(Orc) accepted",
+          "passed": true,
+          "accepted": true,
+          "effects": [
+            "assert Turn = Dragon"
+          ]
+        },
+        {
+          "description": "Wait(Dragon) accepted",
+          "passed": true,
+          "accepted": true,
+          "effects": [
+            "assert Turn = Hero"
+          ]
+        },
+        {
+          "description": "expect",
+          "passed": true
+        },
+        {
+          "description": "Wait(Goblin) rejected by WaitTurn",
+          "passed": true,
+          "accepted": false,
+          "denied_by": [
+            "WaitTurn",
+            "DoWait"
+          ]
+        }
+      ],
+      "final_state": [
+        "Alive(Dragon)",
+        "Alive(Goblin)",
+        "Alive(Hero)",
+        "Alive(Orc)",
+        "HP(Dragon) = 40",
+        "HP(Goblin) = 6",
+        "HP(Hero) = 20",
+        "HP(Orc) = 12",
+        "ItemAt(Gold) = Treasury",
+        "ItemAt(Key) = Lair",
+        "ItemAt(Potion) = Hall",
+        "ItemAt(Shield) = Armory",
+        "ItemAt(Sword) = Armory",
+        "Location(Dragon) = Lair",
+        "Location(Goblin) = Hall",
+        "Location(Hero) = Hall",
+        "Location(Orc) = Armory",
+        "Locked(Treasury)",
+        "Turn = Hero"
+      ]
+    },
+    {
+      "scenario": "rooms must connect and locked doors hold",
+      "steps": [
+        {
+          "description": "Move(Hero, Lair) rejected by MoveAdjacent",
+          "passed": true,
+          "accepted": false,
+          "denied_by": [
+            "MoveAdjacent",
+            "DoMove"
+          ]
+        },
+        {
+          "description": "Move(Hero, Hall) accepted",
+          "passed": true,
+          "accepted": true,
+          "effects": [
+            "assert Location(Hero) = Hall",
+            "assert Turn = Goblin"
+          ]
+        },
+        {
+          "description": "Wait(Goblin) accepted",
+          "passed": true,
+          "accepted": true,
+          "effects": [
+            "assert Turn = Orc"
+          ]
+        },
+        {
+          "description": "Wait(Orc) accepted",
+          "passed": true,
+          "accepted": true,
+          "effects": [
+            "assert Turn = Dragon"
+          ]
+        },
+        {
+          "description": "Wait(Dragon) accepted",
+          "passed": true,
+          "accepted": true,
+          "effects": [
+            "assert Turn = Hero"
+          ]
+        },
+        {
+          "description": "Move(Hero, Treasury) rejected by MoveUnlocked",
+          "passed": true,
+          "accepted": false,
+          "denied_by": [
+            "MoveUnlocked",
+            "DoMove"
+          ]
+        },
+        {
+          "description": "Unlock(Hero, Treasury) rejected by UnlockKey",
+          "passed": true,
+          "accepted": false,
+          "denied_by": [
+            "UnlockKey",
+            "DoUnlock"
+          ]
+        }
+      ],
+      "final_state": [
+        "Alive(Dragon)",
+        "Alive(Goblin)",
+        "Alive(Hero)",
+        "Alive(Orc)",
+        "HP(Dragon) = 40",
+        "HP(Goblin) = 6",
+        "HP(Hero) = 20",
+        "HP(Orc) = 12",
+        "ItemAt(Gold) = Treasury",
+        "ItemAt(Key) = Lair",
+        "ItemAt(Potion) = Hall",
+        "ItemAt(Shield) = Armory",
+        "ItemAt(Sword) = Armory",
+        "Location(Dragon) = Lair",
+        "Location(Goblin) = Hall",
+        "Location(Hero) = Hall",
+        "Location(Orc) = Armory",
+        "Locked(Treasury)",
+        "Turn = Hero"
+      ]
+    },
+    {
+      "scenario": "combat with dice, a kill, and dropped loot",
+      "steps": [
+        {
+          "description": "Move(Hero, Hall) accepted",
+          "passed": true,
+          "accepted": true,
+          "effects": [
+            "assert Location(Hero) = Hall",
+            "assert Turn = Goblin"
+          ]
+        },
+        {
+          "description": "Attack(Goblin, Hero, 6) accepted",
+          "passed": true,
+          "accepted": true,
+          "effects": [
+            "assert HP(Hero) = 15",
+            "assert Turn = Orc"
+          ]
+        },
+        {
+          "description": "expect",
+          "passed": true
+        },
+        {
+          "description": "Wait(Orc) accepted",
+          "passed": true,
+          "accepted": true,
+          "effects": [
+            "assert Turn = Dragon"
+          ]
+        },
+        {
+          "description": "Wait(Dragon) accepted",
+          "passed": true,
+          "accepted": true,
+          "effects": [
+            "assert Turn = Hero"
+          ]
+        },
+        {
+          "description": "Attack(Hero, Goblin, 1) accepted with events",
+          "passed": true,
+          "accepted": true,
+          "effects": [
+            "assert HP(Goblin) = 5",
+            "assert Turn = Goblin"
+          ]
+        },
+        {
+          "description": "expect",
+          "passed": true
+        },
+        {
+          "description": "Attack(Goblin, Hero, 1) accepted with events",
+          "passed": true,
+          "accepted": true,
+          "effects": [
+            "assert HP(Hero) = 15",
+            "assert Turn = Orc"
+          ]
+        },
+        {
+          "description": "expect",
+          "passed": true
+        },
+        {
+          "description": "Wait(Orc) accepted",
+          "passed": true,
+          "accepted": true,
+          "effects": [
+            "assert Turn = Dragon"
+          ]
+        },
+        {
+          "description": "Wait(Dragon) accepted",
+          "passed": true,
+          "accepted": true,
+          "effects": [
+            "assert Turn = Hero"
+          ]
+        },
+        {
+          "description": "Attack(Hero, Goblin, 6) accepted with events",
+          "passed": true,
+          "accepted": true,
+          "events": [
+            "Died(Goblin)"
+          ],
+          "effects": [
+            "assert HP(Goblin) = -1",
+            "assert Turn = Goblin",
+            "retract Alive(Goblin)",
+            "retract Location(Goblin)",
+            "assert Turn = Orc"
+          ]
+        },
+        {
+          "description": "expect",
+          "passed": true
+        },
+        {
+          "description": "Attack(Goblin, Hero, 3) rejected by AttackTurn",
+          "passed": true,
+          "accepted": false,
+          "denied_by": [
+            "AttackTurn",
+            "AttackTarget",
+            "DoAttack"
+          ]
+        },
+        {
+          "description": "Wait(Orc) accepted",
+          "passed": true,
+          "accepted": true,
+          "effects": [
+            "assert Turn = Dragon"
+          ]
+        },
+        {
+          "description": "Wait(Dragon) accepted",
+          "passed": true,
+          "accepted": true,
+          "effects": [
+            "assert Turn = Hero"
+          ]
+        },
+        {
+          "description": "Attack(Hero, Dragon, 6) rejected by AttackTarget",
+          "passed": true,
+          "accepted": false,
+          "denied_by": [
+            "AttackTarget",
+            "DoAttack"
+          ]
+        },
+        {
+          "description": "PickUp(Hero, Potion) accepted",
+          "passed": true,
+          "accepted": true,
+          "effects": [
+            "assert Carrying(Hero, Potion) = true",
+            "retract ItemAt(Potion)",
+            "assert Turn = Orc"
+          ]
+        }
+      ],
+      "final_state": [
+        "Alive(Dragon)",
+        "Alive(Hero)",
+        "Alive(Orc)",
+        "Carrying(Hero, Potion)",
+        "HP(Dragon) = 40",
+        "HP(Goblin) = -1",
+        "HP(Hero) = 15",
+        "HP(Orc) = 12",
+        "ItemAt(Gold) = Treasury",
+        "ItemAt(Key) = Lair",
+        "ItemAt(Shield) = Armory",
+        "ItemAt(Sword) = Armory",
+        "Location(Dragon) = Lair",
+        "Location(Hero) = Hall",
+        "Location(Orc) = Armory",
+        "Locked(Treasury)",
+        "Turn = Orc"
+      ]
+    },
+    {
+      "scenario": "a potion heals but never past the maximum",
+      "steps": [
+        {
+          "description": "Move(Hero, Hall) accepted",
+          "passed": true,
+          "accepted": true,
+          "effects": [
+            "assert Location(Hero) = Hall",
+            "assert Turn = Goblin"
+          ]
+        },
+        {
+          "description": "Attack(Goblin, Hero, 6) accepted",
+          "passed": true,
+          "accepted": true,
+          "effects": [
+            "assert HP(Hero) = 15",
+            "assert Turn = Orc"
+          ]
+        },
+        {
+          "description": "Wait(Orc) accepted",
+          "passed": true,
+          "accepted": true,
+          "effects": [
+            "assert Turn = Dragon"
+          ]
+        },
+        {
+          "description": "Wait(Dragon) accepted",
+          "passed": true,
+          "accepted": true,
+          "effects": [
+            "assert Turn = Hero"
+          ]
+        },
+        {
+          "description": "PickUp(Hero, Potion) accepted",
+          "passed": true,
+          "accepted": true,
+          "effects": [
+            "assert Carrying(Hero, Potion) = true",
+            "retract ItemAt(Potion)",
+            "assert Turn = Goblin"
+          ]
+        },
+        {
+          "description": "Wait(Goblin) accepted",
+          "passed": true,
+          "accepted": true,
+          "effects": [
+            "assert Turn = Orc"
+          ]
+        },
+        {
+          "description": "Wait(Orc) accepted",
+          "passed": true,
+          "accepted": true,
+          "effects": [
+            "assert Turn = Dragon"
+          ]
+        },
+        {
+          "description": "Wait(Dragon) accepted",
+          "passed": true,
+          "accepted": true,
+          "effects": [
+            "assert Turn = Hero"
+          ]
+        },
+        {
+          "description": "expect",
+          "passed": true
+        },
+        {
+          "description": "Drink(Hero) accepted",
+          "passed": true,
+          "accepted": true,
+          "effects": [
+            "retract Carrying(Hero, Potion)",
+            "assert Consumed(Potion) = true",
+            "assert HP(Hero) = 20",
+            "assert Turn = Goblin"
+          ]
+        },
+        {
+          "description": "expect",
+          "passed": true
+        },
+        {
+          "description": "Wait(Goblin) accepted",
+          "passed": true,
+          "accepted": true,
+          "effects": [
+            "assert Turn = Orc"
+          ]
+        },
+        {
+          "description": "Wait(Orc) accepted",
+          "passed": true,
+          "accepted": true,
+          "effects": [
+            "assert Turn = Dragon"
+          ]
+        },
+        {
+          "description": "Wait(Dragon) accepted",
+          "passed": true,
+          "accepted": true,
+          "effects": [
+            "assert Turn = Hero"
+          ]
+        },
+        {
+          "description": "Drink(Hero) rejected by DrinkHasPotion",
+          "passed": true,
+          "accepted": false,
+          "denied_by": [
+            "DrinkHasPotion",
+            "DoDrink"
+          ]
+        }
+      ],
+      "final_state": [
+        "Alive(Dragon)",
+        "Alive(Goblin)",
+        "Alive(Hero)",
+        "Alive(Orc)",
+        "Consumed(Potion)",
+        "HP(Dragon) = 40",
+        "HP(Goblin) = 6",
+        "HP(Hero) = 20",
+        "HP(Orc) = 12",
+        "ItemAt(Gold) = Treasury",
+        "ItemAt(Key) = Lair",
+        "ItemAt(Shield) = Armory",
+        "ItemAt(Sword) = Armory",
+        "Location(Dragon) = Lair",
+        "Location(Goblin) = Hall",
+        "Location(Hero) = Hall",
+        "Location(Orc) = Armory",
+        "Locked(Treasury)",
+        "Turn = Hero"
+      ]
+    },
+    {
+      "scenario": "armor and weapons change the damage",
+      "steps": [
+        {
+          "description": "given nothing",
+          "passed": true
+        },
+        {
+          "description": "given Alive",
+          "passed": true
+        },
+        {
+          "description": "given HP",
+          "passed": true
+        },
+        {
+          "description": "given Location",
+          "passed": true
+        },
+        {
+          "description": "given Alive",
+          "passed": true
+        },
+        {
+          "description": "given HP",
+          "passed": true
+        },
+        {
+          "description": "given Location",
+          "passed": true
+        },
+        {
+          "description": "given ItemAt",
+          "passed": true
+        },
+        {
+          "description": "given ItemAt",
+          "passed": true
+        },
+        {
+          "description": "given ItemAt",
+          "passed": true
+        },
+        {
+          "description": "given ItemAt",
+          "passed": true
+        },
+        {
+          "description": "given ItemAt",
+          "passed": true
+        },
+        {
+          "description": "given Turn",
+          "passed": true
+        },
+        {
+          "description": "PickUp(Hero, Sword) accepted",
+          "passed": true,
+          "accepted": true,
+          "effects": [
+            "assert Carrying(Hero, Sword) = true",
+            "retract ItemAt(Sword)",
+            "assert Turn = Orc"
+          ]
+        },
+        {
+          "description": "Attack(Orc, Hero, 3) accepted",
+          "passed": true,
+          "accepted": true,
+          "effects": [
+            "assert HP(Hero) = 16",
+            "assert Turn = Hero"
+          ]
+        },
+        {
+          "description": "expect",
+          "passed": true
+        },
+        {
+          "description": "PickUp(Hero, Shield) accepted",
+          "passed": true,
+          "accepted": true,
+          "effects": [
+            "assert Carrying(Hero, Shield) = true",
+            "retract ItemAt(Shield)",
+            "assert Turn = Orc"
+          ]
+        },
+        {
+          "description": "Attack(Orc, Hero, 3) accepted",
+          "passed": true,
+          "accepted": true,
+          "effects": [
+            "assert HP(Hero) = 14",
+            "assert Turn = Hero"
+          ]
+        },
+        {
+          "description": "expect",
+          "passed": true
+        },
+        {
+          "description": "Attack(Hero, Orc, 3) accepted",
+          "passed": true,
+          "accepted": true,
+          "effects": [
+            "assert HP(Orc) = 6",
+            "assert Turn = Orc"
+          ]
+        },
+        {
+          "description": "expect",
+          "passed": true
+        }
+      ],
+      "final_state": [
+        "Alive(Hero)",
+        "Alive(Orc)",
+        "Carrying(Hero, Shield)",
+        "Carrying(Hero, Sword)",
+        "HP(Hero) = 14",
+        "HP(Orc) = 6",
+        "ItemAt(Gold) = Treasury",
+        "ItemAt(Key) = Lair",
+        "ItemAt(Potion) = Hall",
+        "Location(Hero) = Armory",
+        "Location(Orc) = Armory",
+        "Turn = Orc"
+      ]
+    },
+    {
+      "scenario": "the dragon can kill the hero, which ends the game",
+      "steps": [
+        {
+          "description": "given nothing",
+          "passed": true
+        },
+        {
+          "description": "given Alive",
+          "passed": true
+        },
+        {
+          "description": "given HP",
+          "passed": true
+        },
+        {
+          "description": "given Location",
+          "passed": true
+        },
+        {
+          "description": "given Alive",
+          "passed": true
+        },
+        {
+          "description": "given HP",
+          "passed": true
+        },
+        {
+          "description": "given Location",
+          "passed": true
+        },
+        {
+          "description": "given ItemAt",
+          "passed": true
+        },
+        {
+          "description": "given ItemAt",
+          "passed": true
+        },
+        {
+          "description": "given ItemAt",
+          "passed": true
+        },
+        {
+          "description": "given ItemAt",
+          "passed": true
+        },
+        {
+          "description": "given ItemAt",
+          "passed": true
+        },
+        {
+          "description": "given Turn",
+          "passed": true
+        },
+        {
+          "description": "Attack(Dragon, Hero, 4) accepted with events",
+          "passed": true,
+          "accepted": true,
+          "events": [
+            "Defeat",
+            "Died(Hero)"
+          ],
+          "effects": [
+            "assert HP(Hero) = -4",
+            "assert Turn = Hero",
+            "retract Alive(Hero)",
+            "retract Location(Hero)",
+            "assert Turn = Dragon"
+          ]
+        },
+        {
+          "description": "expect",
+          "passed": true
+        },
+        {
+          "description": "Wait(Dragon) rejected by WaitTurn",
+          "passed": true,
+          "accepted": false,
+          "denied_by": [
+            "WaitTurn"
+          ]
+        }
+      ],
+      "final_state": [
+        "Alive(Dragon)",
+        "HP(Dragon) = 40",
+        "HP(Hero) = -4",
+        "ItemAt(Gold) = Treasury",
+        "ItemAt(Key) = Lair",
+        "ItemAt(Potion) = Hall",
+        "ItemAt(Shield) = Armory",
+        "ItemAt(Sword) = Armory",
+        "Location(Dragon) = Lair",
+        "Turn = Dragon"
+      ]
+    },
+    {
+      "scenario": "escaping with the gold is victory",
+      "steps": [
+        {
+          "description": "given nothing",
+          "passed": true
+        },
+        {
+          "description": "given Alive",
+          "passed": true
+        },
+        {
+          "description": "given HP",
+          "passed": true
+        },
+        {
+          "description": "given Location",
+          "passed": true
+        },
+        {
+          "description": "given Carrying",
+          "passed": true
+        },
+        {
+          "description": "given ItemAt",
+          "passed": true
+        },
+        {
+          "description": "given ItemAt",
+          "passed": true
+        },
+        {
+          "description": "given ItemAt",
+          "passed": true
+        },
+        {
+          "description": "given ItemAt",
+          "passed": true
+        },
+        {
+          "description": "given Locked",
+          "passed": true
+        },
+        {
+          "description": "given Turn",
+          "passed": true
+        },
+        {
+          "description": "Unlock(Hero, Treasury) accepted",
+          "passed": true,
+          "accepted": true,
+          "effects": [
+            "retract Locked(Treasury)",
+            "assert Turn = Hero"
+          ]
+        },
+        {
+          "description": "Move(Hero, Treasury) accepted",
+          "passed": true,
+          "accepted": true,
+          "effects": [
+            "assert Location(Hero) = Treasury",
+            "assert Turn = Hero"
+          ]
+        },
+        {
+          "description": "PickUp(Hero, Gold) accepted",
+          "passed": true,
+          "accepted": true,
+          "effects": [
+            "assert Carrying(Hero, Gold) = true",
+            "retract ItemAt(Gold)",
+            "assert Turn = Hero"
+          ]
+        },
+        {
+          "description": "Move(Hero, Hall) accepted",
+          "passed": true,
+          "accepted": true,
+          "effects": [
+            "assert Location(Hero) = Hall",
+            "assert Turn = Hero"
+          ]
+        },
+        {
+          "description": "Move(Hero, Entrance) accepted with events",
+          "passed": true,
+          "accepted": true,
+          "events": [
+            "Victory"
+          ],
+          "effects": [
+            "assert Location(Hero) = Entrance",
+            "assert Turn = Hero",
+            "assert Escaped"
+          ]
+        },
+        {
+          "description": "expect",
+          "passed": true
+        },
+        {
+          "description": "Move(Hero, Hall) rejected by MoveTurn",
+          "passed": true,
+          "accepted": false,
+          "denied_by": [
+            "MoveTurn"
+          ]
+        }
+      ],
+      "final_state": [
+        "Alive(Hero)",
+        "Carrying(Hero, Gold)",
+        "Carrying(Hero, Key)",
+        "Escaped",
+        "HP(Hero) = 20",
+        "ItemAt(Potion) = Hall",
+        "ItemAt(Shield) = Armory",
+        "ItemAt(Sword) = Armory",
+        "Location(Hero) = Entrance",
+        "Turn = Hero"
+      ]
+    }
+  ]
+}

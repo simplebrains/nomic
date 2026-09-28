@@ -1,0 +1,222 @@
+{
+  "nomic_core": "0.1",
+  "model": "TicTacToe",
+  "cases": [
+    {
+      "scenario": "X wins the first column",
+      "steps": [
+        {
+          "description": "Play(X, 0, 0) accepted",
+          "passed": true,
+          "accepted": true,
+          "effects": [
+            "assert Cell(0, 0) = X",
+            "assert Turn = O"
+          ]
+        },
+        {
+          "description": "Play(O, 1, 0) accepted",
+          "passed": true,
+          "accepted": true,
+          "effects": [
+            "assert Cell(1, 0) = O",
+            "assert Turn = X"
+          ]
+        },
+        {
+          "description": "Play(X, 0, 1) accepted",
+          "passed": true,
+          "accepted": true,
+          "effects": [
+            "assert Cell(0, 1) = X",
+            "assert Turn = O"
+          ]
+        },
+        {
+          "description": "Play(O, 1, 1) accepted",
+          "passed": true,
+          "accepted": true,
+          "effects": [
+            "assert Cell(1, 1) = O",
+            "assert Turn = X"
+          ]
+        },
+        {
+          "description": "Play(X, 0, 2) accepted with events",
+          "passed": true,
+          "accepted": true,
+          "events": [
+            "Win(X)"
+          ],
+          "effects": [
+            "assert Cell(0, 2) = X",
+            "assert Turn = O",
+            "assert Winner = X"
+          ]
+        },
+        {
+          "description": "expect",
+          "passed": true
+        },
+        {
+          "description": "Play(O, 2, 2) rejected by GameOver",
+          "passed": true,
+          "accepted": false,
+          "denied_by": [
+            "GameOver"
+          ]
+        }
+      ],
+      "final_state": [
+        "Cell(0, 0) = X",
+        "Cell(0, 1) = X",
+        "Cell(0, 2) = X",
+        "Cell(1, 0) = O",
+        "Cell(1, 1) = O",
+        "Turn = O",
+        "Winner = X"
+      ]
+    },
+    {
+      "scenario": "a drawn game",
+      "steps": [
+        {
+          "description": "Play(X, 0, 0) accepted",
+          "passed": true,
+          "accepted": true,
+          "effects": [
+            "assert Cell(0, 0) = X",
+            "assert Turn = O"
+          ]
+        },
+        {
+          "description": "Play(O, 1, 1) accepted",
+          "passed": true,
+          "accepted": true,
+          "effects": [
+            "assert Cell(1, 1) = O",
+            "assert Turn = X"
+          ]
+        },
+        {
+          "description": "Play(X, 2, 2) accepted",
+          "passed": true,
+          "accepted": true,
+          "effects": [
+            "assert Cell(2, 2) = X",
+            "assert Turn = O"
+          ]
+        },
+        {
+          "description": "Play(O, 0, 1) accepted",
+          "passed": true,
+          "accepted": true,
+          "effects": [
+            "assert Cell(0, 1) = O",
+            "assert Turn = X"
+          ]
+        },
+        {
+          "description": "Play(X, 2, 1) accepted",
+          "passed": true,
+          "accepted": true,
+          "effects": [
+            "assert Cell(2, 1) = X",
+            "assert Turn = O"
+          ]
+        },
+        {
+          "description": "Play(O, 2, 0) accepted",
+          "passed": true,
+          "accepted": true,
+          "effects": [
+            "assert Cell(2, 0) = O",
+            "assert Turn = X"
+          ]
+        },
+        {
+          "description": "Play(X, 0, 2) accepted",
+          "passed": true,
+          "accepted": true,
+          "effects": [
+            "assert Cell(0, 2) = X",
+            "assert Turn = O"
+          ]
+        },
+        {
+          "description": "Play(O, 1, 2) accepted",
+          "passed": true,
+          "accepted": true,
+          "effects": [
+            "assert Cell(1, 2) = O",
+            "assert Turn = X"
+          ]
+        },
+        {
+          "description": "Play(X, 1, 0) accepted with events",
+          "passed": true,
+          "accepted": true,
+          "events": [
+            "Draw"
+          ],
+          "effects": [
+            "assert Cell(1, 0) = X",
+            "assert Turn = O",
+            "assert Drawn"
+          ]
+        },
+        {
+          "description": "expect",
+          "passed": true
+        }
+      ],
+      "final_state": [
+        "Cell(0, 0) = X",
+        "Cell(0, 1) = O",
+        "Cell(0, 2) = X",
+        "Cell(1, 0) = X",
+        "Cell(1, 1) = O",
+        "Cell(1, 2) = O",
+        "Cell(2, 0) = O",
+        "Cell(2, 1) = X",
+        "Cell(2, 2) = X",
+        "Drawn",
+        "Turn = O"
+      ]
+    },
+    {
+      "scenario": "taken squares and wrong turns are rejected",
+      "steps": [
+        {
+          "description": "Play(O, 0, 0) rejected by TurnOrder",
+          "passed": true,
+          "accepted": false,
+          "denied_by": [
+            "TurnOrder"
+          ]
+        },
+        {
+          "description": "Play(X, 0, 0) accepted",
+          "passed": true,
+          "accepted": true,
+          "effects": [
+            "assert Cell(0, 0) = X",
+            "assert Turn = O"
+          ]
+        },
+        {
+          "description": "Play(O, 0, 0) rejected by Place",
+          "passed": true,
+          "accepted": false,
+          "denied_by": [
+            "Place"
+          ]
+        }
+      ],
+      "final_state": [
+        "Cell(0, 0) = X",
+        "Turn = O"
+      ]
+    }
+  ]
+}

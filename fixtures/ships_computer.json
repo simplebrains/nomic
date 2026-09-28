@@ -1,0 +1,926 @@
+{
+  "nomic_core": "0.1",
+  "model": "ShipsComputer",
+  "cases": [
+    {
+      "scenario": "chain of command",
+      "steps": [
+        {
+          "description": "SetAlert(Ensign, Red) rejected by AlertCommand",
+          "passed": true,
+          "accepted": false,
+          "denied_by": [
+            "AlertCommand",
+            "DoSetAlert"
+          ]
+        },
+        {
+          "description": "SetAlert(Doctor, Red) rejected by AlertCommand",
+          "passed": true,
+          "accepted": false,
+          "denied_by": [
+            "AlertCommand",
+            "DoSetAlert"
+          ]
+        },
+        {
+          "description": "SetAlert(FirstOfficer, Yellow) accepted",
+          "passed": true,
+          "accepted": true,
+          "effects": [
+            "assert AlertStatus = Yellow"
+          ]
+        },
+        {
+          "description": "expect",
+          "passed": true
+        },
+        {
+          "description": "AllocatePower(Ensign, Sensors, 0) rejected by PowerAuthority",
+          "passed": true,
+          "accepted": false,
+          "denied_by": [
+            "PowerAuthority",
+            "DoAllocate"
+          ]
+        },
+        {
+          "description": "AllocatePower(ChiefEngineer, Sensors, 0) accepted",
+          "passed": true,
+          "accepted": true,
+          "effects": [
+            "assert Allocation(Sensors) = 0"
+          ]
+        },
+        {
+          "description": "expect",
+          "passed": true
+        }
+      ],
+      "final_state": [
+        "AlertStatus = Yellow",
+        "Allocation(Impulse) = 1",
+        "Allocation(LifeSupport) = 2",
+        "Allocation(Sensors) = 0",
+        "Allocation(Shields) = 3",
+        "Allocation(Torpedoes) = 1",
+        "Allocation(Warp) = 4",
+        "HullIntegrity = 100",
+        "OnBridge(Captain)",
+        "OnBridge(Ensign)",
+        "OnBridge(FirstOfficer)",
+        "ReactorOutput = 12",
+        "TorpedoCount = 4"
+      ]
+    },
+    {
+      "scenario": "the power budget is a hard limit, except for the observed red-alert overdraw",
+      "steps": [
+        {
+          "description": "AllocatePower(ChiefEngineer, Phasers, 2) rejected by PowerBudget",
+          "passed": true,
+          "accepted": false,
+          "denied_by": [
+            "PowerBudget"
+          ]
+        },
+        {
+          "description": "SetAlert(Captain, Red) accepted",
+          "passed": true,
+          "accepted": true,
+          "effects": [
+            "assert AlertStatus = Red"
+          ]
+        },
+        {
+          "description": "AllocatePower(ChiefEngineer, Phasers, 2) accepted",
+          "passed": true,
+          "accepted": true,
+          "effects": [
+            "assert Allocation(Phasers) = 2"
+          ]
+        },
+        {
+          "description": "expect",
+          "passed": true
+        },
+        {
+          "description": "AllocatePower(ChiefEngineer, Torpedoes, 2) rejected by PowerBudget",
+          "passed": true,
+          "accepted": false,
+          "denied_by": [
+            "PowerBudget"
+          ]
+        },
+        {
+          "description": "SetAlert(Captain, Green) rejected by StandDownWithinBudget",
+          "passed": true,
+          "accepted": false,
+          "denied_by": [
+            "StandDownWithinBudget"
+          ]
+        },
+        {
+          "description": "AllocatePower(ChiefEngineer, Phasers, 0) accepted",
+          "passed": true,
+          "accepted": true,
+          "effects": [
+            "assert Allocation(Phasers) = 0"
+          ]
+        },
+        {
+          "description": "SetAlert(Captain, Green) accepted",
+          "passed": true,
+          "accepted": true,
+          "effects": [
+            "assert AlertStatus = Green"
+          ]
+        },
+        {
+          "description": "expect",
+          "passed": true
+        }
+      ],
+      "final_state": [
+        "AlertStatus = Green",
+        "Allocation(Impulse) = 1",
+        "Allocation(LifeSupport) = 2",
+        "Allocation(Phasers) = 0",
+        "Allocation(Sensors) = 1",
+        "Allocation(Shields) = 3",
+        "Allocation(Torpedoes) = 1",
+        "Allocation(Warp) = 4",
+        "HullIntegrity = 100",
+        "OnBridge(Captain)",
+        "OnBridge(Ensign)",
+        "OnBridge(FirstOfficer)",
+        "ReactorOutput = 12",
+        "TorpedoCount = 4"
+      ]
+    },
+    {
+      "scenario": "shields absorb fire and a breach raises the alarm",
+      "steps": [
+        {
+          "description": "RaiseShields(Ensign) rejected by ShieldsCommand",
+          "passed": true,
+          "accepted": false,
+          "denied_by": [
+            "ShieldsCommand",
+            "DoRaise"
+          ]
+        },
+        {
+          "description": "RaiseShields(Captain) accepted",
+          "passed": true,
+          "accepted": true,
+          "effects": [
+            "assert ShieldsUp"
+          ]
+        },
+        {
+          "description": "TakeHit(20) accepted",
+          "passed": true,
+          "accepted": true,
+          "effects": [
+            "assert HullIntegrity = 89"
+          ]
+        },
+        {
+          "description": "expect",
+          "passed": true
+        },
+        {
+          "description": "LowerShields(Captain) accepted",
+          "passed": true,
+          "accepted": true,
+          "effects": [
+            "retract ShieldsUp"
+          ]
+        },
+        {
+          "description": "TakeHit(20) accepted",
+          "passed": true,
+          "accepted": true,
+          "effects": [
+            "assert HullIntegrity = 69"
+          ]
+        },
+        {
+          "description": "expect",
+          "passed": true
+        },
+        {
+          "description": "TakeHit(40) accepted with events",
+          "passed": true,
+          "accepted": true,
+          "events": [
+            "HullBreach"
+          ],
+          "effects": [
+            "assert HullIntegrity = 29",
+            "assert AlertStatus = Red"
+          ]
+        },
+        {
+          "description": "expect",
+          "passed": true
+        }
+      ],
+      "final_state": [
+        "AlertStatus = Red",
+        "Allocation(Impulse) = 1",
+        "Allocation(LifeSupport) = 2",
+        "Allocation(Sensors) = 1",
+        "Allocation(Shields) = 3",
+        "Allocation(Torpedoes) = 1",
+        "Allocation(Warp) = 4",
+        "HullIntegrity = 29",
+        "OnBridge(Captain)",
+        "OnBridge(Ensign)",
+        "OnBridge(FirstOfficer)",
+        "ReactorOutput = 12",
+        "TorpedoCount = 4"
+      ]
+    },
+    {
+      "scenario": "reallocation may not starve raised shields or life support",
+      "steps": [
+        {
+          "description": "RaiseShields(Captain) accepted",
+          "passed": true,
+          "accepted": true,
+          "effects": [
+            "assert ShieldsUp"
+          ]
+        },
+        {
+          "description": "AllocatePower(ChiefEngineer, Shields, 1) rejected by ShieldsStayPowered",
+          "passed": true,
+          "accepted": false,
+          "denied_by": [
+            "ShieldsStayPowered"
+          ]
+        },
+        {
+          "description": "AllocatePower(ChiefEngineer, LifeSupport, 1) rejected by LifeSupportMinimum",
+          "passed": true,
+          "accepted": false,
+          "denied_by": [
+            "LifeSupportMinimum"
+          ]
+        },
+        {
+          "description": "LowerShields(Captain) accepted",
+          "passed": true,
+          "accepted": true,
+          "effects": [
+            "retract ShieldsUp"
+          ]
+        },
+        {
+          "description": "AllocatePower(ChiefEngineer, Shields, 1) accepted",
+          "passed": true,
+          "accepted": true,
+          "effects": [
+            "assert Allocation(Shields) = 1"
+          ]
+        },
+        {
+          "description": "RaiseShields(Captain) rejected by ShieldsOperational",
+          "passed": true,
+          "accepted": false,
+          "denied_by": [
+            "ShieldsOperational",
+            "DoRaise"
+          ]
+        }
+      ],
+      "final_state": [
+        "AlertStatus = Green",
+        "Allocation(Impulse) = 1",
+        "Allocation(LifeSupport) = 2",
+        "Allocation(Sensors) = 1",
+        "Allocation(Shields) = 1",
+        "Allocation(Torpedoes) = 1",
+        "Allocation(Warp) = 4",
+        "HullIntegrity = 100",
+        "OnBridge(Captain)",
+        "OnBridge(Ensign)",
+        "OnBridge(FirstOfficer)",
+        "ReactorOutput = 12",
+        "TorpedoCount = 4"
+      ]
+    },
+    {
+      "scenario": "damage reports and repairs",
+      "steps": [
+        {
+          "description": "ReportDamage(Shields) accepted",
+          "passed": true,
+          "accepted": true,
+          "effects": [
+            "assert Damaged(Shields) = true"
+          ]
+        },
+        {
+          "description": "ReportDamage(Shields) rejected by DoReportDamage",
+          "passed": true,
+          "accepted": false,
+          "denied_by": [
+            "DoReportDamage"
+          ]
+        },
+        {
+          "description": "RaiseShields(Captain) rejected by ShieldsOperational",
+          "passed": true,
+          "accepted": false,
+          "denied_by": [
+            "ShieldsOperational",
+            "DoRaise"
+          ]
+        },
+        {
+          "description": "Repair(Ensign, Shields) rejected by RepairAuthority",
+          "passed": true,
+          "accepted": false,
+          "denied_by": [
+            "RepairAuthority",
+            "DoRepair"
+          ]
+        },
+        {
+          "description": "Repair(ChiefEngineer, Shields) accepted",
+          "passed": true,
+          "accepted": true,
+          "effects": [
+            "retract Damaged(Shields)"
+          ]
+        },
+        {
+          "description": "Repair(ChiefEngineer, Shields) rejected by RepairNeeded",
+          "passed": true,
+          "accepted": false,
+          "denied_by": [
+            "RepairNeeded",
+            "DoRepair"
+          ]
+        },
+        {
+          "description": "RaiseShields(Captain) accepted",
+          "passed": true,
+          "accepted": true,
+          "effects": [
+            "assert ShieldsUp"
+          ]
+        },
+        {
+          "description": "expect",
+          "passed": true
+        }
+      ],
+      "final_state": [
+        "AlertStatus = Green",
+        "Allocation(Impulse) = 1",
+        "Allocation(LifeSupport) = 2",
+        "Allocation(Sensors) = 1",
+        "Allocation(Shields) = 3",
+        "Allocation(Torpedoes) = 1",
+        "Allocation(Warp) = 4",
+        "HullIntegrity = 100",
+        "OnBridge(Captain)",
+        "OnBridge(Ensign)",
+        "OnBridge(FirstOfficer)",
+        "ReactorOutput = 12",
+        "ShieldsUp",
+        "TorpedoCount = 4"
+      ]
+    },
+    {
+      "scenario": "warp needs coils powered for the factor",
+      "steps": [
+        {
+          "description": "EngageWarp(Captain, 5) rejected by WarpPower",
+          "passed": true,
+          "accepted": false,
+          "denied_by": [
+            "WarpPower",
+            "DoWarp"
+          ]
+        },
+        {
+          "description": "EngageWarp(Captain, 4) accepted",
+          "passed": true,
+          "accepted": true,
+          "effects": [
+            "assert WarpSpeed = 4"
+          ]
+        },
+        {
+          "description": "expect",
+          "passed": true
+        },
+        {
+          "description": "AllocatePower(ChiefEngineer, Warp, 2) rejected by WarpNeedsPower",
+          "passed": true,
+          "accepted": false,
+          "denied_by": [
+            "WarpNeedsPower"
+          ]
+        },
+        {
+          "description": "AllStop(Captain) accepted",
+          "passed": true,
+          "accepted": true,
+          "effects": [
+            "retract WarpSpeed"
+          ]
+        },
+        {
+          "description": "AllocatePower(ChiefEngineer, Warp, 2) accepted",
+          "passed": true,
+          "accepted": true,
+          "effects": [
+            "assert Allocation(Warp) = 2"
+          ]
+        },
+        {
+          "description": "EngageWarp(Captain, 2) rejected by WarpOperational",
+          "passed": true,
+          "accepted": false,
+          "denied_by": [
+            "WarpOperational",
+            "DoWarp"
+          ]
+        },
+        {
+          "description": "AllocatePower(ChiefEngineer, Warp, 5) rejected by PowerBudget",
+          "passed": true,
+          "accepted": false,
+          "denied_by": [
+            "PowerBudget"
+          ]
+        },
+        {
+          "description": "AllocatePower(ChiefEngineer, Sensors, 0) accepted",
+          "passed": true,
+          "accepted": true,
+          "effects": [
+            "assert Allocation(Sensors) = 0"
+          ]
+        },
+        {
+          "description": "AllocatePower(ChiefEngineer, Warp, 5) accepted",
+          "passed": true,
+          "accepted": true,
+          "effects": [
+            "assert Allocation(Warp) = 5"
+          ]
+        },
+        {
+          "description": "EngageWarp(Captain, 5) accepted",
+          "passed": true,
+          "accepted": true,
+          "effects": [
+            "assert WarpSpeed = 5"
+          ]
+        },
+        {
+          "description": "expect",
+          "passed": true
+        }
+      ],
+      "final_state": [
+        "AlertStatus = Green",
+        "Allocation(Impulse) = 1",
+        "Allocation(LifeSupport) = 2",
+        "Allocation(Sensors) = 0",
+        "Allocation(Shields) = 3",
+        "Allocation(Torpedoes) = 1",
+        "Allocation(Warp) = 5",
+        "HullIntegrity = 100",
+        "OnBridge(Captain)",
+        "OnBridge(Ensign)",
+        "OnBridge(FirstOfficer)",
+        "ReactorOutput = 12",
+        "TorpedoCount = 4",
+        "WarpSpeed = 5"
+      ]
+    },
+    {
+      "scenario": "weapons are locked outside red alert",
+      "steps": [
+        {
+          "description": "FireTorpedo(Captain) rejected by TorpedoRedAlert",
+          "passed": true,
+          "accepted": false,
+          "denied_by": [
+            "TorpedoRedAlert",
+            "DoFireTorpedo"
+          ]
+        },
+        {
+          "description": "SetAlert(Captain, Red) accepted",
+          "passed": true,
+          "accepted": true,
+          "effects": [
+            "assert AlertStatus = Red"
+          ]
+        },
+        {
+          "description": "FireTorpedo(Captain) accepted",
+          "passed": true,
+          "accepted": true,
+          "effects": [
+            "assert TorpedoCount = 3"
+          ]
+        },
+        {
+          "description": "expect",
+          "passed": true
+        },
+        {
+          "description": "FirePhasers(Captain) rejected by PhaserReady",
+          "passed": true,
+          "accepted": false,
+          "denied_by": [
+            "PhaserReady",
+            "DoFirePhasers"
+          ]
+        },
+        {
+          "description": "AllocatePower(ChiefEngineer, Phasers, 2) accepted",
+          "passed": true,
+          "accepted": true,
+          "effects": [
+            "assert Allocation(Phasers) = 2"
+          ]
+        },
+        {
+          "description": "FirePhasers(Captain) accepted",
+          "passed": true,
+          "accepted": true
+        },
+        {
+          "description": "ReportDamage(Torpedoes) accepted",
+          "passed": true,
+          "accepted": true,
+          "effects": [
+            "assert Damaged(Torpedoes) = true"
+          ]
+        },
+        {
+          "description": "FireTorpedo(Captain) rejected by TorpedoReady",
+          "passed": true,
+          "accepted": false,
+          "denied_by": [
+            "TorpedoReady",
+            "DoFireTorpedo"
+          ]
+        }
+      ],
+      "final_state": [
+        "AlertStatus = Red",
+        "Allocation(Impulse) = 1",
+        "Allocation(LifeSupport) = 2",
+        "Allocation(Phasers) = 2",
+        "Allocation(Sensors) = 1",
+        "Allocation(Shields) = 3",
+        "Allocation(Torpedoes) = 1",
+        "Allocation(Warp) = 4",
+        "Damaged(Torpedoes)",
+        "HullIntegrity = 100",
+        "OnBridge(Captain)",
+        "OnBridge(Ensign)",
+        "OnBridge(FirstOfficer)",
+        "ReactorOutput = 12",
+        "TorpedoCount = 3"
+      ]
+    },
+    {
+      "scenario": "self-destruct needs two senior officers and only the captain cancels",
+      "steps": [
+        {
+          "description": "AuthorizeSelfDestruct(Ensign) rejected by DestructAuthority",
+          "passed": true,
+          "accepted": false,
+          "denied_by": [
+            "DestructAuthority",
+            "DoAuthorize"
+          ]
+        },
+        {
+          "description": "AuthorizeSelfDestruct(Captain) accepted with events",
+          "passed": true,
+          "accepted": true,
+          "effects": [
+            "assert SelfDestructArmedBy(Captain) = true"
+          ]
+        },
+        {
+          "description": "AuthorizeSelfDestruct(Captain) rejected by DestructOnce",
+          "passed": true,
+          "accepted": false,
+          "denied_by": [
+            "DestructOnce",
+            "DoAuthorize"
+          ]
+        },
+        {
+          "description": "Tick rejected by DoTick",
+          "passed": true,
+          "accepted": false,
+          "denied_by": [
+            "DoTick"
+          ]
+        },
+        {
+          "description": "AuthorizeSelfDestruct(FirstOfficer) accepted with events",
+          "passed": true,
+          "accepted": true,
+          "events": [
+            "SelfDestructArmed"
+          ],
+          "effects": [
+            "assert SelfDestructArmedBy(FirstOfficer) = true",
+            "assert Countdown = 3"
+          ]
+        },
+        {
+          "description": "expect",
+          "passed": true
+        },
+        {
+          "description": "Tick accepted",
+          "passed": true,
+          "accepted": true,
+          "effects": [
+            "assert Countdown = 2"
+          ]
+        },
+        {
+          "description": "Tick accepted",
+          "passed": true,
+          "accepted": true,
+          "effects": [
+            "assert Countdown = 1"
+          ]
+        },
+        {
+          "description": "expect",
+          "passed": true
+        },
+        {
+          "description": "CancelSelfDestruct(FirstOfficer) rejected by CancelIsCaptains",
+          "passed": true,
+          "accepted": false,
+          "denied_by": [
+            "CancelIsCaptains",
+            "DoCancel"
+          ]
+        },
+        {
+          "description": "CancelSelfDestruct(Captain) accepted",
+          "passed": true,
+          "accepted": true,
+          "effects": [
+            "retract Countdown",
+            "retract SelfDestructArmedBy(Captain)",
+            "retract SelfDestructArmedBy(ChiefEngineer)",
+            "retract SelfDestructArmedBy(Doctor)",
+            "retract SelfDestructArmedBy(Ensign)",
+            "retract SelfDestructArmedBy(FirstOfficer)"
+          ]
+        },
+        {
+          "description": "expect",
+          "passed": true
+        }
+      ],
+      "final_state": [
+        "AlertStatus = Green",
+        "Allocation(Impulse) = 1",
+        "Allocation(LifeSupport) = 2",
+        "Allocation(Sensors) = 1",
+        "Allocation(Shields) = 3",
+        "Allocation(Torpedoes) = 1",
+        "Allocation(Warp) = 4",
+        "HullIntegrity = 100",
+        "OnBridge(Captain)",
+        "OnBridge(Ensign)",
+        "OnBridge(FirstOfficer)",
+        "ReactorOutput = 12",
+        "TorpedoCount = 4"
+      ]
+    },
+    {
+      "scenario": "detonation",
+      "steps": [
+        {
+          "description": "AuthorizeSelfDestruct(Captain) accepted",
+          "passed": true,
+          "accepted": true,
+          "effects": [
+            "assert SelfDestructArmedBy(Captain) = true"
+          ]
+        },
+        {
+          "description": "AuthorizeSelfDestruct(FirstOfficer) accepted with events",
+          "passed": true,
+          "accepted": true,
+          "events": [
+            "SelfDestructArmed"
+          ],
+          "effects": [
+            "assert SelfDestructArmedBy(FirstOfficer) = true",
+            "assert Countdown = 3"
+          ]
+        },
+        {
+          "description": "Tick accepted",
+          "passed": true,
+          "accepted": true,
+          "effects": [
+            "assert Countdown = 2"
+          ]
+        },
+        {
+          "description": "Tick accepted",
+          "passed": true,
+          "accepted": true,
+          "effects": [
+            "assert Countdown = 1"
+          ]
+        },
+        {
+          "description": "Tick accepted with events",
+          "passed": true,
+          "accepted": true,
+          "events": [
+            "Detonation"
+          ],
+          "effects": [
+            "assert Countdown = 0",
+            "assert Destroyed"
+          ]
+        },
+        {
+          "description": "expect",
+          "passed": true
+        },
+        {
+          "description": "SetAlert(Captain, Green) rejected by AlertCommand",
+          "passed": true,
+          "accepted": false,
+          "denied_by": [
+            "AlertCommand"
+          ]
+        },
+        {
+          "description": "Tick rejected by DoTick",
+          "passed": true,
+          "accepted": false,
+          "denied_by": [
+            "DoTick"
+          ]
+        }
+      ],
+      "final_state": [
+        "AlertStatus = Green",
+        "Allocation(Impulse) = 1",
+        "Allocation(LifeSupport) = 2",
+        "Allocation(Sensors) = 1",
+        "Allocation(Shields) = 3",
+        "Allocation(Torpedoes) = 1",
+        "Allocation(Warp) = 4",
+        "Countdown = 0",
+        "Destroyed",
+        "HullIntegrity = 100",
+        "OnBridge(Captain)",
+        "OnBridge(Ensign)",
+        "OnBridge(FirstOfficer)",
+        "ReactorOutput = 12",
+        "SelfDestructArmedBy(Captain)",
+        "SelfDestructArmedBy(FirstOfficer)",
+        "TorpedoCount = 4"
+      ]
+    },
+    {
+      "scenario": "the computer goes to red alert on its own when life support fails",
+      "steps": [
+        {
+          "description": "ReportDamage(LifeSupport) accepted with events",
+          "passed": true,
+          "accepted": true,
+          "events": [
+            "LifeSupportFailing"
+          ],
+          "effects": [
+            "assert Damaged(LifeSupport) = true",
+            "assert AlertStatus = Red"
+          ]
+        },
+        {
+          "description": "expect",
+          "passed": true
+        },
+        {
+          "description": "Repair(ChiefEngineer, LifeSupport) accepted with events",
+          "passed": true,
+          "accepted": true,
+          "effects": [
+            "retract Damaged(LifeSupport)"
+          ]
+        },
+        {
+          "description": "expect",
+          "passed": true
+        }
+      ],
+      "final_state": [
+        "AlertStatus = Red",
+        "Allocation(Impulse) = 1",
+        "Allocation(LifeSupport) = 2",
+        "Allocation(Sensors) = 1",
+        "Allocation(Shields) = 3",
+        "Allocation(Torpedoes) = 1",
+        "Allocation(Warp) = 4",
+        "HullIntegrity = 100",
+        "OnBridge(Captain)",
+        "OnBridge(Ensign)",
+        "OnBridge(FirstOfficer)",
+        "ReactorOutput = 12",
+        "TorpedoCount = 4"
+      ]
+    },
+    {
+      "scenario": "the ship can be lost",
+      "steps": [
+        {
+          "description": "TakeHit(40) accepted",
+          "passed": true,
+          "accepted": true,
+          "effects": [
+            "assert HullIntegrity = 60"
+          ]
+        },
+        {
+          "description": "TakeHit(40) accepted with events",
+          "passed": true,
+          "accepted": true,
+          "events": [
+            "HullBreach"
+          ],
+          "effects": [
+            "assert HullIntegrity = 20",
+            "assert AlertStatus = Red"
+          ]
+        },
+        {
+          "description": "expect",
+          "passed": true
+        },
+        {
+          "description": "TakeHit(40) accepted with events",
+          "passed": true,
+          "accepted": true,
+          "events": [
+            "ShipLost"
+          ],
+          "effects": [
+            "assert HullIntegrity = 0",
+            "assert Destroyed"
+          ]
+        },
+        {
+          "description": "expect",
+          "passed": true
+        },
+        {
+          "description": "TakeHit(5) rejected by DoTakeHit",
+          "passed": true,
+          "accepted": false,
+          "denied_by": [
+            "DoTakeHit"
+          ]
+        }
+      ],
+      "final_state": [
+        "AlertStatus = Red",
+        "Allocation(Impulse) = 1",
+        "Allocation(LifeSupport) = 2",
+        "Allocation(Sensors) = 1",
+        "Allocation(Shields) = 3",
+        "Allocation(Torpedoes) = 1",
+        "Allocation(Warp) = 4",
+        "Destroyed",
+        "HullIntegrity = 0",
+        "OnBridge(Captain)",
+        "OnBridge(Ensign)",
+        "OnBridge(FirstOfficer)",
+        "ReactorOutput = 12",
+        "TorpedoCount = 4"
+      ]
+    }
+  ]
+}

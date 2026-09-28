@@ -1,0 +1,15 @@
+{
+  "name": "nomic-monorepo",
+  "private": true,
+  "description": "Nomic: a deterministic executable specification language. Rust reference machine in crates/, editor and tooling packages in packages/.",
+  "license": "MIT",
+  "scripts": {
+    "build": "pnpm -r run build",
+    "test": "pnpm -r run test",
+    "check": "cargo test && pnpm -r run build && pnpm -r run test && cargo run --release -q -- cite examples/nomic.nom"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0"
+  },
+  "engines": { "node": ">=20" }
+}

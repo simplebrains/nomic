@@ -1,0 +1,368 @@
+{
+  "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+  "name": "Nomic",
+  "scopeName": "source.nomic",
+  "fileTypes": [
+    "nom",
+    "nomic"
+  ],
+  "patterns": [
+    {
+      "include": "#comments"
+    },
+    {
+      "include": "#declarations"
+    },
+    {
+      "include": "#citations"
+    },
+    {
+      "include": "#scenario-steps"
+    },
+    {
+      "include": "#keywords"
+    },
+    {
+      "include": "#types"
+    },
+    {
+      "include": "#literals"
+    },
+    {
+      "include": "#strings"
+    },
+    {
+      "include": "#calls"
+    },
+    {
+      "include": "#variants"
+    },
+    {
+      "include": "#operators"
+    },
+    {
+      "include": "#punctuation"
+    }
+  ],
+  "repository": {
+    "comments": {
+      "patterns": [
+        {
+          "name": "comment.line.documentation.nomic",
+          "match": "///.*$"
+        },
+        {
+          "name": "comment.line.double-slash.nomic",
+          "match": "//.*$"
+        }
+      ]
+    },
+    "declarations": {
+      "patterns": [
+        {
+          "comment": "type Name = ...",
+          "match": "\\b(observed|required|expected|assumed)?\\s*\\b(type)\\s+([A-Za-z_][A-Za-z0-9_]*)",
+          "captures": {
+            "1": {
+              "name": "storage.modifier.status.nomic"
+            },
+            "2": {
+              "name": "storage.type.declaration.nomic"
+            },
+            "3": {
+              "name": "entity.name.type.nomic"
+            }
+          }
+        },
+        {
+          "comment": "rule Name on Occurrence / exception Name on Invariant",
+          "match": "\\b(observed|required|expected|assumed)?\\s*\\b(rule|exception)\\s+([A-Za-z_][A-Za-z0-9_]*)\\s+(on)\\s+([A-Za-z_][A-Za-z0-9_]*)",
+          "captures": {
+            "1": {
+              "name": "storage.modifier.status.nomic"
+            },
+            "2": {
+              "name": "storage.type.declaration.nomic"
+            },
+            "3": {
+              "name": "entity.name.function.rule.nomic"
+            },
+            "4": {
+              "name": "keyword.control.nomic"
+            },
+            "5": {
+              "name": "entity.name.function.occurrence.nomic"
+            }
+          }
+        },
+        {
+          "comment": "fact / derive / action / event / invariant / ensure Name",
+          "match": "\\b(observed|required|expected|assumed)?\\s*\\b(fact|derive|action|event|invariant|ensure)\\s+([A-Za-z_][A-Za-z0-9_]*)",
+          "captures": {
+            "1": {
+              "name": "storage.modifier.status.nomic"
+            },
+            "2": {
+              "name": "storage.type.declaration.nomic"
+            },
+            "3": {
+              "name": "entity.name.function.declaration.nomic"
+            }
+          }
+        },
+        {
+          "comment": "model Name",
+          "match": "\\b(model)\\s+([A-Za-z_][A-Za-z0-9_]*)",
+          "captures": {
+            "1": {
+              "name": "storage.type.declaration.nomic"
+            },
+            "2": {
+              "name": "entity.name.namespace.nomic"
+            }
+          }
+        },
+        {
+          "comment": "scenario \"name\"",
+          "begin": "\\b(scenario)\\s+(?=\")",
+          "beginCaptures": {
+            "1": {
+              "name": "storage.type.declaration.nomic"
+            }
+          },
+          "end": "(?<=\")",
+          "patterns": [
+            {
+              "name": "entity.name.section.scenario.nomic string.quoted.double.nomic",
+              "begin": "\"",
+              "end": "\"",
+              "patterns": [
+                {
+                  "include": "#string-escapes"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "comment": "cite Target",
+          "match": "\\b(cite)\\s+([A-Za-z_][A-Za-z0-9_]*)?",
+          "captures": {
+            "1": {
+              "name": "storage.type.declaration.nomic"
+            },
+            "2": {
+              "name": "entity.name.function.declaration.nomic"
+            }
+          }
+        },
+        {
+          "name": "storage.type.declaration.nomic",
+          "match": "\\b(init)\\b"
+        }
+      ]
+    },
+    "citations": {
+      "comment": "relation \"path#L1-L2@pin\" \"note\"",
+      "begin": "\\b(realizes|derives_from|evidences|contradicts|configures|documents)\\s+(?=\")",
+      "beginCaptures": {
+        "1": {
+          "name": "keyword.other.relation.nomic"
+        }
+      },
+      "end": "(?<=\")",
+      "patterns": [
+        {
+          "name": "string.other.link.locator.nomic",
+          "begin": "\"",
+          "end": "\"",
+          "patterns": [
+            {
+              "name": "constant.numeric.line-range.nomic",
+              "match": "#L[0-9]+(-L[0-9]+)?"
+            },
+            {
+              "name": "constant.other.pin.nomic",
+              "match": "@[0-9a-f]+"
+            }
+          ]
+        }
+      ]
+    },
+    "scenario-steps": {
+      "patterns": [
+        {
+          "match": "\\b(rejected)\\s+(by)\\s+([A-Za-z_][A-Za-z0-9_]*)",
+          "captures": {
+            "1": {
+              "name": "keyword.control.nomic"
+            },
+            "2": {
+              "name": "keyword.control.nomic"
+            },
+            "3": {
+              "name": "entity.name.function.rule.nomic"
+            }
+          }
+        }
+      ]
+    },
+    "keywords": {
+      "patterns": [
+        {
+          "name": "storage.modifier.status.nomic",
+          "match": "\\b(observed|required|expected|assumed)\\b"
+        },
+        {
+          "name": "keyword.control.nomic",
+          "match": "\\b(on|when|if|else|for|where|require|deny|allow|assert|retract|emit|let|given|expect|emits|rejected|by|match)\\b"
+        },
+        {
+          "name": "support.function.builtin.nomic",
+          "match": "\\b(all|exists|count|sum|first|legal)\\b"
+        },
+        {
+          "name": "keyword.other.relation.nomic",
+          "match": "\\b(realizes|derives_from|evidences|contradicts|configures|documents)\\b"
+        },
+        {
+          "name": "storage.type.declaration.nomic",
+          "match": "\\b(model|type|fact|derive|action|event|rule|invariant|ensure|exception|init|scenario|cite)\\b"
+        }
+      ]
+    },
+    "types": {
+      "patterns": [
+        {
+          "name": "support.type.primitive.nomic",
+          "match": "\\b(Int|Bool|Text)\\b(\\?)?"
+        },
+        {
+          "comment": "inline range type 0..6 or -1..1",
+          "match": "(-?[0-9]+)(\\.\\.)(-?[0-9]+)",
+          "captures": {
+            "1": {
+              "name": "constant.numeric.integer.nomic"
+            },
+            "2": {
+              "name": "keyword.operator.range.nomic"
+            },
+            "3": {
+              "name": "constant.numeric.integer.nomic"
+            }
+          }
+        },
+        {
+          "comment": "name: Type   (parameters, binders, fact values, derive results)",
+          "match": "(:)\\s*(?:\\b(Int|Bool|Text)\\b|([A-Z][A-Za-z0-9_]*))(\\?)?",
+          "captures": {
+            "1": {
+              "name": "punctuation.separator.type.nomic"
+            },
+            "2": {
+              "name": "support.type.primitive.nomic"
+            },
+            "3": {
+              "name": "entity.name.type.nomic"
+            },
+            "4": {
+              "name": "keyword.operator.optional.nomic"
+            }
+          }
+        }
+      ]
+    },
+    "literals": {
+      "patterns": [
+        {
+          "name": "constant.language.nomic",
+          "match": "\\b(true|false|none|nothing)\\b"
+        },
+        {
+          "name": "constant.numeric.integer.nomic",
+          "match": "\\b[0-9]+\\b"
+        }
+      ]
+    },
+    "strings": {
+      "name": "string.quoted.double.nomic",
+      "begin": "\"",
+      "end": "\"",
+      "patterns": [
+        {
+          "include": "#string-escapes"
+        }
+      ]
+    },
+    "string-escapes": {
+      "name": "constant.character.escape.nomic",
+      "match": "\\\\[\"\\\\nt]"
+    },
+    "calls": {
+      "comment": "Name( \u2026 ): fact lookup, derive application, action or event occurrence",
+      "match": "\\b([A-Z][A-Za-z0-9_]*)(?=\\()",
+      "captures": {
+        "1": {
+          "name": "entity.name.function.call.nomic"
+        }
+      }
+    },
+    "variants": {
+      "comment": "Bare capitalised name: an enum variant or a zero-arity fact or derive",
+      "match": "\\b[A-Z][A-Za-z0-9_]*\\b",
+      "name": "variable.other.constant.nomic"
+    },
+    "operators": {
+      "patterns": [
+        {
+          "name": "keyword.operator.comparison.nomic",
+          "match": "==|!=|<=|>=|<|>"
+        },
+        {
+          "name": "keyword.operator.logical.nomic",
+          "match": "&&|\\|\\||!"
+        },
+        {
+          "name": "keyword.operator.coalesce.nomic",
+          "match": "\\?\\?"
+        },
+        {
+          "name": "keyword.operator.arrow.nomic",
+          "match": "=>"
+        },
+        {
+          "name": "keyword.operator.assignment.nomic",
+          "match": "="
+        },
+        {
+          "name": "keyword.operator.arithmetic.nomic",
+          "match": "[+\\-*/%]"
+        },
+        {
+          "name": "keyword.operator.ternary.nomic",
+          "match": "\\?|:"
+        },
+        {
+          "name": "keyword.operator.alternative.nomic",
+          "match": "\\|"
+        }
+      ]
+    },
+    "punctuation": {
+      "patterns": [
+        {
+          "name": "punctuation.section.braces.nomic",
+          "match": "[{}]"
+        },
+        {
+          "name": "punctuation.section.parens.nomic",
+          "match": "[()]"
+        },
+        {
+          "name": "punctuation.separator.nomic",
+          "match": "[,;]"
+        }
+      ]
+    }
+  }
+}

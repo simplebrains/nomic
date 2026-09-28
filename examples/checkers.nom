@@ -1,0 +1,213 @@
+/// American checkers (draughts) on an 8x8 board, twelve men a side.
+/// Men step diagonally forward; kings step diagonally in any direction.
+/// Captures jump over an adjacent enemy to the empty square beyond, are
+/// mandatory when available, and continue with the same piece while further
+/// jumps exist. Reaching the far rank crowns the piece and ends its turn.
+/// A side with no pieces or no legal move loses.
+///
+/// This model exercises the reaction mechanism: a jump does not end the turn
+/// itself. The `JumpEnded` event fires when the landing square offers no
+/// further capture (or the piece was just crowned), and its reaction rule
+/// hands the turn over — all inside the one transition.
+model Checkers
+
+type Side = Red | Black
+type File = 0..7
+type Rank = 0..7
+type Dir = -1..1
+
+/// The side owning the piece on a square, if any.
+fact Owner(f: File, r: Rank): Side
+/// The piece on this square is a king.
+fact King(f: File, r: Rank)
+fact Turn: Side
+/// A piece in mid-capture that must keep jumping from here.
+fact Continuing(f: File, r: Rank)
+/// The continuing piece was crowned by its last jump, which ends the turn.
+fact Crowned(f: File, r: Rank)
+fact Winner: Side
+
+derive Other(s: Side): Side = match s { Red => Black, Black => Red }
+/// Red moves up the board, Black down.
+derive Forward(s: Side): Int = match s { Red => 1, Black => -1 }
+derive CrownRank(s: Side): Int = match s { Red => 7, Black => 0 }
+/// Pieces live on the dark squares only.
+derive Dark(f: Int, r: Int): Bool = (f + r) % 2 == 1
+derive OnBoard(f: Int, r: Int): Bool = f >= 0 && f <= 7 && r >= 0 && r <= 7
+derive Empty(f: Int, r: Int): Bool = OnBoard(f, r) && Owner(f, r) == none
+derive Pieces(s: Side): Int = count(f: File, r: Rank => Owner(f, r) == s)
+derive Kings(s: Side): Int = count(f: File, r: Rank => Owner(f, r) == s && King(f, r))
+
+/// The piece at (f, r) may move in direction (df, dr): diagonal, and forward
+/// unless it is a king.
+derive Heading(f: File, r: Rank, df: Dir, dr: Dir): Bool =
+  Owner(f, r) != none && df != 0 && dr != 0 && (King(f, r) || dr == Forward(Owner(f, r) ?? Red))
+derive StepOk(f: File, r: Rank, df: Dir, dr: Dir): Bool =
+  Heading(f, r, df, dr) && Empty(f + df, r + dr)
+derive JumpOk(f: File, r: Rank, df: Dir, dr: Dir): Bool =
+  Heading(f, r, df, dr)
+  && Owner(f + df, r + dr) == Other(Owner(f, r) ?? Red)
+  && Empty(f + 2 * df, r + 2 * dr)
+derive CanJump(f: File, r: Rank): Bool = exists(df: Dir, dr: Dir => JumpOk(f, r, df, dr))
+derive CanStep(f: File, r: Rank): Bool = exists(df: Dir, dr: Dir => StepOk(f, r, df, dr))
+derive SideCanJump(s: Side): Bool = exists(f: File, r: Rank where Owner(f, r) == s => CanJump(f, r))
+derive HasMove(s: Side): Bool = exists(f: File, r: Rank where Owner(f, r) == s => CanJump(f, r) || CanStep(f, r))
+derive MidCapture: Bool = exists(f: File, r: Rank => Continuing(f, r))
+derive Over: Bool = Winner != none
+
+/// Move the piece at (f, r) one square in direction (df, dr).
+action Step(side: Side, f: File, r: Rank, df: Dir, dr: Dir)
+/// Jump the piece at (f, r) over the adjacent enemy in direction (df, dr).
+action Jump(side: Side, f: File, r: Rank, df: Dir, dr: Dir)
+
+rule StepGameOver on Step(s, f, r, df, dr) { deny if Over "the game is over" }
+rule StepTurn on Step(s, f, r, df, dr) { require Turn == s "not your turn" }
+rule StepOwnPiece on Step(s, f, r, df, dr) { require Owner(f, r) == s "not your piece" }
+rule StepNotMidCapture on Step(s, f, r, df, dr) { deny if MidCapture "a capture in progress must be completed" }
+rule CaptureIsMandatory on Step(s, f, r, df, dr) { deny if SideCanJump(s) "a capture is available and must be taken" }
+rule MakeStep on Step(s, f, r, df, dr) {
+  require StepOk(f, r, df, dr) "illegal step"
+  retract Owner(f, r)
+  assert Owner(f + df, r + dr) = s
+  if King(f, r) {
+    retract King(f, r)
+    assert King(f + df, r + dr)
+  } else if r + dr == CrownRank(s) {
+    assert King(f + df, r + dr)
+  }
+  assert Turn = Other(s)
+}
+
+rule JumpGameOver on Jump(s, f, r, df, dr) { deny if Over "the game is over" }
+rule JumpTurn on Jump(s, f, r, df, dr) { require Turn == s "not your turn" }
+rule JumpOwnPiece on Jump(s, f, r, df, dr) { require Owner(f, r) == s "not your piece" }
+rule JumpSamePiece on Jump(s, f, r, df, dr) {
+  deny if MidCapture && !Continuing(f, r) "the capture must continue with the same piece"
+}
+rule MakeJump on Jump(s, f, r, df, dr) {
+  require JumpOk(f, r, df, dr) "illegal jump"
+  let tf = f + 2 * df
+  let tr = r + 2 * dr
+  retract Owner(f, r)
+  retract Owner(f + df, r + dr)
+  retract King(f + df, r + dr)
+  assert Owner(tf, tr) = s
+  if King(f, r) {
+    retract King(f, r)
+    assert King(tf, tr)
+  } else if tr == CrownRank(s) {
+    assert King(tf, tr)
+    assert Crowned(tf, tr)
+  }
+  retract Continuing(f, r)
+  assert Continuing(tf, tr)
+}
+
+/// The jumping piece can go no further (or was just crowned): its turn ends.
+event JumpEnded(f: File, r: Rank) when Continuing(f, r) && (Crowned(f, r) || !CanJump(f, r))
+rule EndTurn on JumpEnded(f, r) {
+  retract Continuing(f, r)
+  retract Crowned(f, r)
+  assert Turn = Other(Owner(f, r) ?? Red)
+}
+
+/// The side to move has nothing left or nothing legal: the other side wins.
+event Won(s: Side) when Turn == Other(s) && !MidCapture && (Pieces(Other(s)) == 0 || !HasMove(Other(s)))
+rule RecordWin on Won(s) { assert Winner = s }
+
+invariant PiecesOnDarkSquares: all(f: File, r: Rank where Owner(f, r) != none => Dark(f, r))
+invariant KingsHaveOwners: all(f: File, r: Rank where King(f, r) => Owner(f, r) != none)
+invariant TwelveAtMost: Pieces(Red) <= 12 && Pieces(Black) <= 12
+invariant OneContinuingPiece: count(f: File, r: Rank => Continuing(f, r)) <= 1
+invariant ContinuingPieceIsOnTurn: all(f: File, r: Rank where Continuing(f, r) => Owner(f, r) == Turn)
+invariant CrownedOnlyWhileContinuing: all(f: File, r: Rank where Crowned(f, r) => Continuing(f, r))
+
+init {
+  for (f: File, r: 0..2 where Dark(f, r)) { assert Owner(f, r) = Red }
+  for (f: File, r: 5..7 where Dark(f, r)) { assert Owner(f, r) = Black }
+  assert Turn = Red
+}
+
+scenario "opening steps alternate turns" {
+  expect Pieces(Red) == 12 && Pieces(Black) == 12
+  Step(Red, 1, 2, 1, 1)
+  expect Owner(2, 3) == Red && Owner(1, 2) == none && Turn == Black
+  Step(Black, 4, 5, -1, -1)
+  expect Owner(3, 4) == Black && Turn == Red
+  Step(Red, 3, 2, 1, 1) rejected by CaptureIsMandatory
+}
+
+scenario "a single jump captures and hands over the turn" {
+  Step(Red, 1, 2, 1, 1)
+  Step(Black, 4, 5, -1, -1)
+  Jump(Red, 2, 3, 1, 1) emits JumpEnded(4, 5)
+  expect Owner(4, 5) == Red && Owner(3, 4) == none && Owner(2, 3) == none
+  expect Pieces(Black) == 11 && Turn == Black && !MidCapture
+}
+
+scenario "men only move forward and only onto empty dark squares" {
+  Step(Red, 1, 2, 1, -1) rejected by MakeStep
+  Step(Red, 1, 2, 0, 1) rejected by MakeStep
+  Step(Red, 0, 1, 1, 1) rejected by MakeStep
+  Step(Black, 4, 5, -1, -1) rejected by StepTurn
+  Step(Red, 4, 5, -1, -1) rejected by StepOwnPiece
+}
+
+scenario "a double jump continues within the turn" {
+  given nothing
+  given Turn = Red
+  given Owner(1, 0) = Red
+  given Owner(7, 0) = Red
+  given Owner(2, 1) = Black
+  given Owner(4, 3) = Black
+  given Owner(6, 1) = Black
+  Step(Red, 1, 0, 1, 1) rejected by CaptureIsMandatory
+  Jump(Red, 1, 0, 1, 1) emits nothing
+  expect Owner(3, 2) == Red && Owner(2, 1) == none && Turn == Red && MidCapture
+  Jump(Red, 7, 0, -1, 1) rejected by JumpSamePiece
+  Step(Red, 3, 2, -1, 1) rejected by StepNotMidCapture
+  Jump(Red, 3, 2, 1, 1) emits JumpEnded(5, 4)
+  expect Owner(5, 4) == Red && Pieces(Black) == 1 && Turn == Black && !MidCapture
+}
+
+scenario "crowning ends the turn even if another jump exists" {
+  given nothing
+  given Turn = Red
+  given Owner(2, 5) = Red
+  given Owner(3, 6) = Black
+  given Owner(5, 6) = Black
+  Jump(Red, 2, 5, 1, 1) emits JumpEnded(4, 7)
+  expect King(4, 7) && Turn == Black && !MidCapture && !Crowned(4, 7)
+  expect CanJump(4, 7)
+}
+
+scenario "kings move backward" {
+  given nothing
+  given Turn = Black
+  given Owner(3, 4) = Black
+  given King(3, 4)
+  given Owner(1, 0) = Red
+  Step(Black, 3, 4, 1, 1)
+  expect Owner(4, 5) == Black && King(4, 5) && !King(3, 4) && Turn == Red
+}
+
+scenario "capturing the last piece wins" {
+  given nothing
+  given Turn = Red
+  given Owner(2, 3) = Red
+  given Owner(3, 4) = Black
+  Jump(Red, 2, 3, 1, 1) emits JumpEnded(4, 5), Won(Red)
+  expect Winner == Red && Pieces(Black) == 0
+  Step(Red, 4, 5, 1, 1) rejected by StepGameOver
+}
+
+scenario "a side with no legal move has lost" {
+  given nothing
+  given Turn = Red
+  given Owner(1, 0) = Red
+  given Owner(0, 1) = Black
+  given Owner(2, 1) = Black
+  given Owner(3, 2) = Black
+  Step(Red, 1, 0, 1, 1) rejected by MakeStep
+  expect !HasMove(Red) && HasMove(Black)
+}

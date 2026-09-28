@@ -1,0 +1,461 @@
+{
+  "nomic_core": "0.1",
+  "model": "ConnectFour",
+  "cases": [
+    {
+      "scenario": "vertical win is emitted exactly once and ends the game",
+      "steps": [
+        {
+          "description": "Drop(Red, 0) accepted",
+          "passed": true,
+          "accepted": true,
+          "effects": [
+            "assert Cell(0, 0) = Red",
+            "assert Turn = Yellow"
+          ]
+        },
+        {
+          "description": "Drop(Yellow, 1) accepted",
+          "passed": true,
+          "accepted": true,
+          "effects": [
+            "assert Cell(1, 0) = Yellow",
+            "assert Turn = Red"
+          ]
+        },
+        {
+          "description": "Drop(Red, 0) accepted",
+          "passed": true,
+          "accepted": true,
+          "effects": [
+            "assert Cell(0, 1) = Red",
+            "assert Turn = Yellow"
+          ]
+        },
+        {
+          "description": "Drop(Yellow, 1) accepted",
+          "passed": true,
+          "accepted": true,
+          "effects": [
+            "assert Cell(1, 1) = Yellow",
+            "assert Turn = Red"
+          ]
+        },
+        {
+          "description": "Drop(Red, 0) accepted",
+          "passed": true,
+          "accepted": true,
+          "effects": [
+            "assert Cell(0, 2) = Red",
+            "assert Turn = Yellow"
+          ]
+        },
+        {
+          "description": "Drop(Yellow, 1) accepted",
+          "passed": true,
+          "accepted": true,
+          "effects": [
+            "assert Cell(1, 2) = Yellow",
+            "assert Turn = Red"
+          ]
+        },
+        {
+          "description": "expect",
+          "passed": true
+        },
+        {
+          "description": "Drop(Red, 0) accepted with events",
+          "passed": true,
+          "accepted": true,
+          "events": [
+            "Win(Red)"
+          ],
+          "effects": [
+            "assert Cell(0, 3) = Red",
+            "assert Turn = Yellow",
+            "assert Winner = Red"
+          ]
+        },
+        {
+          "description": "expect",
+          "passed": true
+        },
+        {
+          "description": "Drop(Yellow, 2) rejected by GameOver",
+          "passed": true,
+          "accepted": false,
+          "denied_by": [
+            "GameOver"
+          ]
+        }
+      ],
+      "final_state": [
+        "Cell(0, 0) = Red",
+        "Cell(0, 1) = Red",
+        "Cell(0, 2) = Red",
+        "Cell(0, 3) = Red",
+        "Cell(1, 0) = Yellow",
+        "Cell(1, 1) = Yellow",
+        "Cell(1, 2) = Yellow",
+        "Turn = Yellow",
+        "Winner = Red"
+      ]
+    },
+    {
+      "scenario": "horizontal win",
+      "steps": [
+        {
+          "description": "Drop(Red, 0) accepted",
+          "passed": true,
+          "accepted": true,
+          "effects": [
+            "assert Cell(0, 0) = Red",
+            "assert Turn = Yellow"
+          ]
+        },
+        {
+          "description": "Drop(Yellow, 0) accepted",
+          "passed": true,
+          "accepted": true,
+          "effects": [
+            "assert Cell(0, 1) = Yellow",
+            "assert Turn = Red"
+          ]
+        },
+        {
+          "description": "Drop(Red, 1) accepted",
+          "passed": true,
+          "accepted": true,
+          "effects": [
+            "assert Cell(1, 0) = Red",
+            "assert Turn = Yellow"
+          ]
+        },
+        {
+          "description": "Drop(Yellow, 1) accepted",
+          "passed": true,
+          "accepted": true,
+          "effects": [
+            "assert Cell(1, 1) = Yellow",
+            "assert Turn = Red"
+          ]
+        },
+        {
+          "description": "Drop(Red, 2) accepted",
+          "passed": true,
+          "accepted": true,
+          "effects": [
+            "assert Cell(2, 0) = Red",
+            "assert Turn = Yellow"
+          ]
+        },
+        {
+          "description": "Drop(Yellow, 2) accepted",
+          "passed": true,
+          "accepted": true,
+          "effects": [
+            "assert Cell(2, 1) = Yellow",
+            "assert Turn = Red"
+          ]
+        },
+        {
+          "description": "Drop(Red, 3) accepted with events",
+          "passed": true,
+          "accepted": true,
+          "events": [
+            "Win(Red)"
+          ],
+          "effects": [
+            "assert Cell(3, 0) = Red",
+            "assert Turn = Yellow",
+            "assert Winner = Red"
+          ]
+        }
+      ],
+      "final_state": [
+        "Cell(0, 0) = Red",
+        "Cell(0, 1) = Yellow",
+        "Cell(1, 0) = Red",
+        "Cell(1, 1) = Yellow",
+        "Cell(2, 0) = Red",
+        "Cell(2, 1) = Yellow",
+        "Cell(3, 0) = Red",
+        "Turn = Yellow",
+        "Winner = Red"
+      ]
+    },
+    {
+      "scenario": "diagonal win",
+      "steps": [
+        {
+          "description": "Drop(Red, 0) accepted",
+          "passed": true,
+          "accepted": true,
+          "effects": [
+            "assert Cell(0, 0) = Red",
+            "assert Turn = Yellow"
+          ]
+        },
+        {
+          "description": "Drop(Yellow, 1) accepted",
+          "passed": true,
+          "accepted": true,
+          "effects": [
+            "assert Cell(1, 0) = Yellow",
+            "assert Turn = Red"
+          ]
+        },
+        {
+          "description": "Drop(Red, 1) accepted",
+          "passed": true,
+          "accepted": true,
+          "effects": [
+            "assert Cell(1, 1) = Red",
+            "assert Turn = Yellow"
+          ]
+        },
+        {
+          "description": "Drop(Yellow, 2) accepted",
+          "passed": true,
+          "accepted": true,
+          "effects": [
+            "assert Cell(2, 0) = Yellow",
+            "assert Turn = Red"
+          ]
+        },
+        {
+          "description": "Drop(Red, 3) accepted",
+          "passed": true,
+          "accepted": true,
+          "effects": [
+            "assert Cell(3, 0) = Red",
+            "assert Turn = Yellow"
+          ]
+        },
+        {
+          "description": "Drop(Yellow, 2) accepted",
+          "passed": true,
+          "accepted": true,
+          "effects": [
+            "assert Cell(2, 1) = Yellow",
+            "assert Turn = Red"
+          ]
+        },
+        {
+          "description": "Drop(Red, 2) accepted",
+          "passed": true,
+          "accepted": true,
+          "effects": [
+            "assert Cell(2, 2) = Red",
+            "assert Turn = Yellow"
+          ]
+        },
+        {
+          "description": "Drop(Yellow, 3) accepted",
+          "passed": true,
+          "accepted": true,
+          "effects": [
+            "assert Cell(3, 1) = Yellow",
+            "assert Turn = Red"
+          ]
+        },
+        {
+          "description": "Drop(Red, 4) accepted",
+          "passed": true,
+          "accepted": true,
+          "effects": [
+            "assert Cell(4, 0) = Red",
+            "assert Turn = Yellow"
+          ]
+        },
+        {
+          "description": "Drop(Yellow, 3) accepted",
+          "passed": true,
+          "accepted": true,
+          "effects": [
+            "assert Cell(3, 2) = Yellow",
+            "assert Turn = Red"
+          ]
+        },
+        {
+          "description": "Drop(Red, 3) accepted with events",
+          "passed": true,
+          "accepted": true,
+          "events": [
+            "Win(Red)"
+          ],
+          "effects": [
+            "assert Cell(3, 3) = Red",
+            "assert Turn = Yellow",
+            "assert Winner = Red"
+          ]
+        }
+      ],
+      "final_state": [
+        "Cell(0, 0) = Red",
+        "Cell(1, 0) = Yellow",
+        "Cell(1, 1) = Red",
+        "Cell(2, 0) = Yellow",
+        "Cell(2, 1) = Yellow",
+        "Cell(2, 2) = Red",
+        "Cell(3, 0) = Red",
+        "Cell(3, 1) = Yellow",
+        "Cell(3, 2) = Yellow",
+        "Cell(3, 3) = Red",
+        "Cell(4, 0) = Red",
+        "Turn = Yellow",
+        "Winner = Red"
+      ]
+    },
+    {
+      "scenario": "moves out of turn are rejected",
+      "steps": [
+        {
+          "description": "Drop(Yellow, 3) rejected by TurnOrder",
+          "passed": true,
+          "accepted": false,
+          "denied_by": [
+            "TurnOrder"
+          ]
+        },
+        {
+          "description": "Drop(Red, 3) accepted",
+          "passed": true,
+          "accepted": true,
+          "effects": [
+            "assert Cell(3, 0) = Red",
+            "assert Turn = Yellow"
+          ]
+        },
+        {
+          "description": "Drop(Red, 3) rejected by TurnOrder",
+          "passed": true,
+          "accepted": false,
+          "denied_by": [
+            "TurnOrder"
+          ]
+        },
+        {
+          "description": "expect",
+          "passed": true
+        }
+      ],
+      "final_state": [
+        "Cell(3, 0) = Red",
+        "Turn = Yellow"
+      ]
+    },
+    {
+      "scenario": "a full column rejects further drops",
+      "steps": [
+        {
+          "description": "Drop(Red, 0) accepted",
+          "passed": true,
+          "accepted": true,
+          "effects": [
+            "assert Cell(0, 0) = Red",
+            "assert Turn = Yellow"
+          ]
+        },
+        {
+          "description": "Drop(Yellow, 0) accepted",
+          "passed": true,
+          "accepted": true,
+          "effects": [
+            "assert Cell(0, 1) = Yellow",
+            "assert Turn = Red"
+          ]
+        },
+        {
+          "description": "Drop(Red, 0) accepted",
+          "passed": true,
+          "accepted": true,
+          "effects": [
+            "assert Cell(0, 2) = Red",
+            "assert Turn = Yellow"
+          ]
+        },
+        {
+          "description": "Drop(Yellow, 0) accepted",
+          "passed": true,
+          "accepted": true,
+          "effects": [
+            "assert Cell(0, 3) = Yellow",
+            "assert Turn = Red"
+          ]
+        },
+        {
+          "description": "Drop(Red, 0) accepted",
+          "passed": true,
+          "accepted": true,
+          "effects": [
+            "assert Cell(0, 4) = Red",
+            "assert Turn = Yellow"
+          ]
+        },
+        {
+          "description": "Drop(Yellow, 0) accepted",
+          "passed": true,
+          "accepted": true,
+          "effects": [
+            "assert Cell(0, 5) = Yellow",
+            "assert Turn = Red"
+          ]
+        },
+        {
+          "description": "expect",
+          "passed": true
+        },
+        {
+          "description": "Drop(Red, 0) rejected by Place",
+          "passed": true,
+          "accepted": false,
+          "denied_by": [
+            "Place"
+          ]
+        },
+        {
+          "description": "Drop(Red, 1) accepted",
+          "passed": true,
+          "accepted": true,
+          "effects": [
+            "assert Cell(1, 0) = Red",
+            "assert Turn = Yellow"
+          ]
+        }
+      ],
+      "final_state": [
+        "Cell(0, 0) = Red",
+        "Cell(0, 1) = Yellow",
+        "Cell(0, 2) = Red",
+        "Cell(0, 3) = Yellow",
+        "Cell(0, 4) = Red",
+        "Cell(0, 5) = Yellow",
+        "Cell(1, 0) = Red",
+        "Turn = Yellow"
+      ]
+    },
+    {
+      "scenario": "a move that does not win emits nothing",
+      "steps": [
+        {
+          "description": "Drop(Red, 3) accepted with events",
+          "passed": true,
+          "accepted": true,
+          "effects": [
+            "assert Cell(3, 0) = Red",
+            "assert Turn = Yellow"
+          ]
+        },
+        {
+          "description": "expect",
+          "passed": true
+        }
+      ],
+      "final_state": [
+        "Cell(3, 0) = Red",
+        "Turn = Yellow"
+      ]
+    }
+  ]
+}
