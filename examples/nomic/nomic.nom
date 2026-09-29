@@ -15,7 +15,7 @@
 /// rules was added for it, realizing the "match against occurrence and
 /// current state" wording of the core semantics.
 model NomicMachine
-  documents "README.md#L218-L232@77de0c9701bc" "the pipeline section of the README"
+  documents "README.md#L220-L234@77de0c9701bc" "the pipeline section of the README"
   realizes "crates/nomic/src/machine.rs#L1-L15@eb1871a676c8" "the module doc lists the ten stages"
   evidences "crates/nomic/tests/examples.rs#L77-L85@eedf5b4d87bc" "tic-tac-toe: 5478 positions, 958 terminal"
   evidences "crates/nomic/tests/examples.rs#L87-L94@c341eb0d5d74" "Connect Four ply counts match OEIS A212693"
@@ -175,9 +175,9 @@ rule do_fail on invariantFails(i, x) when At == Verify {
 }
   realizes "crates/nomic/src/machine.rs#L736-L760@9722bdc69159" "verify: exceptions are consulted only for failures"
 
-event TransitionCommitted when Outcome == Accepted
-event TransitionRejected when Outcome == Rejected
-event ModelDefect when Outcome == ModelError
+event TRANSITION_COMMITTED when Outcome == Accepted
+event TRANSITION_REJECTED when Outcome == Rejected
+event MODEL_DEFECT when Outcome == ModelError
 
 invariant accepted_means_committed: Outcome != Accepted || At == Commit
 /// A rejected occurrence changes nothing.
@@ -202,7 +202,7 @@ scenario "an accepted transition passes through every stage in order" {
   advance; expect At == Detect && Applied
   advance; expect At == React
   advance; expect At == Verify
-  advance emits TransitionCommitted
+  advance emits TRANSITION_COMMITTED
   expect Outcome == Accepted && At == Commit
   advance rejected by advance_not_done
 }
@@ -210,7 +210,7 @@ scenario "an accepted transition passes through every stage in order" {
 scenario "no matching rule rejects" {
   begin; advance; advance; advance
   expect At == Resolve && !any_match
-  advance emits TransitionRejected
+  advance emits TRANSITION_REJECTED
   expect Outcome == Rejected && !Applied
 }
 
@@ -221,7 +221,7 @@ scenario "any denial rejects, whatever the other rules say" {
   ruleMatches(2, Allow, true) rejected by match_once
   advance; advance
   expect !is_legal
-  advance emits TransitionRejected
+  advance emits TRANSITION_REJECTED
   expect !Applied
 }
 
@@ -229,7 +229,7 @@ scenario "conflicting effects are a model error, not a resolution" {
   begin; advance; ruleMatches(1, Allow, true); ruleMatches(3, Allow, true)
   advance; advance; advance
   expect At == Transition
-  effectsConflict emits ModelDefect
+  effectsConflict emits MODEL_DEFECT
   expect Outcome == ModelError && !Applied
   advance rejected by advance_not_done
 }
@@ -244,14 +244,14 @@ scenario "reactions cascade in rounds and each event fires once" {
   eventDetected(2)
   advance; expect Round == 2 && Fired(2)
   advance; expect At == Verify
-  advance emits TransitionCommitted
+  advance emits TRANSITION_COMMITTED
 }
 
 scenario "an excused invariant failure still commits; an unexcused one is a defect" {
   begin; advance; ruleMatches(1, Allow, true); advance; advance; advance; advance; advance; advance
   expect At == Verify
   invariantFails(1, true)
-  advance emits TransitionCommitted
+  advance emits TRANSITION_COMMITTED
   expect Outcome == Accepted
 }
 
@@ -259,7 +259,7 @@ scenario "an unexcused invariant failure is a model error" {
   begin; advance; ruleMatches(1, Allow, true); advance; advance; advance; advance; advance; advance
   invariantFails(1, true)
   invariantFails(2, false)
-  advance emits ModelDefect
+  advance emits MODEL_DEFECT
   expect Outcome == ModelError && Applied
 }
 

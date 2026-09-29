@@ -94,8 +94,8 @@
           "passed": true,
           "accepted": true,
           "events": [
-            "Check(Black)",
-            "Checkmate(Black)"
+            "CHECK(Black)",
+            "CHECKMATE(Black)"
           ],
           "effects": [
             "assert Color(5, 6) = White",
@@ -231,7 +231,7 @@
           "passed": true,
           "accepted": true,
           "events": [
-            "Check(Black)"
+            "CHECK(Black)"
           ],
           "effects": [
             "assert Color(1, 4) = White",
@@ -854,7 +854,7 @@
           "passed": true,
           "accepted": true,
           "events": [
-            "Check(Black)"
+            "CHECK(Black)"
           ],
           "effects": [
             "retract Color(0, 6)",
@@ -922,7 +922,7 @@
           "passed": true,
           "accepted": true,
           "events": [
-            "Stalemate(Black)"
+            "STALEMATE(Black)"
           ],
           "effects": [
             "retract Color(2, 0)",

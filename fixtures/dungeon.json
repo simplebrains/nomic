@@ -260,7 +260,7 @@
           "passed": true,
           "accepted": true,
           "events": [
-            "Died(Goblin)"
+            "DIED(Goblin)"
           ],
           "effects": [
             "assert HP(Goblin) = -1",
@@ -676,8 +676,8 @@
           "passed": true,
           "accepted": true,
           "events": [
-            "Defeat",
-            "Died(Hero)"
+            "DEFEATED",
+            "DIED(Hero)"
           ],
           "effects": [
             "assert HP(Hero) = -4",
@@ -802,7 +802,7 @@
           "passed": true,
           "accepted": true,
           "events": [
-            "Victory"
+            "ESCAPED"
           ],
           "effects": [
             "assert Location(Hero) = Entrance",

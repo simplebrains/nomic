@@ -28,12 +28,12 @@ derive over: Bool = Winner != none || Drawn
 rule game_over on drop(p, c) { deny if over "the game is over" }
 
 /// `p` has connected four. Edge-triggered: emitted once, when it becomes true.
-event Win(p: Player) when four_in_a_row(p)
+event WON(p: Player) when four_in_a_row(p)
 /// The board filled with no winner.
-event Draw when full && !four_in_a_row(Red) && !four_in_a_row(Yellow)
+event DRAWN when full && !four_in_a_row(Red) && !four_in_a_row(Yellow)
 
-rule record_winner on Win(p) { assert Winner = p }
-rule record_draw on Draw { assert Drawn }
+rule record_winner on WON(p) { assert Winner = p }
+rule record_draw on DRAWN { assert Drawn }
 
 invariant winner_has_line: Winner == none || four_in_a_row(Winner)
 invariant not_both_ended: !(Winner != none && Drawn)
@@ -41,14 +41,14 @@ invariant not_both_ended: !(Winner != none && Drawn)
 scenario "vertical win is emitted exactly once and ends the game" {
   drop(Red, 0); drop(Yellow, 1); drop(Red, 0); drop(Yellow, 1); drop(Red, 0); drop(Yellow, 1)
   expect height(0) == 3 && Winner == none
-  drop(Red, 0) emits Win(Red)
+  drop(Red, 0) emits WON(Red)
   expect Winner == Red && over
   drop(Yellow, 2) rejected by game_over
 }
 
 scenario "horizontal win" {
   drop(Red, 0); drop(Yellow, 0); drop(Red, 1); drop(Yellow, 1); drop(Red, 2); drop(Yellow, 2)
-  drop(Red, 3) emits Win(Red)
+  drop(Red, 3) emits WON(Red)
 }
 
 scenario "diagonal win" {
@@ -56,7 +56,7 @@ scenario "diagonal win" {
   drop(Yellow, 1); drop(Red, 1)
   drop(Yellow, 2); drop(Red, 3); drop(Yellow, 2); drop(Red, 2)
   drop(Yellow, 3); drop(Red, 4); drop(Yellow, 3)
-  drop(Red, 3) emits Win(Red)
+  drop(Red, 3) emits WON(Red)
 }
 
 scenario "moves out of turn are rejected" {

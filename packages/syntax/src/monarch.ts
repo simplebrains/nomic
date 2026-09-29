@@ -104,6 +104,7 @@ export const nomicMonarch: MonarchLanguage = {
           },
         },
       ],
+      [/[A-Z][A-Z0-9_]+\b/, "entity.name.event"],
       [/[A-Z]\w*(?=\()/, "entity.name.function"],
       [
         /[A-Z]\w*/,

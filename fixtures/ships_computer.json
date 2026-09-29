@@ -215,7 +215,7 @@
           "passed": true,
           "accepted": true,
           "events": [
-            "HullBreach"
+            "HULL_BREACH"
           ],
           "effects": [
             "assert HullIntegrity = 29",
@@ -639,7 +639,7 @@
           "passed": true,
           "accepted": true,
           "events": [
-            "SelfDestructArmed"
+            "SELF_DESTRUCT_ARMED"
           ],
           "effects": [
             "assert SelfDestructArmedBy(FirstOfficer) = true",
@@ -729,7 +729,7 @@
           "passed": true,
           "accepted": true,
           "events": [
-            "SelfDestructArmed"
+            "SELF_DESTRUCT_ARMED"
           ],
           "effects": [
             "assert SelfDestructArmedBy(FirstOfficer) = true",
@@ -757,7 +757,7 @@
           "passed": true,
           "accepted": true,
           "events": [
-            "Detonation"
+            "DETONATION"
           ],
           "effects": [
             "assert Countdown = 0",
@@ -813,7 +813,7 @@
           "passed": true,
           "accepted": true,
           "events": [
-            "LifeSupportFailing"
+            "LIFE_SUPPORT_FAILING"
           ],
           "effects": [
             "assert Damaged(LifeSupport) = true",
@@ -869,7 +869,7 @@
           "passed": true,
           "accepted": true,
           "events": [
-            "HullBreach"
+            "HULL_BREACH"
           ],
           "effects": [
             "assert HullIntegrity = 20",
@@ -885,7 +885,7 @@
           "passed": true,
           "accepted": true,
           "events": [
-            "ShipLost"
+            "DESTROYED"
           ],
           "effects": [
             "assert HullIntegrity = 0",

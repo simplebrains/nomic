@@ -68,7 +68,7 @@
           "passed": true,
           "accepted": true,
           "events": [
-            "Win(Red)"
+            "WON(Red)"
           ],
           "effects": [
             "assert Cell(0, 3) = Red",
@@ -163,7 +163,7 @@
           "passed": true,
           "accepted": true,
           "events": [
-            "Win(Red)"
+            "WON(Red)"
           ],
           "effects": [
             "assert Cell(3, 0) = Red",
@@ -282,7 +282,7 @@
           "passed": true,
           "accepted": true,
           "events": [
-            "Win(Red)"
+            "WON(Red)"
           ],
           "effects": [
             "assert Cell(3, 3) = Red",

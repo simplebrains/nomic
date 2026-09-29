@@ -73,6 +73,7 @@ test("connect four tokenizes with the intended scopes", async () => {
   assert.ok(toks.some((t) => has(t, "comment.line.documentation.nomic") && t.text.includes("Connect Four")), "doc comment");
   assert.ok(find(toks, "turn_order", "entity.name.function.rule.nomic"), "`rejected by rule`");
   assert.ok(toks.some((t) => has(t, "entity.name.section.scenario.nomic")), "scenario name");
+  assert.ok(find(toks, "WON", "entity.name.function.event.nomic"), "ALL_CAPS event in a rule head and emits");
 });
 
 test("the meta model's citations tokenize as locators", async () => {

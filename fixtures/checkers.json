@@ -102,7 +102,7 @@
           "passed": true,
           "accepted": true,
           "events": [
-            "JumpEnded(4, 5)"
+            "JUMP_ENDED(4, 5)"
           ],
           "effects": [
             "retract Continuing(2, 3)",
@@ -303,7 +303,7 @@
           "passed": true,
           "accepted": true,
           "events": [
-            "JumpEnded(5, 4)"
+            "JUMP_ENDED(5, 4)"
           ],
           "effects": [
             "retract Continuing(3, 2)",
@@ -357,7 +357,7 @@
           "passed": true,
           "accepted": true,
           "events": [
-            "JumpEnded(4, 7)"
+            "JUMP_ENDED(4, 7)"
           ],
           "effects": [
             "retract Continuing(2, 5)",
@@ -460,8 +460,8 @@
           "passed": true,
           "accepted": true,
           "events": [
-            "JumpEnded(4, 5)",
-            "Won(Red)"
+            "JUMP_ENDED(4, 5)",
+            "WON(Red)"
           ],
           "effects": [
             "retract Continuing(2, 3)",

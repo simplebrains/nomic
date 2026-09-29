@@ -46,7 +46,7 @@
           "passed": true,
           "accepted": true,
           "events": [
-            "Win(X)"
+            "WON(X)"
           ],
           "effects": [
             "assert Cell(0, 2) = X",
@@ -157,7 +157,7 @@
           "passed": true,
           "accepted": true,
           "events": [
-            "Draw"
+            "DRAWN"
           ],
           "effects": [
             "assert Cell(1, 0) = X",

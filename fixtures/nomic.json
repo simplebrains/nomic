@@ -127,7 +127,7 @@
           "passed": true,
           "accepted": true,
           "events": [
-            "TransitionCommitted"
+            "TRANSITION_COMMITTED"
           ],
           "effects": [
             "assert At = Commit",
@@ -204,7 +204,7 @@
           "passed": true,
           "accepted": true,
           "events": [
-            "TransitionRejected"
+            "TRANSITION_REJECTED"
           ],
           "effects": [
             "assert Outcome = Rejected"
@@ -293,7 +293,7 @@
           "passed": true,
           "accepted": true,
           "events": [
-            "TransitionRejected"
+            "TRANSITION_REJECTED"
           ],
           "effects": [
             "assert Outcome = Rejected"
@@ -388,7 +388,7 @@
           "passed": true,
           "accepted": true,
           "events": [
-            "ModelDefect"
+            "MODEL_DEFECT"
           ],
           "effects": [
             "assert Conflict",
@@ -569,7 +569,7 @@
           "passed": true,
           "accepted": true,
           "events": [
-            "TransitionCommitted"
+            "TRANSITION_COMMITTED"
           ],
           "effects": [
             "assert At = Commit",
@@ -686,7 +686,7 @@
           "passed": true,
           "accepted": true,
           "events": [
-            "TransitionCommitted"
+            "TRANSITION_COMMITTED"
           ],
           "effects": [
             "assert At = Commit",
@@ -811,7 +811,7 @@
           "passed": true,
           "accepted": true,
           "events": [
-            "ModelDefect"
+            "MODEL_DEFECT"
           ],
           "effects": [
             "assert Outcome = ModelError"

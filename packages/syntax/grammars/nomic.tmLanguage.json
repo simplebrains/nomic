@@ -32,6 +32,9 @@
       "include": "#strings"
     },
     {
+      "include": "#events"
+    },
+    {
       "include": "#calls"
     },
     {
@@ -96,8 +99,23 @@
           }
         },
         {
-          "comment": "fact / derive / action / event / invariant / ensure Name",
-          "match": "\\b(observed|required|expected|assumed)?\\s*\\b(fact|derive|action|event|invariant|ensure)\\s+([A-Za-z_][A-Za-z0-9_]*)",
+          "comment": "event NAME (events are ALL_CAPS by convention)",
+          "match": "\\b(observed|required|expected|assumed)?\\s*\\b(event)\\s+([A-Za-z_][A-Za-z0-9_]*)",
+          "captures": {
+            "1": {
+              "name": "storage.modifier.status.nomic"
+            },
+            "2": {
+              "name": "storage.type.declaration.nomic"
+            },
+            "3": {
+              "name": "entity.name.function.event.nomic"
+            }
+          }
+        },
+        {
+          "comment": "fact / derive / action / invariant / ensure Name",
+          "match": "\\b(observed|required|expected|assumed)?\\s*\\b(fact|derive|action|invariant|ensure)\\s+([A-Za-z_][A-Za-z0-9_]*)",
           "captures": {
             "1": {
               "name": "storage.modifier.status.nomic"
@@ -367,6 +385,11 @@
           "match": "[,;]"
         }
       ]
+    },
+    "events": {
+      "comment": "An ALL_CAPS name (two or more characters) is an event occurrence",
+      "match": "\\b[A-Z][A-Z0-9_]+\\b",
+      "name": "entity.name.function.event.nomic"
     }
   }
 }

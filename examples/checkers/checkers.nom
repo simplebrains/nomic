@@ -6,7 +6,7 @@
 /// A side with no pieces or no legal move loses.
 ///
 /// This model exercises the reaction mechanism: a jump does not end the turn
-/// itself. The `JumpEnded` event fires when the landing square offers no
+/// itself. The `JUMP_ENDED` event fires when the landing square offers no
 /// further capture (or the piece was just crowned), and its reaction rule
 /// hands the turn over — all inside the one transition.
 model Checkers
@@ -110,17 +110,17 @@ rule make_jump on jump(s, f, r, df, dr) {
 }
 
 /// The jumping piece can go no further (or was just crowned): its turn ends.
-event JumpEnded(f: File, r: Rank) when Continuing(f, r) && (Crowned(f, r) || !can_jump(f, r))
-rule end_turn on JumpEnded(f, r) {
+event JUMP_ENDED(f: File, r: Rank) when Continuing(f, r) && (Crowned(f, r) || !can_jump(f, r))
+rule end_turn on JUMP_ENDED(f, r) {
   retract Continuing(f, r)
   retract Crowned(f, r)
   assert Turn = other(Owner(f, r) ?? Red)
 }
 
 /// The side to move has nothing left or nothing legal: the other side wins.
-event Won(s: Side) when
+event WON(s: Side) when
   Turn == other(s) && !mid_capture && (pieces(other(s)) == 0 || !has_move(other(s)))
-rule record_win on Won(s) { assert Winner = s }
+rule record_win on WON(s) { assert Winner = s }
 
 invariant pieces_on_dark_squares: all(f: File, r: Rank where Owner(f, r) != none => dark(f, r))
 invariant kings_have_owners: all(f: File, r: Rank where King(f, r) => Owner(f, r) != none)
@@ -149,7 +149,7 @@ scenario "opening steps alternate turns" {
 scenario "a single jump captures and hands over the turn" {
   step(Red, 1, 2, 1, 1)
   step(Black, 4, 5, -1, -1)
-  jump(Red, 2, 3, 1, 1) emits JumpEnded(4, 5)
+  jump(Red, 2, 3, 1, 1) emits JUMP_ENDED(4, 5)
   expect Owner(4, 5) == Red && Owner(3, 4) == none && Owner(2, 3) == none
   expect pieces(Black) == 11 && Turn == Black && !mid_capture
 }
@@ -175,7 +175,7 @@ scenario "a double jump continues within the turn" {
   expect Owner(3, 2) == Red && Owner(2, 1) == none && Turn == Red && mid_capture
   jump(Red, 7, 0, -1, 1) rejected by jump_same_piece
   step(Red, 3, 2, -1, 1) rejected by step_not_mid_capture
-  jump(Red, 3, 2, 1, 1) emits JumpEnded(5, 4)
+  jump(Red, 3, 2, 1, 1) emits JUMP_ENDED(5, 4)
   expect Owner(5, 4) == Red && pieces(Black) == 1 && Turn == Black && !mid_capture
 }
 
@@ -185,7 +185,7 @@ scenario "crowning ends the turn even if another jump exists" {
   given Owner(2, 5) = Red
   given Owner(3, 6) = Black
   given Owner(5, 6) = Black
-  jump(Red, 2, 5, 1, 1) emits JumpEnded(4, 7)
+  jump(Red, 2, 5, 1, 1) emits JUMP_ENDED(4, 7)
   expect King(4, 7) && Turn == Black && !mid_capture && !Crowned(4, 7)
   expect can_jump(4, 7)
 }
@@ -205,7 +205,7 @@ scenario "capturing the last piece wins" {
   given Turn = Red
   given Owner(2, 3) = Red
   given Owner(3, 4) = Black
-  jump(Red, 2, 3, 1, 1) emits JumpEnded(4, 5), Won(Red)
+  jump(Red, 2, 3, 1, 1) emits JUMP_ENDED(4, 5), WON(Red)
   expect Winner == Red && pieces(Black) == 0
   step(Red, 4, 5, 1, 1) rejected by step_game_over
 }

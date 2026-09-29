@@ -90,7 +90,7 @@ rule do_ship on ship(id) {
     assert Reservation(s, k) = held(s, k) - wanted(id, k)
   }
   assert Order(id) = Shipped
-  emit OrderShipped(id)
+  emit ORDER_SHIPPED(id)
 }
 
 rule cancel_live on cancel(id) {
@@ -136,10 +136,10 @@ rule end_audit_reconciled on endAudit(s) {
 }
 
 /// An order left the building.
-event OrderShipped(id: OrderId)
+event ORDER_SHIPPED(id: OrderId)
 /// Available stock fell below the reorder point.
-expected event LowStock(site: Site, sku: Sku) when available(site, sku) < threshold(site, sku)
-event StockOut(site: Site, sku: Sku) when stock(site, sku) == 0 && threshold(site, sku) > 0
+expected event LOW_STOCK(site: Site, sku: Sku) when available(site, sku) < threshold(site, sku)
+event STOCK_OUT(site: Site, sku: Sku) when stock(site, sku) == 0 && threshold(site, sku) > 0
 
 invariant non_negative_stock: all(s: Site, k: Sku => stock(s, k) >= 0)
 invariant reserved_within_stock: all(s: Site, k: Sku => held(s, k) <= stock(s, k))
@@ -169,9 +169,9 @@ scenario "receive, order, reserve, ship" {
   placeOrder(1, Warehouse)
   addLine(1, Widget, 12)
   addLine(1, Gadget, 4)
-  reserve(1) emits LowStock(Warehouse, Gadget)
+  reserve(1) emits LOW_STOCK(Warehouse, Gadget)
   expect held(Warehouse, Widget) == 12 && available(Warehouse, Widget) == 8 && Order(1) == Reserved
-  ship(1) emits OrderShipped(1)
+  ship(1) emits ORDER_SHIPPED(1)
   expect stock(Warehouse, Widget) == 8 && held(Warehouse, Widget) == 0 && stock(Warehouse, Gadget) == 4
   expect Order(1) == Shipped
   ship(1) rejected by ship_reserved
@@ -191,7 +191,7 @@ scenario "reservation is all or nothing" {
 scenario "cancelling a reserved order releases its stock" {
   placeOrder(2, Warehouse)
   addLine(2, Widget, 20)
-  reserve(2) emits LowStock(Warehouse, Widget)
+  reserve(2) emits LOW_STOCK(Warehouse, Widget)
   expect available(Warehouse, Widget) == 0
   transfer(Warehouse, StoreSouth, Widget, 1) rejected by transfer_available
   cancel(2)
@@ -212,10 +212,10 @@ scenario "adjustments happen under audit and may go negative until reconciled" {
   adjust(Warehouse, Gadget, -3) rejected by adjust_under_audit
   beginAudit(Warehouse)
   beginAudit(Warehouse) rejected by do_begin_audit
-  adjust(Warehouse, Gadget, -10) emits LowStock(Warehouse, Gadget)
+  adjust(Warehouse, Gadget, -10) emits LOW_STOCK(Warehouse, Gadget)
   expect stock(Warehouse, Gadget) == -2
   endAudit(Warehouse) rejected by end_audit_reconciled
-  receive(Warehouse, Gadget, 2) emits StockOut(Warehouse, Gadget)
+  receive(Warehouse, Gadget, 2) emits STOCK_OUT(Warehouse, Gadget)
   endAudit(Warehouse)
   expect !Auditing(Warehouse) && stock(Warehouse, Gadget) == 0
 }
@@ -223,8 +223,8 @@ scenario "adjustments happen under audit and may go negative until reconciled" {
 scenario "stock-out and low-stock are announced once each" {
   placeOrder(1, StoreNorth)
   addLine(1, Widget, 6)
-  reserve(1) emits LowStock(StoreNorth, Widget)
-  ship(1) emits OrderShipped(1), StockOut(StoreNorth, Widget)
+  reserve(1) emits LOW_STOCK(StoreNorth, Widget)
+  ship(1) emits ORDER_SHIPPED(1), STOCK_OUT(StoreNorth, Widget)
   receive(StoreNorth, Widget, 1) emits nothing
   receive(StoreNorth, Widget, 4) emits nothing
   expect available(StoreNorth, Widget) == 5 && !(available(StoreNorth, Widget) < threshold(StoreNorth, Widget))

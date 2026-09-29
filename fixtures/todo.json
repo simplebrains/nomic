@@ -39,7 +39,7 @@
           "passed": true,
           "accepted": true,
           "events": [
-            "Started(TaskId(\"write-spec\"))"
+            "STARTED(TaskId(\"write-spec\"))"
           ],
           "effects": [
             "assert Task(TaskId(\"write-spec\")) = Doing"
@@ -50,7 +50,7 @@
           "passed": true,
           "accepted": true,
           "events": [
-            "Finished(TaskId(\"write-spec\"))"
+            "FINISHED(TaskId(\"write-spec\"))"
           ],
           "effects": [
             "assert Task(TaskId(\"write-spec\")) = Done"
@@ -230,7 +230,7 @@
           "passed": true,
           "accepted": true,
           "events": [
-            "Started(TaskId(\"a\"))"
+            "STARTED(TaskId(\"a\"))"
           ],
           "effects": [
             "assert Task(TaskId(\"a\")) = Doing"
@@ -241,7 +241,7 @@
           "passed": true,
           "accepted": true,
           "events": [
-            "Started(TaskId(\"b\"))"
+            "STARTED(TaskId(\"b\"))"
           ],
           "effects": [
             "assert Task(TaskId(\"b\")) = Doing"
@@ -276,7 +276,7 @@
           "passed": true,
           "accepted": true,
           "events": [
-            "Started(TaskId(\"c\"))"
+            "STARTED(TaskId(\"c\"))"
           ],
           "effects": [
             "assert Task(TaskId(\"c\")) = Doing"
@@ -339,7 +339,7 @@
           "passed": true,
           "accepted": true,
           "events": [
-            "Started(TaskId(\"a\"))"
+            "STARTED(TaskId(\"a\"))"
           ],
           "effects": [
             "assert Task(TaskId(\"a\")) = Doing"
@@ -428,7 +428,7 @@
           "passed": true,
           "accepted": true,
           "events": [
-            "Started(TaskId(\"review\"))"
+            "STARTED(TaskId(\"review\"))"
           ],
           "effects": [
             "assert Task(TaskId(\"review\")) = Doing"
@@ -439,8 +439,8 @@
           "passed": true,
           "accepted": true,
           "events": [
-            "Finished(TaskId(\"review\"))",
-            "Unblocked(TaskId(\"deploy\"))"
+            "FINISHED(TaskId(\"review\"))",
+            "UNBLOCKED(TaskId(\"deploy\"))"
           ],
           "effects": [
             "assert Task(TaskId(\"review\")) = Done",
@@ -456,7 +456,7 @@
           "passed": true,
           "accepted": true,
           "events": [
-            "Started(TaskId(\"deploy\"))"
+            "STARTED(TaskId(\"deploy\"))"
           ],
           "effects": [
             "assert Task(TaskId(\"deploy\")) = Doing"

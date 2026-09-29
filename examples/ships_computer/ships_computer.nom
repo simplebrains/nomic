@@ -202,18 +202,18 @@ rule do_tick on tick {
 }
 
 /// Two senior officers have authorized: the countdown starts.
-event SelfDestructArmed when armed >= 2 && Countdown == none
-rule start_countdown on SelfDestructArmed { assert Countdown = 3 }
-event Detonation when Countdown == 0
-rule do_detonate on Detonation { assert Destroyed }
+event SELF_DESTRUCT_ARMED when armed >= 2 && Countdown == none
+rule start_countdown on SELF_DESTRUCT_ARMED { assert Countdown = 3 }
+event DETONATION when Countdown == 0
+rule do_detonate on DETONATION { assert Destroyed }
 
 /// Life support has dropped below minimum: the computer goes to red alert on its own.
-expected event LifeSupportFailing when !dead && !operational(LifeSupport)
-rule auto_red_alert on LifeSupportFailing { assert AlertStatus = Red }
-event HullBreach when !dead && hull < 30
-rule breach_alert on HullBreach { assert AlertStatus = Red }
-event ShipLost when hull <= 0 && !Destroyed
-rule do_lose on ShipLost { assert Destroyed }
+expected event LIFE_SUPPORT_FAILING when !dead && !operational(LifeSupport)
+rule auto_red_alert on LIFE_SUPPORT_FAILING { assert AlertStatus = Red }
+event HULL_BREACH when !dead && hull < 30
+rule breach_alert on HULL_BREACH { assert AlertStatus = Red }
+event DESTROYED when hull <= 0 && !Destroyed
+rule do_lose on DESTROYED { assert Destroyed }
 
 /// Total allocation may not exceed the reactor rating.
 invariant power_within_reactor: total_draw <= reactor
@@ -275,7 +275,7 @@ scenario "shields absorb fire and a breach raises the alarm" {
   lowerShields(Captain)
   takeHit(20)
   expect hull == 69
-  takeHit(40) emits HullBreach
+  takeHit(40) emits HULL_BREACH
   expect hull == 29 && AlertStatus == Red
 }
 
@@ -331,7 +331,7 @@ scenario "self-destruct needs two senior officers and only the captain cancels" 
   authorizeSelfDestruct(Captain) emits nothing
   authorizeSelfDestruct(Captain) rejected by destruct_once
   tick rejected by do_tick
-  authorizeSelfDestruct(FirstOfficer) emits SelfDestructArmed
+  authorizeSelfDestruct(FirstOfficer) emits SELF_DESTRUCT_ARMED
   expect Countdown == 3
   tick; tick
   expect Countdown == 1
@@ -342,25 +342,25 @@ scenario "self-destruct needs two senior officers and only the captain cancels" 
 
 scenario "detonation" {
   authorizeSelfDestruct(Captain)
-  authorizeSelfDestruct(FirstOfficer) emits SelfDestructArmed
+  authorizeSelfDestruct(FirstOfficer) emits SELF_DESTRUCT_ARMED
   tick; tick
-  tick emits Detonation
+  tick emits DETONATION
   expect Destroyed
   setAlert(Captain, Green) rejected by alert_command
   tick rejected by do_tick
 }
 
 scenario "the computer goes to red alert on its own when life support fails" {
-  reportDamage(LifeSupport) emits LifeSupportFailing
+  reportDamage(LifeSupport) emits LIFE_SUPPORT_FAILING
   expect AlertStatus == Red && !operational(LifeSupport)
   repair(ChiefEngineer, LifeSupport) emits nothing
   expect operational(LifeSupport) && AlertStatus == Red
 }
 
 scenario "the ship can be lost" {
-  takeHit(40); takeHit(40) emits HullBreach
+  takeHit(40); takeHit(40) emits HULL_BREACH
   expect hull == 20
-  takeHit(40) emits ShipLost
+  takeHit(40) emits DESTROYED
   expect Destroyed && hull == 0
   takeHit(5) rejected by do_take_hit
 }

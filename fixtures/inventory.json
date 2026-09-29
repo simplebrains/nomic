@@ -43,7 +43,7 @@
           "passed": true,
           "accepted": true,
           "events": [
-            "LowStock(Warehouse, Gadget)"
+            "LOW_STOCK(Warehouse, Gadget)"
           ],
           "effects": [
             "assert Order(1) = Reserved",
@@ -60,7 +60,7 @@
           "passed": true,
           "accepted": true,
           "events": [
-            "OrderShipped(1)"
+            "ORDER_SHIPPED(1)"
           ],
           "effects": [
             "assert OnHand(Warehouse, Gadget) = 4",
@@ -68,7 +68,7 @@
             "assert Order(1) = Shipped",
             "assert Reservation(Warehouse, Gadget) = 0",
             "assert Reservation(Warehouse, Widget) = 0",
-            "emit OrderShipped(1)"
+            "emit ORDER_SHIPPED(1)"
           ]
         },
         {
@@ -166,7 +166,7 @@
           "passed": true,
           "accepted": true,
           "events": [
-            "LowStock(StoreNorth, Widget)"
+            "LOW_STOCK(StoreNorth, Widget)"
           ],
           "effects": [
             "assert Order(1) = Reserved",
@@ -226,7 +226,7 @@
           "passed": true,
           "accepted": true,
           "events": [
-            "LowStock(Warehouse, Widget)"
+            "LOW_STOCK(Warehouse, Widget)"
           ],
           "effects": [
             "assert Order(2) = Reserved",
@@ -395,7 +395,7 @@
           "passed": true,
           "accepted": true,
           "events": [
-            "LowStock(Warehouse, Gadget)"
+            "LOW_STOCK(Warehouse, Gadget)"
           ],
           "effects": [
             "assert OnHand(Warehouse, Gadget) = -2"
@@ -418,7 +418,7 @@
           "passed": true,
           "accepted": true,
           "events": [
-            "StockOut(Warehouse, Gadget)"
+            "STOCK_OUT(Warehouse, Gadget)"
           ],
           "effects": [
             "assert OnHand(Warehouse, Gadget) = 0"
@@ -477,7 +477,7 @@
           "passed": true,
           "accepted": true,
           "events": [
-            "LowStock(StoreNorth, Widget)"
+            "LOW_STOCK(StoreNorth, Widget)"
           ],
           "effects": [
             "assert Order(1) = Reserved",
@@ -489,14 +489,14 @@
           "passed": true,
           "accepted": true,
           "events": [
-            "OrderShipped(1)",
-            "StockOut(StoreNorth, Widget)"
+            "ORDER_SHIPPED(1)",
+            "STOCK_OUT(StoreNorth, Widget)"
           ],
           "effects": [
             "assert OnHand(StoreNorth, Widget) = 0",
             "assert Order(1) = Shipped",
             "assert Reservation(StoreNorth, Widget) = 0",
-            "emit OrderShipped(1)"
+            "emit ORDER_SHIPPED(1)"
           ]
         },
         {

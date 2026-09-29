@@ -10,7 +10,7 @@
 /// stalemate then fall out as edge-triggered events over `legal(...)`.
 ///
 /// Not modeled: the fifty-move and threefold-repetition draw claims (the
-/// half-move clock is tracked and `FiftyMoves` is announced, but nothing acts
+/// half-move clock is tracked and `FIFTY_MOVES` is announced, but nothing acts
 /// on it), draw by agreement, and insufficient material.
 model Chess
 
@@ -252,15 +252,15 @@ rule make_resign on resign(s) { assert Outcome = s == White ? BlackWins : WhiteW
 /// The side that just moved may not leave its own king attacked.
 ensure king_safe: !in_check(other(Turn))
 
-event Check(s: Side) when Turn == s && in_check(s)
-event Checkmate(s: Side) when !over && Turn == s && in_check(s) && !has_legal_move(s)
+event CHECK(s: Side) when Turn == s && in_check(s)
+event CHECKMATE(s: Side) when !over && Turn == s && in_check(s) && !has_legal_move(s)
 /// Only while the game is in progress: after a resignation no move is legal either.
-event Stalemate(s: Side) when !over && Turn == s && !in_check(s) && !has_legal_move(s)
+event STALEMATE(s: Side) when !over && Turn == s && !in_check(s) && !has_legal_move(s)
 /// Fifty moves without capture or pawn move: a draw may be claimed (not modeled).
-event FiftyMoves when (HalfmoveClock ?? 0) >= 100
+event FIFTY_MOVES when (HalfmoveClock ?? 0) >= 100
 
-rule record_checkmate on Checkmate(s) { assert Outcome = s == White ? BlackWins : WhiteWins }
-rule record_stalemate on Stalemate(s) { assert Outcome = Draw }
+rule record_checkmate on CHECKMATE(s) { assert Outcome = s == White ? BlackWins : WhiteWins }
+rule record_stalemate on STALEMATE(s) { assert Outcome = Draw }
 
 invariant one_king_each:
   count(f: File, r: Rank => Piece(f, r) == King && Color(f, r) == White) == 1
@@ -288,14 +288,14 @@ scenario "scholar's mate" {
   move(4, 1, 4, 3); move(4, 6, 4, 4)
   move(3, 0, 7, 4); move(1, 7, 2, 5)
   move(5, 0, 2, 3); move(6, 7, 5, 5)
-  move(7, 4, 5, 6) emits Check(Black), Checkmate(Black)
+  move(7, 4, 5, 6) emits CHECK(Black), CHECKMATE(Black)
   expect Outcome == WhiteWins && over
   move(4, 7, 3, 6) rejected by move_game_over
 }
 
 scenario "a check must be answered and the king may not walk into attack" {
   move(4, 1, 4, 3); move(3, 6, 3, 4)
-  move(5, 0, 1, 4) emits Check(Black)
+  move(5, 0, 1, 4) emits CHECK(Black)
   expect in_check(Black) && Turn == Black
   move(0, 6, 0, 5) rejected by king_safe
   move(1, 7, 2, 5)
@@ -343,7 +343,7 @@ scenario "promotion" {
   move(0, 6, 0, 7) rejected by move_must_promote
   promote(0, 6, 0, 7, King) rejected by promote_piece
   promote(0, 6, 0, 7, Pawn) rejected by promote_piece
-  promote(0, 6, 0, 7, Queen) emits Check(Black)
+  promote(0, 6, 0, 7, Queen) emits CHECK(Black)
   expect Piece(0, 7) == Queen && Color(0, 7) == White && Turn == Black
 }
 
@@ -353,7 +353,7 @@ scenario "stalemate is a draw" {
   given Piece(1, 5) = King; given Color(1, 5) = White
   given Piece(2, 0) = Queen; given Color(2, 0) = White
   given Piece(0, 7) = King; given Color(0, 7) = Black
-  move(2, 0, 2, 6) emits Stalemate(Black)
+  move(2, 0, 2, 6) emits STALEMATE(Black)
   expect Outcome == Draw && !in_check(Black)
 }
 

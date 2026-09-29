@@ -106,8 +106,8 @@ rule place on drop(p, c) {
   assert Turn = other(p)
 }
 
-event Win(p: Player) when four_in_a_row(p)   // edge-triggered: emitted once, when it becomes true
-rule record_winner on Win(p) { assert Winner = p }   // reaction, same transition
+event WON(p: Player) when four_in_a_row(p)   // edge-triggered: emitted once, when it becomes true
+rule record_winner on WON(p) { assert Winner = p }   // reaction, same transition
 
 invariant no_floating_discs:
   all(c: Column, r: 0..5 where r > 0 && Cell(c, r) != none => Cell(c, r - 1) != none)
@@ -116,7 +116,7 @@ init { assert Turn = Red }
 
 scenario "vertical win" {
   drop(Red, 0); drop(Yellow, 1); drop(Red, 0); drop(Yellow, 1); drop(Red, 0); drop(Yellow, 1)
-  drop(Red, 0) emits Win(Red)
+  drop(Red, 0) emits WON(Red)
   drop(Yellow, 2) rejected by game_over
   expect Winner == Red
 }
@@ -194,13 +194,15 @@ Dependents follow automatically: a bump to `nomic` patches `nomic-fmt` and
 
 ## Names and words
 
-Naming convention, by what a name is: **things** (types, variants, facts,
-events) are `CamelCase`; **actions** look like functions, `lowerCamelCase(x, y)`;
-**derives** are `snake_case(v)`; **rules, invariants, ensures, and
-exceptions** are `snake_case_sentences`. So a rule head reads as a proposition
-about a command, `rule set_focus_non_empty on setFocus(id, text, at)`, and the
-case of the occurrence tells you whether a rule governs an action (`on
-drop(p, c)`) or reacts to an event (`on Win(p)`). The checker enforces only
+Naming convention, by what a name is: **things** (types, variants, facts) are
+`CamelCase`; **events** are `ALL_CAPS` moments (`WON`, `JUMP_ENDED`), which
+lets a state and the edge into it share a word: `fact Drawn` records the
+condition, `event DRAWN` marks it becoming true; **actions** look like
+functions, `lowerCamelCase(x, y)`; **derives** are `snake_case(v)`; **rules,
+invariants, ensures, and exceptions** are `snake_case_sentences`. So a rule
+head reads as a proposition about a command, `rule set_focus_non_empty on
+setFocus(id, text, at)`, and the case of the occurrence tells you whether a
+rule governs an action (`on drop(p, c)`) or reacts to an event (`on WON(p)`). The checker enforces only
 what the grammar needs (variants capitalized) and one hygiene rule: a local
 name (parameter, binding, `let`) may not shadow a global.
 

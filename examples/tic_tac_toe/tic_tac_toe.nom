@@ -34,11 +34,11 @@ rule place on play(m, c, r) {
   assert Turn = other(m)
 }
 
-event Win(m: Mark) when wins(m)
-event Draw when filled == 9 && !wins(X) && !wins(O)
+event WON(m: Mark) when wins(m)
+event DRAWN when filled == 9 && !wins(X) && !wins(O)
 
-rule record_winner on Win(m) { assert Winner = m }
-rule record_draw on Draw { assert Drawn }
+rule record_winner on WON(m) { assert Winner = m }
+rule record_draw on DRAWN { assert Drawn }
 
 invariant turn_matches_marks: Turn == X ? marks(X) == marks(O) : marks(X) == marks(O) + 1
 invariant one_winner: !(wins(X) && wins(O))
@@ -49,7 +49,7 @@ init { assert Turn = X }
 
 scenario "X wins the first column" {
   play(X, 0, 0); play(O, 1, 0); play(X, 0, 1); play(O, 1, 1)
-  play(X, 0, 2) emits Win(X)
+  play(X, 0, 2) emits WON(X)
   expect Winner == X
   play(O, 2, 2) rejected by game_over
 }
@@ -57,7 +57,7 @@ scenario "X wins the first column" {
 scenario "a drawn game" {
   play(X, 0, 0); play(O, 1, 1); play(X, 2, 2); play(O, 0, 1); play(X, 2, 1)
   play(O, 2, 0); play(X, 0, 2); play(O, 1, 2)
-  play(X, 1, 0) emits Draw
+  play(X, 1, 0) emits DRAWN
   expect Drawn && Winner == none
 }
 

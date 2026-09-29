@@ -99,14 +99,14 @@ rule do_set_wip on setWipLimit(n) {
 
 /// Announced for each task the moment it enters Doing; the population of
 /// identities in the state is what the detector ranges over.
-event Started(id: TaskId) when Task(id) == Doing
-event Finished(id: TaskId) when Task(id) == Done
+event STARTED(id: TaskId) when Task(id) == Doing
+event FINISHED(id: TaskId) when Task(id) == Done
 /// Every blocker of `id` has ended, while some blocking record still exists.
-event Unblocked(id: TaskId) when
+event UNBLOCKED(id: TaskId) when
   open(id) && blockers(id) == 0 && exists((t, b) in Blocked => t == id)
 
 /// A finished task releases everything it was blocking.
-rule release_blocked on Finished(id) {
+rule release_blocked on FINISHED(id) {
   for ((t, b) in Blocked where b == id) { retract Blocked(t, b) }
 }
 
@@ -128,8 +128,8 @@ scenario "a task moves forward through its lifecycle, never backward" {
   expect Task(TaskId("write-spec")) == Draft && count(t in Task => true) == 1
   advance(TaskId("write-spec"), Ready)
   advance(TaskId("write-spec"), Draft) rejected by advance_forward
-  advance(TaskId("write-spec"), Doing) emits Started(TaskId("write-spec"))
-  advance(TaskId("write-spec"), Done) emits Finished(TaskId("write-spec"))
+  advance(TaskId("write-spec"), Doing) emits STARTED(TaskId("write-spec"))
+  advance(TaskId("write-spec"), Done) emits FINISHED(TaskId("write-spec"))
   advance(TaskId("write-spec"), Cancelled) rejected by advance_forward
 }
 
@@ -175,9 +175,9 @@ scenario "blocked tasks wait; finishing the blocker releases them" {
   advance(TaskId("deploy"), Ready)
   advance(TaskId("deploy"), Doing) rejected by not_blocked
   advance(TaskId("review"), Ready); advance(TaskId("review"), Doing)
-  advance(TaskId("review"), Done) emits Finished(TaskId("review")), Unblocked(TaskId("deploy"))
+  advance(TaskId("review"), Done) emits FINISHED(TaskId("review")), UNBLOCKED(TaskId("deploy"))
   expect blockers(TaskId("deploy")) == 0 && none((t, b) in Blocked => true)
-  advance(TaskId("deploy"), Doing) emits Started(TaskId("deploy"))
+  advance(TaskId("deploy"), Doing) emits STARTED(TaskId("deploy"))
 }
 
 scenario "cancelling a blocked task drops its blocking records" {
