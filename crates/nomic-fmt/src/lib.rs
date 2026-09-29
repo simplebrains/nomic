@@ -394,7 +394,8 @@ impl<'a> Printer<'a> {
     }
 
     fn invariant(&mut self, kw: &str, d: &InvariantDecl) {
-        let head = format!("{}{kw} {}:", status(d.status), d.name);
+        let name = if kw == "ensure" { quote(&d.name) } else { d.name.clone() };
+        let head = format!("{}{kw} {name}:", status(d.status));
         self.head_expr(head, &d.body, 0, "");
     }
 
@@ -420,7 +421,7 @@ impl<'a> Printer<'a> {
     }
 
     fn rule(&mut self, d: &RuleDecl) {
-        let mut head = format!("{}rule {} on {}", status(d.status), d.name, pattern(&d.on));
+        let mut head = format!("{}rule {} on {}", status(d.status), quote(&d.name), pattern(&d.on));
         if let Some(w) = &d.when {
             head.push_str(" when ");
             head.push_str(&expr(w, 0));
@@ -743,7 +744,7 @@ fn step(s: &Step) -> String {
                 Outcome::Rejected { by: None } => t.push_str(" rejected"),
                 Outcome::Rejected { by: Some(r) } => {
                     t.push_str(" rejected by ");
-                    t.push_str(r);
+                    t.push_str(&quote(r));
                 }
             }
             t

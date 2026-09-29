@@ -87,7 +87,7 @@ fn describe(step: &Step) -> String {
             Outcome::Accepted { emits: None } => format!("{action} accepted"),
             Outcome::Accepted { emits: Some(_) } => format!("{action} accepted with events"),
             Outcome::Rejected { by: None } => format!("{action} rejected"),
-            Outcome::Rejected { by: Some(r) } => format!("{action} rejected by {r}"),
+            Outcome::Rejected { by: Some(r) } => format!("{action} rejected by {r:?}"),
         },
         Step::Expect { .. } => "expect".to_string(),
     }
@@ -126,7 +126,7 @@ fn run_step(machine: &Machine, state: &mut State, index: usize, step: &Step) -> 
                 Outcome::Accepted { emits: None } => format!("{occ} accepted"),
                 Outcome::Accepted { emits: Some(_) } => format!("{occ} accepted with events"),
                 Outcome::Rejected { by: None } => format!("{occ} rejected"),
-                Outcome::Rejected { by: Some(r) } => format!("{occ} rejected by {r}"),
+                Outcome::Rejected { by: Some(r) } => format!("{occ} rejected by {r:?}"),
             };
             let result = machine.apply(state, &occ);
             let result = match result {
@@ -172,10 +172,10 @@ fn run_step(machine: &Machine, state: &mut State, index: usize, step: &Step) -> 
                 }
                 (Outcome::Rejected { by }, crate::machine::Outcome::Rejected { transition }) => match by {
                     None => (true, None),
-                    Some(rule) if transition.denied_by(rule) => (true, None),
-                    Some(rule) => {
-                        let actual: Vec<&str> = transition.denials.iter().map(|(r, _)| r.as_str()).collect();
-                        (false, Some(format!("expected denial by `{rule}`, denied by [{}]", actual.join(", "))))
+                    Some(label) if transition.denied_by(label) => (true, None),
+                    Some(label) => {
+                        let actual: Vec<String> = transition.denials.iter().map(|(r, m)| format!("{r:?}: {m}")).collect();
+                        (false, Some(format!("expected denial by {label:?}, denied by [{}]", actual.join("; "))))
                     }
                 },
                 (Outcome::Rejected { .. }, crate::machine::Outcome::Accepted { .. }) => {

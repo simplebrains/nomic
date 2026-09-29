@@ -327,7 +327,7 @@ impl Parser {
             }
             "rule" => {
                 self.bump();
-                let name = self.ident()?;
+                let name = self.string()?;
                 self.expect_kw("on")?;
                 let on = self.pattern()?;
                 let when = if self.eat_kw("when") { Some(self.expr()?) } else { None };
@@ -345,7 +345,7 @@ impl Parser {
             }
             "ensure" => {
                 self.bump();
-                let name = self.ident()?;
+                let name = self.string()?;
                 self.expect(Tok::Colon)?;
                 let body = self.expr()?;
                 m.ensures.push(InvariantDecl { name: name.clone(), doc, status, body, pos });
@@ -740,7 +740,7 @@ impl Parser {
         }
         let (action, args) = self.fact_ref()?;
         let outcome = if self.eat_kw("rejected") {
-            let by = if self.eat_kw("by") { Some(self.ident()?) } else { None };
+            let by = if self.eat_kw("by") { Some(self.string()?) } else { None };
             Outcome::Rejected { by }
         } else if self.eat_kw("emits") {
             let mut emits = Vec::new();
@@ -1035,14 +1035,14 @@ mod tests {
             fact Cell(col: Column, row: 0..5): Player
             derive Other(p: Player): Player = match p { Red => Yellow, Yellow => Red }
             action Drop(player: Player, col: Column)
-            rule Place on Drop(p, c) {
+            rule "place" on Drop(p, c) {
                 require Turn == p "not your turn"
                 assert Turn = Other(p)
             }
             event Win(p: Player) when exists(c: Column => Cell(c, 0) == p)
             invariant Something: Turn != none
             init { assert Turn = Red }
-            scenario "x" { Drop(Red, 0); Drop(Red, 0) rejected by Place; expect Turn == Yellow }
+            scenario "x" { Drop(Red, 0); Drop(Red, 0) rejected by "not your turn"; expect Turn == Yellow }
         "#;
         let m = parse(src).unwrap();
         assert_eq!(m.name.as_deref(), Some("Tiny"));
@@ -1062,7 +1062,7 @@ mod tests {
              derive emit(x: Int): Int = x + (count ?? 0) + (order ?? 0)\n\
              derive Total: Int = sum(k: Kind => when(k) ?? 0) + count(k: Kind => when(k) != none)\n\
              action type(deny: Int)\naction allow\n\
-             rule Set on type(d) { assert order = d; assert count = emit(d) }\nrule Ok on allow { allow }\n\
+             rule \"set\" on type(d) { assert order = d; assert count = emit(d) }\nrule \"ok\" on allow { allow }\n\
              scenario \"s\" { type(3); allow; expect order == 3 && Total >= 0 }\n",
         )
         .unwrap();
@@ -1079,11 +1079,11 @@ mod tests {
     #[test]
     fn by_is_a_contextual_keyword() {
         let m = parse(
-            "type Id = opaque\nfact Blocked(id: Id, by: Id)\naction Block(id: Id, by: Id)\nrule R on Block(id, by) { assert Blocked(id, by) }\nscenario \"s\" { Block(Id(\"a\"), Id(\"b\")) rejected by R }\n",
+            "type Id = opaque\nfact Blocked(id: Id, by: Id)\naction Block(id: Id, by: Id)\nrule \"r\" on Block(id, by) { assert Blocked(id, by) }\nscenario \"s\" { Block(Id(\"a\"), Id(\"b\")) rejected by \"r\" }\n",
         )
         .unwrap();
         assert_eq!(m.facts[0].keys[1].name, "by");
-        assert!(matches!(&m.scenarios[0].steps[0], Step::Act { outcome: Outcome::Rejected { by: Some(r) }, .. } if r == "R"));
+        assert!(matches!(&m.scenarios[0].steps[0], Step::Act { outcome: Outcome::Rejected { by: Some(r) }, .. } if r == "r"));
     }
 
     #[test]

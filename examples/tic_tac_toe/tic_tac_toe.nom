@@ -22,13 +22,13 @@ derive over: Bool = Winner != none || Drawn
 
 action play(mark: Mark, col: Pos, row: Pos)
 
-rule game_over on play(m, c, r) {
+rule "game over" on play(m, c, r) {
   deny if over "the game is over"
 }
-rule turn_order on play(m, c, r) {
+rule "turn order" on play(m, c, r) {
   require Turn == m "not your turn"
 }
-rule place on play(m, c, r) {
+rule "place" on play(m, c, r) {
   require Cell(c, r) == none "square is taken"
   assert Cell(c, r) = m
   assert Turn = other(m)
@@ -37,8 +37,8 @@ rule place on play(m, c, r) {
 event WON(m: Mark) when wins(m)
 event DRAWN when filled == 9 && !wins(X) && !wins(O)
 
-rule record_winner on WON(m) { assert Winner = m }
-rule record_draw on DRAWN { assert Drawn }
+rule "record winner" on WON(m) { assert Winner = m }
+rule "record draw" on DRAWN { assert Drawn }
 
 invariant turn_matches_marks: Turn == X ? marks(X) == marks(O) : marks(X) == marks(O) + 1
 invariant one_winner: !(wins(X) && wins(O))
@@ -51,7 +51,7 @@ scenario "X wins the first column" {
   play(X, 0, 0); play(O, 1, 0); play(X, 0, 1); play(O, 1, 1)
   play(X, 0, 2) emits WON(X)
   expect Winner == X
-  play(O, 2, 2) rejected by game_over
+  play(O, 2, 2) rejected by "game over"
 }
 
 scenario "a drawn game" {
@@ -62,7 +62,7 @@ scenario "a drawn game" {
 }
 
 scenario "taken squares and wrong turns are rejected" {
-  play(O, 0, 0) rejected by turn_order
+  play(O, 0, 0) rejected by "turn order"
   play(X, 0, 0)
-  play(O, 0, 0) rejected by place
+  play(O, 0, 0) rejected by "place"
 }

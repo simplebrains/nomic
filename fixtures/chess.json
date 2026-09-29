@@ -113,13 +113,13 @@
           "passed": true
         },
         {
-          "description": "move(4, 7, 3, 6) rejected by move_game_over",
+          "description": "move(4, 7, 3, 6) rejected by \"move game over\"",
           "passed": true,
           "accepted": false,
           "denied_by": [
-            "move_game_over",
-            "move_geometry",
-            "make_move"
+            "move game over",
+            "move geometry",
+            "make move"
           ]
         }
       ],
@@ -248,11 +248,11 @@
           "passed": true
         },
         {
-          "description": "move(0, 6, 0, 5) rejected by king_safe",
+          "description": "move(0, 6, 0, 5) rejected by \"king safe\"",
           "passed": true,
           "accepted": false,
           "denied_by": [
-            "king_safe"
+            "king safe"
           ]
         },
         {
@@ -383,11 +383,11 @@
           "passed": true
         },
         {
-          "description": "move(4, 0, 4, 1) rejected by king_safe",
+          "description": "move(4, 0, 4, 1) rejected by \"king safe\"",
           "passed": true,
           "accepted": false,
           "denied_by": [
-            "king_safe"
+            "king safe"
           ]
         },
         {
@@ -542,21 +542,21 @@
           "passed": true
         },
         {
-          "description": "castle(Queenside) rejected by castle_path",
+          "description": "castle(Queenside) rejected by \"castle path\"",
           "passed": true,
           "accepted": false,
           "denied_by": [
-            "castle_path",
-            "make_castle"
+            "castle path",
+            "make castle"
           ]
         },
         {
-          "description": "castle(Kingside) rejected by castle_path",
+          "description": "castle(Kingside) rejected by \"castle path\"",
           "passed": true,
           "accepted": false,
           "denied_by": [
-            "castle_path",
-            "make_castle"
+            "castle path",
+            "make castle"
           ]
         }
       ],
@@ -826,27 +826,27 @@
           "passed": true
         },
         {
-          "description": "move(0, 6, 0, 7) rejected by move_must_promote",
+          "description": "move(0, 6, 0, 7) rejected by \"move must promote\"",
           "passed": true,
           "accepted": false,
           "denied_by": [
-            "move_must_promote"
+            "move must promote"
           ]
         },
         {
-          "description": "promote(0, 6, 0, 7, King) rejected by promote_piece",
+          "description": "promote(0, 6, 0, 7, King) rejected by \"promote piece\"",
           "passed": true,
           "accepted": false,
           "denied_by": [
-            "promote_piece"
+            "promote piece"
           ]
         },
         {
-          "description": "promote(0, 6, 0, 7, Pawn) rejected by promote_piece",
+          "description": "promote(0, 6, 0, 7, Pawn) rejected by \"promote piece\"",
           "passed": true,
           "accepted": false,
           "denied_by": [
-            "promote_piece"
+            "promote piece"
           ]
         },
         {
@@ -982,11 +982,11 @@
           "passed": true
         },
         {
-          "description": "move(4, 6, 4, 4) rejected by move_game_over",
+          "description": "move(4, 6, 4, 4) rejected by \"move game over\"",
           "passed": true,
           "accepted": false,
           "denied_by": [
-            "move_game_over"
+            "move game over"
           ]
         }
       ],
@@ -1069,21 +1069,21 @@
       "scenario": "pieces obey their geometry",
       "steps": [
         {
-          "description": "move(0, 0, 0, 2) rejected by move_geometry",
+          "description": "move(0, 0, 0, 2) rejected by \"move geometry\"",
           "passed": true,
           "accepted": false,
           "denied_by": [
-            "move_geometry",
-            "make_move"
+            "move geometry",
+            "make move"
           ]
         },
         {
-          "description": "move(1, 0, 3, 1) rejected by move_geometry",
+          "description": "move(1, 0, 3, 1) rejected by \"move geometry\"",
           "passed": true,
           "accepted": false,
           "denied_by": [
-            "move_geometry",
-            "make_move"
+            "move geometry",
+            "make move"
           ]
         },
         {

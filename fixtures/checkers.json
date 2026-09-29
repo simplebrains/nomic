@@ -38,11 +38,11 @@
           "passed": true
         },
         {
-          "description": "step(Red, 3, 2, 1, 1) rejected by capture_is_mandatory",
+          "description": "step(Red, 3, 2, 1, 1) rejected by \"capture is mandatory\"",
           "passed": true,
           "accepted": false,
           "denied_by": [
-            "capture_is_mandatory"
+            "capture is mandatory"
           ]
         }
       ],
@@ -156,43 +156,43 @@
       "scenario": "men only move forward and only onto empty dark squares",
       "steps": [
         {
-          "description": "step(Red, 1, 2, 1, -1) rejected by make_step",
+          "description": "step(Red, 1, 2, 1, -1) rejected by \"make step\"",
           "passed": true,
           "accepted": false,
           "denied_by": [
-            "make_step"
+            "make step"
           ]
         },
         {
-          "description": "step(Red, 1, 2, 0, 1) rejected by make_step",
+          "description": "step(Red, 1, 2, 0, 1) rejected by \"make step\"",
           "passed": true,
           "accepted": false,
           "denied_by": [
-            "make_step"
+            "make step"
           ]
         },
         {
-          "description": "step(Red, 0, 1, 1, 1) rejected by make_step",
+          "description": "step(Red, 0, 1, 1, 1) rejected by \"make step\"",
           "passed": true,
           "accepted": false,
           "denied_by": [
-            "make_step"
+            "make step"
           ]
         },
         {
-          "description": "step(Black, 4, 5, -1, -1) rejected by step_turn",
+          "description": "step(Black, 4, 5, -1, -1) rejected by \"step turn\"",
           "passed": true,
           "accepted": false,
           "denied_by": [
-            "step_turn"
+            "step turn"
           ]
         },
         {
-          "description": "step(Red, 4, 5, -1, -1) rejected by step_own_piece",
+          "description": "step(Red, 4, 5, -1, -1) rejected by \"step own piece\"",
           "passed": true,
           "accepted": false,
           "denied_by": [
-            "step_own_piece"
+            "step own piece"
           ]
         }
       ],
@@ -256,12 +256,12 @@
           "passed": true
         },
         {
-          "description": "step(Red, 1, 0, 1, 1) rejected by capture_is_mandatory",
+          "description": "step(Red, 1, 0, 1, 1) rejected by \"capture is mandatory\"",
           "passed": true,
           "accepted": false,
           "denied_by": [
-            "capture_is_mandatory",
-            "make_step"
+            "capture is mandatory",
+            "make step"
           ]
         },
         {
@@ -282,20 +282,20 @@
           "passed": true
         },
         {
-          "description": "jump(Red, 7, 0, -1, 1) rejected by jump_same_piece",
+          "description": "jump(Red, 7, 0, -1, 1) rejected by \"jump same piece\"",
           "passed": true,
           "accepted": false,
           "denied_by": [
-            "jump_same_piece"
+            "jump same piece"
           ]
         },
         {
-          "description": "step(Red, 3, 2, -1, 1) rejected by step_not_mid_capture",
+          "description": "step(Red, 3, 2, -1, 1) rejected by \"step not mid capture\"",
           "passed": true,
           "accepted": false,
           "denied_by": [
-            "step_not_mid_capture",
-            "capture_is_mandatory"
+            "step not mid capture",
+            "capture is mandatory"
           ]
         },
         {
@@ -481,12 +481,12 @@
           "passed": true
         },
         {
-          "description": "step(Red, 4, 5, 1, 1) rejected by step_game_over",
+          "description": "step(Red, 4, 5, 1, 1) rejected by \"step game over\"",
           "passed": true,
           "accepted": false,
           "denied_by": [
-            "step_game_over",
-            "step_turn"
+            "step game over",
+            "step turn"
           ]
         }
       ],
@@ -524,11 +524,11 @@
           "passed": true
         },
         {
-          "description": "step(Red, 1, 0, 1, 1) rejected by make_step",
+          "description": "step(Red, 1, 0, 1, 1) rejected by \"make step\"",
           "passed": true,
           "accepted": false,
           "denied_by": [
-            "make_step"
+            "make step"
           ]
         },
         {

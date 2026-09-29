@@ -62,16 +62,16 @@ action step(side: Side, f: File, r: Rank, df: Dir, dr: Dir)
 /// Jump the piece at (f, r) over the adjacent enemy in direction (df, dr).
 action jump(side: Side, f: File, r: Rank, df: Dir, dr: Dir)
 
-rule step_game_over on step(s, f, r, df, dr) { deny if over "the game is over" }
-rule step_turn on step(s, f, r, df, dr) { require Turn == s "not your turn" }
-rule step_own_piece on step(s, f, r, df, dr) { require Owner(f, r) == s "not your piece" }
-rule step_not_mid_capture on step(s, f, r, df, dr) {
+rule "step game over" on step(s, f, r, df, dr) { deny if over "the game is over" }
+rule "step turn" on step(s, f, r, df, dr) { require Turn == s "not your turn" }
+rule "step own piece" on step(s, f, r, df, dr) { require Owner(f, r) == s "not your piece" }
+rule "step not mid capture" on step(s, f, r, df, dr) {
   deny if mid_capture "a capture in progress must be completed"
 }
-rule capture_is_mandatory on step(s, f, r, df, dr) {
+rule "capture is mandatory" on step(s, f, r, df, dr) {
   deny if side_can_jump(s) "a capture is available and must be taken"
 }
-rule make_step on step(s, f, r, df, dr) {
+rule "make step" on step(s, f, r, df, dr) {
   require step_ok(f, r, df, dr) "illegal step"
   retract Owner(f, r)
   assert Owner(f + df, r + dr) = s
@@ -84,13 +84,13 @@ rule make_step on step(s, f, r, df, dr) {
   assert Turn = other(s)
 }
 
-rule jump_game_over on jump(s, f, r, df, dr) { deny if over "the game is over" }
-rule jump_turn on jump(s, f, r, df, dr) { require Turn == s "not your turn" }
-rule jump_own_piece on jump(s, f, r, df, dr) { require Owner(f, r) == s "not your piece" }
-rule jump_same_piece on jump(s, f, r, df, dr) {
+rule "jump game over" on jump(s, f, r, df, dr) { deny if over "the game is over" }
+rule "jump turn" on jump(s, f, r, df, dr) { require Turn == s "not your turn" }
+rule "jump own piece" on jump(s, f, r, df, dr) { require Owner(f, r) == s "not your piece" }
+rule "jump same piece" on jump(s, f, r, df, dr) {
   deny if mid_capture && !Continuing(f, r) "the capture must continue with the same piece"
 }
-rule make_jump on jump(s, f, r, df, dr) {
+rule "make jump" on jump(s, f, r, df, dr) {
   require jump_ok(f, r, df, dr) "illegal jump"
   let tf = f + 2 * df
   let tr = r + 2 * dr
@@ -111,7 +111,7 @@ rule make_jump on jump(s, f, r, df, dr) {
 
 /// The jumping piece can go no further (or was just crowned): its turn ends.
 event JUMP_ENDED(f: File, r: Rank) when Continuing(f, r) && (Crowned(f, r) || !can_jump(f, r))
-rule end_turn on JUMP_ENDED(f, r) {
+rule "end turn" on JUMP_ENDED(f, r) {
   retract Continuing(f, r)
   retract Crowned(f, r)
   assert Turn = other(Owner(f, r) ?? Red)
@@ -120,7 +120,7 @@ rule end_turn on JUMP_ENDED(f, r) {
 /// The side to move has nothing left or nothing legal: the other side wins.
 event WON(s: Side) when
   Turn == other(s) && !mid_capture && (pieces(other(s)) == 0 || !has_move(other(s)))
-rule record_win on WON(s) { assert Winner = s }
+rule "record win" on WON(s) { assert Winner = s }
 
 invariant pieces_on_dark_squares: all(f: File, r: Rank where Owner(f, r) != none => dark(f, r))
 invariant kings_have_owners: all(f: File, r: Rank where King(f, r) => Owner(f, r) != none)
@@ -143,7 +143,7 @@ scenario "opening steps alternate turns" {
   expect Owner(2, 3) == Red && Owner(1, 2) == none && Turn == Black
   step(Black, 4, 5, -1, -1)
   expect Owner(3, 4) == Black && Turn == Red
-  step(Red, 3, 2, 1, 1) rejected by capture_is_mandatory
+  step(Red, 3, 2, 1, 1) rejected by "capture is mandatory"
 }
 
 scenario "a single jump captures and hands over the turn" {
@@ -155,11 +155,11 @@ scenario "a single jump captures and hands over the turn" {
 }
 
 scenario "men only move forward and only onto empty dark squares" {
-  step(Red, 1, 2, 1, -1) rejected by make_step
-  step(Red, 1, 2, 0, 1) rejected by make_step
-  step(Red, 0, 1, 1, 1) rejected by make_step
-  step(Black, 4, 5, -1, -1) rejected by step_turn
-  step(Red, 4, 5, -1, -1) rejected by step_own_piece
+  step(Red, 1, 2, 1, -1) rejected by "make step"
+  step(Red, 1, 2, 0, 1) rejected by "make step"
+  step(Red, 0, 1, 1, 1) rejected by "make step"
+  step(Black, 4, 5, -1, -1) rejected by "step turn"
+  step(Red, 4, 5, -1, -1) rejected by "step own piece"
 }
 
 scenario "a double jump continues within the turn" {
@@ -170,11 +170,11 @@ scenario "a double jump continues within the turn" {
   given Owner(2, 1) = Black
   given Owner(4, 3) = Black
   given Owner(6, 1) = Black
-  step(Red, 1, 0, 1, 1) rejected by capture_is_mandatory
+  step(Red, 1, 0, 1, 1) rejected by "capture is mandatory"
   jump(Red, 1, 0, 1, 1) emits nothing
   expect Owner(3, 2) == Red && Owner(2, 1) == none && Turn == Red && mid_capture
-  jump(Red, 7, 0, -1, 1) rejected by jump_same_piece
-  step(Red, 3, 2, -1, 1) rejected by step_not_mid_capture
+  jump(Red, 7, 0, -1, 1) rejected by "jump same piece"
+  step(Red, 3, 2, -1, 1) rejected by "step not mid capture"
   jump(Red, 3, 2, 1, 1) emits JUMP_ENDED(5, 4)
   expect Owner(5, 4) == Red && pieces(Black) == 1 && Turn == Black && !mid_capture
 }
@@ -207,7 +207,7 @@ scenario "capturing the last piece wins" {
   given Owner(3, 4) = Black
   jump(Red, 2, 3, 1, 1) emits JUMP_ENDED(4, 5), WON(Red)
   expect Winner == Red && pieces(Black) == 0
-  step(Red, 4, 5, 1, 1) rejected by step_game_over
+  step(Red, 4, 5, 1, 1) rejected by "step game over"
 }
 
 scenario "a side with no legal move has lost" {
@@ -217,6 +217,6 @@ scenario "a side with no legal move has lost" {
   given Owner(0, 1) = Black
   given Owner(2, 1) = Black
   given Owner(3, 2) = Black
-  step(Red, 1, 0, 1, 1) rejected by make_step
+  step(Red, 1, 0, 1, 1) rejected by "make step"
   expect !has_move(Red) && has_move(Black)
 }

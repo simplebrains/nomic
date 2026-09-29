@@ -434,20 +434,18 @@ fn collect_expr(m: &Model, e: &Expr, out: &mut BTreeSet<String>) {
 // ---- renaming ------------------------------------------------------------------
 
 /// Rename global `from` to `to` throughout a model fragment: types, facts,
-/// derives, actions, events, and also rule-like names (rules, invariants,
-/// ensures, exceptions) where scenarios and exceptions refer to them. Enum
-/// variants are not renamed here (see `rename_variant`). Locals are assumed
-/// not to shadow globals, which the checker enforces.
+/// derives, actions, events, and also the identifier-named behavior
+/// (invariants, exceptions) where exceptions refer to them. Rules and ensures
+/// carry quoted labels, not identifiers, and are left alone. Enum variants are
+/// not renamed here (see `rename_variant`). Locals are assumed not to shadow
+/// globals, which the checker enforces.
 pub fn rename(m: &mut Model, from: &str, to: &str) {
     let r = |s: &mut String| {
         if s == from {
             *s = to.to_string();
         }
     };
-    for d in &mut m.rules {
-        r(&mut d.name);
-    }
-    for d in m.invariants.iter_mut().chain(m.ensures.iter_mut()) {
+    for d in &mut m.invariants {
         r(&mut d.name);
     }
     for d in &mut m.exceptions {
@@ -460,7 +458,6 @@ pub fn rename(m: &mut Model, from: &str, to: &str) {
                     r(action);
                     args.iter_mut().for_each(|a| rename_expr(a, from, to));
                     match outcome {
-                        Outcome::Rejected { by: Some(b) } => r(b),
                         Outcome::Accepted { emits: Some(evs) } => {
                             for e in evs {
                                 r(&mut e.name);
@@ -926,7 +923,7 @@ mod tests {
     #[test]
     fn include_brings_behavior_but_not_scenarios() {
         let s = src(&[
-            ("board.nom", "model Board\nfact Count: Int\naction Bump\nrule DoBump on Bump { assert Count = (Count ?? 0) + 1 }\ninvariant NonNegative: (Count ?? 0) >= 0\ninit { assert Count = 0 }\nscenario \"own\" { Bump }\n"),
+            ("board.nom", "model Board\nfact Count: Int\naction Bump\nrule \"do bump\" on Bump { assert Count = (Count ?? 0) + 1 }\ninvariant NonNegative: (Count ?? 0) >= 0\ninit { assert Count = 0 }\nscenario \"own\" { Bump }\n"),
             ("main.nom", "model Main\ninclude \"board.nom\"\nscenario \"mine\" { Bump; expect Count == 1 }\n"),
         ]);
         let m = link(Path::new("main.nom"), s.0["main.nom"], &s).unwrap();
@@ -957,8 +954,8 @@ mod tests {
             ("a.nom", "model A\ninclude \"b.nom\"\n"),
             ("b.nom", "model B\ninclude \"a.nom\"\n"),
             ("c.nom", "model C\nimport \"a.nom\" { Nope }\n"),
-            ("d.nom", "model D\nimport \"e.nom\" { R }\n"),
-            ("e.nom", "model E\naction Go\nrule R on Go { allow }\n"),
+            ("d.nom", "model D\nimport \"e.nom\" { pos }\n"),
+            ("e.nom", "model E\nfact N: Int\ninvariant pos: (N ?? 0) >= 0\n"),
         ]);
         assert!(link(Path::new("a.nom"), s.0["a.nom"], &s).unwrap_err().message.contains("cycle"));
         let e = link(Path::new("d.nom"), s.0["d.nom"], &s).unwrap_err();

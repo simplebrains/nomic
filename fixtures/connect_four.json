@@ -81,11 +81,11 @@
           "passed": true
         },
         {
-          "description": "drop(Yellow, 2) rejected by game_over",
+          "description": "drop(Yellow, 2) rejected by \"game over\"",
           "passed": true,
           "accepted": false,
           "denied_by": [
-            "game_over"
+            "game over"
           ]
         }
       ],
@@ -311,11 +311,11 @@
       "scenario": "moves out of turn are rejected",
       "steps": [
         {
-          "description": "drop(Yellow, 3) rejected by turn_order",
+          "description": "drop(Yellow, 3) rejected by \"turn order\"",
           "passed": true,
           "accepted": false,
           "denied_by": [
-            "turn_order"
+            "turn order"
           ]
         },
         {
@@ -328,11 +328,11 @@
           ]
         },
         {
-          "description": "drop(Red, 3) rejected by turn_order",
+          "description": "drop(Red, 3) rejected by \"turn order\"",
           "passed": true,
           "accepted": false,
           "denied_by": [
-            "turn_order"
+            "turn order"
           ]
         },
         {
@@ -407,7 +407,7 @@
           "passed": true
         },
         {
-          "description": "drop(Red, 0) rejected by place",
+          "description": "drop(Red, 0) rejected by \"place\"",
           "passed": true,
           "accepted": false,
           "denied_by": [

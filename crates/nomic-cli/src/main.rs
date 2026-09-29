@@ -232,7 +232,7 @@ fn run(args: &[String]) -> Result<ExitCode, String> {
                     let a = report.rules_allowed.get(&r.name).copied().unwrap_or(0);
                     let d = report.rules_denied.get(&r.name).copied().unwrap_or(0);
                     let note = if a == 0 && d == 0 { "  (never matched)" } else { "" };
-                    println!("  {}: allowed {a}, denied {d}{note}", r.name);
+                    println!("  {:?}: allowed {a}, denied {d}{note}", r.name);
                 }
                 if !report.exceptions_exercised.is_empty() {
                     println!("exceptions exercised:");
@@ -414,7 +414,7 @@ fn occurrence(model: &Model, state: &State, text: &str) -> Result<Occurrence, St
 fn print_transition(t: &Transition, indent: &str) {
     println!("{indent}{} → {}", t.occurrence, if t.accepted { "accepted" } else { "rejected" });
     for (rule, reason) in &t.denials {
-        println!("{indent}  denied by {rule}: {reason}");
+        println!("{indent}  denied by {rule:?}: {reason}");
     }
     for round in &t.rounds {
         if round.trigger != t.occurrence {
@@ -427,7 +427,7 @@ fn print_transition(t: &Transition, indent: &str) {
                 Disposition::Deny { reason } => format!("deny ({reason})"),
                 Disposition::Abstain { reason } => format!("abstain ({reason})"),
             };
-            println!("{indent}    rule {} [{}] → {disp}", rt.rule, binds.join(", "));
+            println!("{indent}    rule {:?} [{}] → {disp}", rt.rule, binds.join(", "));
             for e in &rt.effects {
                 println!("{indent}      {e}");
             }

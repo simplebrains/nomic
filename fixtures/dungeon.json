@@ -55,12 +55,12 @@
           "passed": true
         },
         {
-          "description": "wait(Goblin) rejected by wait_turn",
+          "description": "wait(Goblin) rejected by \"wait turn\"",
           "passed": true,
           "accepted": false,
           "denied_by": [
-            "wait_turn",
-            "do_wait"
+            "wait turn",
+            "do wait"
           ]
         }
       ],
@@ -90,12 +90,12 @@
       "scenario": "rooms must connect and locked doors hold",
       "steps": [
         {
-          "description": "move(Hero, Lair) rejected by move_adjacent",
+          "description": "move(Hero, Lair) rejected by \"move adjacent\"",
           "passed": true,
           "accepted": false,
           "denied_by": [
-            "move_adjacent",
-            "do_move"
+            "move adjacent",
+            "do move"
           ]
         },
         {
@@ -132,21 +132,21 @@
           ]
         },
         {
-          "description": "move(Hero, Treasury) rejected by move_unlocked",
+          "description": "move(Hero, Treasury) rejected by \"move unlocked\"",
           "passed": true,
           "accepted": false,
           "denied_by": [
-            "move_unlocked",
-            "do_move"
+            "move unlocked",
+            "do move"
           ]
         },
         {
-          "description": "unlock(Hero, Treasury) rejected by unlock_key",
+          "description": "unlock(Hero, Treasury) rejected by \"unlock key\"",
           "passed": true,
           "accepted": false,
           "denied_by": [
-            "unlock_key",
-            "do_unlock"
+            "unlock key",
+            "do unlock"
           ]
         }
       ],
@@ -275,13 +275,13 @@
           "passed": true
         },
         {
-          "description": "attack(Goblin, Hero, 3) rejected by attack_turn",
+          "description": "attack(Goblin, Hero, 3) rejected by \"attack turn\"",
           "passed": true,
           "accepted": false,
           "denied_by": [
-            "attack_turn",
-            "attack_target",
-            "do_attack"
+            "attack turn",
+            "attack target",
+            "do attack"
           ]
         },
         {
@@ -301,12 +301,12 @@
           ]
         },
         {
-          "description": "attack(Hero, Dragon, 6) rejected by attack_target",
+          "description": "attack(Hero, Dragon, 6) rejected by \"attack target\"",
           "passed": true,
           "accepted": false,
           "denied_by": [
-            "attack_target",
-            "do_attack"
+            "attack target",
+            "do attack"
           ]
         },
         {
@@ -455,12 +455,12 @@
           ]
         },
         {
-          "description": "drink(Hero) rejected by drink_has_potion",
+          "description": "drink(Hero) rejected by \"drink has potion\"",
           "passed": true,
           "accepted": false,
           "denied_by": [
-            "drink_has_potion",
-            "do_drink"
+            "drink has potion",
+            "do drink"
           ]
         }
       ],
@@ -692,11 +692,11 @@
           "passed": true
         },
         {
-          "description": "wait(Dragon) rejected by wait_turn",
+          "description": "wait(Dragon) rejected by \"wait turn\"",
           "passed": true,
           "accepted": false,
           "denied_by": [
-            "wait_turn"
+            "wait turn"
           ]
         }
       ],
@@ -815,11 +815,11 @@
           "passed": true
         },
         {
-          "description": "move(Hero, Hall) rejected by move_turn",
+          "description": "move(Hero, Hall) rejected by \"move turn\"",
           "passed": true,
           "accepted": false,
           "denied_by": [
-            "move_turn"
+            "move turn"
           ]
         }
       ],

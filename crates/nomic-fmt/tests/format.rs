@@ -72,10 +72,10 @@ fn every_example_is_already_formatted() {
 
 #[test]
 fn comments_survive_and_layout_is_normalized() {
-    let src = "// leading\nmodel   M\n\n\n\ntype   T=A|B // trailing\n// before fact\nfact F(x:T) :Int\nrule R on Go(a){ require   F(a)!=none   \"why\"\nassert F(a)=(F(a)??0)+1 }\naction Go(a:T)\n// tail\n";
+    let src = "// leading\nmodel   M\n\n\n\ntype   T=A|B // trailing\n// before fact\nfact F(x:T) :Int\nrule \"r\" on Go(a){ require   F(a)!=none   \"why\"\nassert F(a)=(F(a)??0)+1 }\naction Go(a:T)\n// tail\n";
     let out = nomic_fmt::format(src).unwrap();
     // Blank lines are kept only where the source had them; the header always gets one.
-    let want = "// leading\nmodel M\n\ntype T = A | B // trailing\n// before fact\nfact F(x: T): Int\nrule R on Go(a) {\n  require F(a) != none \"why\"\n  assert F(a) = (F(a) ?? 0) + 1\n}\naction Go(a: T)\n// tail\n";
+    let want = "// leading\nmodel M\n\ntype T = A | B // trailing\n// before fact\nfact F(x: T): Int\nrule \"r\" on Go(a) {\n  require F(a) != none \"why\"\n  assert F(a) = (F(a) ?? 0) + 1\n}\naction Go(a: T)\n// tail\n";
     assert_eq!(out, want);
     assert_eq!(nomic_fmt::format(&out).unwrap(), out);
 }

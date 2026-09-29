@@ -13,7 +13,7 @@
 //!     type Light = Red | Green
 //!     fact Signal: Light
 //!     action Switch
-//!     rule Toggle on Switch {
+//!     rule "toggle" on Switch {
 //!         assert Signal = match Signal { Red => Green, Green => Red }
 //!     }
 //!     invariant Lit: Signal != none

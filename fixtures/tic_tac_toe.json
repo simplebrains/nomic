@@ -59,11 +59,11 @@
           "passed": true
         },
         {
-          "description": "play(O, 2, 2) rejected by game_over",
+          "description": "play(O, 2, 2) rejected by \"game over\"",
           "passed": true,
           "accepted": false,
           "denied_by": [
-            "game_over"
+            "game over"
           ]
         }
       ],
@@ -188,11 +188,11 @@
       "scenario": "taken squares and wrong turns are rejected",
       "steps": [
         {
-          "description": "play(O, 0, 0) rejected by turn_order",
+          "description": "play(O, 0, 0) rejected by \"turn order\"",
           "passed": true,
           "accepted": false,
           "denied_by": [
-            "turn_order"
+            "turn order"
           ]
         },
         {
@@ -205,7 +205,7 @@
           ]
         },
         {
-          "description": "play(O, 0, 0) rejected by place",
+          "description": "play(O, 0, 0) rejected by \"place\"",
           "passed": true,
           "accepted": false,
           "denied_by": [

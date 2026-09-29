@@ -124,8 +124,10 @@ pub struct Transition {
 }
 
 impl Transition {
-    pub fn denied_by(&self, rule: &str) -> bool {
-        self.denials.iter().any(|(r, _)| r == rule)
+    /// Was the transition denied under `label`, either as the name of the rule
+    /// or ensure that denied it, or as the reason the denying statement gave?
+    pub fn denied_by(&self, label: &str) -> bool {
+        self.denials.iter().any(|(r, m)| r == label || m == label)
     }
 }
 

@@ -81,139 +81,141 @@ action cancel_self_destruct(officer: Officer)
 /// One second of the countdown passes.
 action tick
 
-rule alert_command on set_alert(o, l) {
+rule "alert command" on set_alert(o, l) {
   require !dead && can_command(o) "only a senior officer on the bridge can change alert status"
 }
-rule stand_down_within_budget on set_alert(o, l) {
+rule "stand down within budget" on set_alert(o, l) {
   require
     l == Red || total_draw <= reactor "trim power to the reactor rating before standing down from red alert"
 }
-rule do_set_alert on set_alert(o, l) {
+rule "do set alert" on set_alert(o, l) {
   require can_command(o)
   assert AlertStatus = l
 }
 
-rule power_authority on allocate_power(o, s, u) {
+rule "power authority" on allocate_power(o, s, u) {
   require !dead && engineering(o) "only engineering or command can reallocate power"
 }
 /// The budget is the reactor rating, plus the two-unit overdraw engineering
 /// takes during red alert (see exception RedAlertOverdraw).
-rule power_budget on allocate_power(o, s, u) {
+rule "power budget" on allocate_power(o, s, u) {
   require
     total_draw - draw(s) + u <= reactor + (AlertStatus == Red ? 2 : 0) "that allocation exceeds the reactor budget"
 }
-rule do_allocate on allocate_power(o, s, u) {
+rule "do allocate" on allocate_power(o, s, u) {
   require engineering(o)
   assert Allocation(s) = u
 }
 
-rule shields_command on raise_shields(o) { require !dead && can_command(o) "not authorized" }
-rule shields_operational on raise_shields(o) {
+rule "shields command" on raise_shields(o) { require !dead && can_command(o) "not authorized" }
+rule "shields operational" on raise_shields(o) {
   require operational(Shields) "shield generators are not operational"
 }
-rule do_raise on raise_shields(o) {
+rule "do raise" on raise_shields(o) {
   require can_command(o) && operational(Shields)
   assert ShieldsUp
 }
-rule lower_command on lower_shields(o) { require !dead && can_command(o) "not authorized" }
-rule do_lower on lower_shields(o) {
+rule "lower command" on lower_shields(o) { require !dead && can_command(o) "not authorized" }
+rule "do lower" on lower_shields(o) {
   require can_command(o)
   retract ShieldsUp
 }
 
-rule warp_command on engage_warp(o, f) { require !dead && can_command(o) "not authorized" }
-rule warp_operational on engage_warp(o, f) {
+rule "warp command" on engage_warp(o, f) { require !dead && can_command(o) "not authorized" }
+rule "warp operational" on engage_warp(o, f) {
   require operational(Warp) "warp drive is not operational"
 }
-rule warp_power on engage_warp(o, f) {
+rule "warp power" on engage_warp(o, f) {
   require draw(Warp) >= f "insufficient power to the warp coils for that factor"
 }
-rule do_warp on engage_warp(o, f) {
+rule "do warp" on engage_warp(o, f) {
   require can_command(o) && operational(Warp) && draw(Warp) >= f
   assert WarpSpeed = f
 }
-rule stop_command on all_stop(o) { require !dead && can_command(o) "not authorized" }
-rule do_stop on all_stop(o) {
+rule "stop command" on all_stop(o) { require !dead && can_command(o) "not authorized" }
+rule "do stop" on all_stop(o) {
   require can_command(o)
   retract WarpSpeed
 }
 
-rule torpedo_command on fire_torpedo(o) { require !dead && can_command(o) "not authorized" }
-rule torpedo_red_alert on fire_torpedo(o) {
+rule "torpedo command" on fire_torpedo(o) { require !dead && can_command(o) "not authorized" }
+rule "torpedo red alert" on fire_torpedo(o) {
   require AlertStatus == Red "weapons are locked outside red alert"
 }
-rule torpedo_ready on fire_torpedo(o) {
+rule "torpedo ready" on fire_torpedo(o) {
   require operational(Torpedoes) && torpedo_stock > 0 "torpedo launcher not ready"
 }
-rule do_fire_torpedo on fire_torpedo(o) {
+rule "do fire torpedo" on fire_torpedo(o) {
   require can_command(o) && AlertStatus == Red && operational(Torpedoes) && torpedo_stock > 0
   assert TorpedoCount = torpedo_stock - 1
 }
-rule phaser_command on fire_phasers(o) { require !dead && can_command(o) "not authorized" }
-rule phaser_red_alert on fire_phasers(o) {
+rule "phaser command" on fire_phasers(o) { require !dead && can_command(o) "not authorized" }
+rule "phaser red alert" on fire_phasers(o) {
   require AlertStatus == Red "weapons are locked outside red alert"
 }
-rule phaser_ready on fire_phasers(o) { require operational(Phasers) "phaser banks not operational" }
-rule do_fire_phasers on fire_phasers(o) {
+rule "phaser ready" on fire_phasers(o) {
+  require operational(Phasers) "phaser banks not operational"
+}
+rule "do fire phasers" on fire_phasers(o) {
   require can_command(o) && AlertStatus == Red && operational(Phasers)
 }
 
 /// Shields absorb three points per power unit allocated; the rest reaches the hull.
-rule do_take_hit on take_hit(d) {
+rule "do take hit" on take_hit(d) {
   require !dead
   let absorbed = ShieldsUp && operational(Shields) ? draw(Shields) * 3 : 0
   assert HullIntegrity = max(0, hull - max(0, d - absorbed))
 }
 
-rule do_report_damage on report_damage(s) {
+rule "do report damage" on report_damage(s) {
   require !dead && !Damaged(s) "already reported"
   assert Damaged(s)
 }
-rule repair_authority on repair(o, s) {
+rule "repair authority" on repair(o, s) {
   require !dead && engineering(o) "only engineering can clear a damage report"
 }
-rule repair_needed on repair(o, s) { require Damaged(s) "nothing to repair" }
-rule do_repair on repair(o, s) {
+rule "repair needed" on repair(o, s) { require Damaged(s) "nothing to repair" }
+rule "do repair" on repair(o, s) {
   require engineering(o) && Damaged(s)
   retract Damaged(s)
 }
 
-rule destruct_authority on authorize_self_destruct(o) {
+rule "destruct authority" on authorize_self_destruct(o) {
   require !dead && can_command(o) "self-destruct needs a senior officer on the bridge"
 }
-rule destruct_once on authorize_self_destruct(o) {
+rule "destruct once" on authorize_self_destruct(o) {
   require !SelfDestructArmedBy(o) "already authorized"
 }
-rule do_authorize on authorize_self_destruct(o) {
+rule "do authorize" on authorize_self_destruct(o) {
   require can_command(o) && !SelfDestructArmedBy(o)
   assert SelfDestructArmedBy(o)
 }
-rule cancel_is_captains on cancel_self_destruct(o) {
+rule "cancel is captains" on cancel_self_destruct(o) {
   require !dead && o == Captain && OnBridge(o) "only the captain can cancel"
 }
-rule do_cancel on cancel_self_destruct(o) {
+rule "do cancel" on cancel_self_destruct(o) {
   require o == Captain && OnBridge(o)
   for (x: Officer) { retract SelfDestructArmedBy(x) }
   retract Countdown
 }
-rule do_tick on tick {
+rule "do tick" on tick {
   require !dead && Countdown != none && (Countdown ?? 0) > 0 "no countdown running"
   assert Countdown = (Countdown ?? 0) - 1
 }
 
 /// Two senior officers have authorized: the countdown starts.
 event SELF_DESTRUCT_ARMED when armed >= 2 && Countdown == none
-rule start_countdown on SELF_DESTRUCT_ARMED { assert Countdown = 3 }
+rule "start countdown" on SELF_DESTRUCT_ARMED { assert Countdown = 3 }
 event DETONATION when Countdown == 0
-rule do_detonate on DETONATION { assert Destroyed }
+rule "do detonate" on DETONATION { assert Destroyed }
 
 /// Life support has dropped below minimum: the computer goes to red alert on its own.
 expected event LIFE_SUPPORT_FAILING when !dead && !operational(LifeSupport)
-rule auto_red_alert on LIFE_SUPPORT_FAILING { assert AlertStatus = Red }
+rule "auto red alert" on LIFE_SUPPORT_FAILING { assert AlertStatus = Red }
 event HULL_BREACH when !dead && hull < 30
-rule breach_alert on HULL_BREACH { assert AlertStatus = Red }
+rule "breach alert" on HULL_BREACH { assert AlertStatus = Red }
 event DESTROYED when hull <= 0 && !Destroyed
-rule do_lose on DESTROYED { assert Destroyed }
+rule "do lose" on DESTROYED { assert Destroyed }
 
 /// Total allocation may not exceed the reactor rating.
 invariant power_within_reactor: total_draw <= reactor
@@ -225,9 +227,9 @@ observed exception red_alert_overdraw on power_within_reactor when
   AlertStatus == Red && total_draw <= reactor + 2
 
 /// Reallocation may not starve raised shields or life support.
-ensure shields_stay_powered: !ShieldsUp || draw(Shields) >= min_power(Shields)
-ensure life_support_minimum: draw(LifeSupport) >= min_power(LifeSupport) || Destroyed
-ensure warp_needs_power: speed <= draw(Warp)
+ensure "shields stay powered": !ShieldsUp || draw(Shields) >= min_power(Shields)
+ensure "life support minimum": draw(LifeSupport) >= min_power(LifeSupport) || Destroyed
+ensure "warp needs power": speed <= draw(Warp)
 
 init {
   assert AlertStatus = Green
@@ -246,29 +248,29 @@ init {
 }
 
 scenario "chain of command" {
-  set_alert(Ensign, Red) rejected by alert_command
-  set_alert(Doctor, Red) rejected by alert_command
+  set_alert(Ensign, Red) rejected by "alert command"
+  set_alert(Doctor, Red) rejected by "alert command"
   set_alert(FirstOfficer, Yellow)
   expect AlertStatus == Yellow
-  allocate_power(Ensign, Sensors, 0) rejected by power_authority
+  allocate_power(Ensign, Sensors, 0) rejected by "power authority"
   allocate_power(ChiefEngineer, Sensors, 0)
   expect total_draw == 11
 }
 
 scenario "the power budget is a hard limit, except for the observed red-alert overdraw" {
-  allocate_power(ChiefEngineer, Phasers, 2) rejected by power_budget
+  allocate_power(ChiefEngineer, Phasers, 2) rejected by "power budget"
   set_alert(Captain, Red)
   allocate_power(ChiefEngineer, Phasers, 2)
   expect total_draw == 14 && total_draw > reactor
-  allocate_power(ChiefEngineer, Torpedoes, 2) rejected by power_budget
-  set_alert(Captain, Green) rejected by stand_down_within_budget
+  allocate_power(ChiefEngineer, Torpedoes, 2) rejected by "power budget"
+  set_alert(Captain, Green) rejected by "stand down within budget"
   allocate_power(ChiefEngineer, Phasers, 0)
   set_alert(Captain, Green)
   expect total_draw == 12
 }
 
 scenario "shields absorb fire and a breach raises the alarm" {
-  raise_shields(Ensign) rejected by shields_command
+  raise_shields(Ensign) rejected by "shields command"
   raise_shields(Captain)
   take_hit(20)
   expect hull == 89
@@ -281,33 +283,33 @@ scenario "shields absorb fire and a breach raises the alarm" {
 
 scenario "reallocation may not starve raised shields or life support" {
   raise_shields(Captain)
-  allocate_power(ChiefEngineer, Shields, 1) rejected by shields_stay_powered
-  allocate_power(ChiefEngineer, LifeSupport, 1) rejected by life_support_minimum
+  allocate_power(ChiefEngineer, Shields, 1) rejected by "shields stay powered"
+  allocate_power(ChiefEngineer, LifeSupport, 1) rejected by "life support minimum"
   lower_shields(Captain)
   allocate_power(ChiefEngineer, Shields, 1)
-  raise_shields(Captain) rejected by shields_operational
+  raise_shields(Captain) rejected by "shields operational"
 }
 
 scenario "damage reports and repairs" {
   report_damage(Shields)
-  report_damage(Shields) rejected by do_report_damage
-  raise_shields(Captain) rejected by shields_operational
-  repair(Ensign, Shields) rejected by repair_authority
+  report_damage(Shields) rejected by "do report damage"
+  raise_shields(Captain) rejected by "shields operational"
+  repair(Ensign, Shields) rejected by "repair authority"
   repair(ChiefEngineer, Shields)
-  repair(ChiefEngineer, Shields) rejected by repair_needed
+  repair(ChiefEngineer, Shields) rejected by "repair needed"
   raise_shields(Captain)
   expect ShieldsUp
 }
 
 scenario "warp needs coils powered for the factor" {
-  engage_warp(Captain, 5) rejected by warp_power
+  engage_warp(Captain, 5) rejected by "warp power"
   engage_warp(Captain, 4)
   expect speed == 4
-  allocate_power(ChiefEngineer, Warp, 2) rejected by warp_needs_power
+  allocate_power(ChiefEngineer, Warp, 2) rejected by "warp needs power"
   all_stop(Captain)
   allocate_power(ChiefEngineer, Warp, 2)
-  engage_warp(Captain, 2) rejected by warp_operational
-  allocate_power(ChiefEngineer, Warp, 5) rejected by power_budget
+  engage_warp(Captain, 2) rejected by "warp operational"
+  allocate_power(ChiefEngineer, Warp, 5) rejected by "power budget"
   allocate_power(ChiefEngineer, Sensors, 0)
   allocate_power(ChiefEngineer, Warp, 5)
   engage_warp(Captain, 5)
@@ -315,27 +317,27 @@ scenario "warp needs coils powered for the factor" {
 }
 
 scenario "weapons are locked outside red alert" {
-  fire_torpedo(Captain) rejected by torpedo_red_alert
+  fire_torpedo(Captain) rejected by "torpedo red alert"
   set_alert(Captain, Red)
   fire_torpedo(Captain)
   expect torpedo_stock == 3
-  fire_phasers(Captain) rejected by phaser_ready
+  fire_phasers(Captain) rejected by "phaser ready"
   allocate_power(ChiefEngineer, Phasers, 2)
   fire_phasers(Captain)
   report_damage(Torpedoes)
-  fire_torpedo(Captain) rejected by torpedo_ready
+  fire_torpedo(Captain) rejected by "torpedo ready"
 }
 
 scenario "self-destruct needs two senior officers and only the captain cancels" {
-  authorize_self_destruct(Ensign) rejected by destruct_authority
+  authorize_self_destruct(Ensign) rejected by "destruct authority"
   authorize_self_destruct(Captain) emits nothing
-  authorize_self_destruct(Captain) rejected by destruct_once
-  tick rejected by do_tick
+  authorize_self_destruct(Captain) rejected by "destruct once"
+  tick rejected by "do tick"
   authorize_self_destruct(FirstOfficer) emits SELF_DESTRUCT_ARMED
   expect Countdown == 3
   tick; tick
   expect Countdown == 1
-  cancel_self_destruct(FirstOfficer) rejected by cancel_is_captains
+  cancel_self_destruct(FirstOfficer) rejected by "cancel is captains"
   cancel_self_destruct(Captain)
   expect Countdown == none && armed == 0
 }
@@ -346,8 +348,8 @@ scenario "detonation" {
   tick; tick
   tick emits DETONATION
   expect Destroyed
-  set_alert(Captain, Green) rejected by alert_command
-  tick rejected by do_tick
+  set_alert(Captain, Green) rejected by "alert command"
+  tick rejected by "do tick"
 }
 
 scenario "the computer goes to red alert on its own when life support fails" {
@@ -362,5 +364,5 @@ scenario "the ship can be lost" {
   expect hull == 20
   take_hit(40) emits DESTROYED
   expect Destroyed && hull == 0
-  take_hit(5) rejected by do_take_hit
+  take_hit(5) rejected by "do take hit"
 }

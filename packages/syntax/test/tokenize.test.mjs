@@ -54,7 +54,7 @@ test("connect four tokenizes with the intended scopes", async () => {
   assert.ok(find(toks, "rule", "storage.type.declaration.nomic"), "`rule` is a declaration keyword");
   assert.ok(find(toks, "include", "storage.type.declaration.nomic"), "`include` is a declaration keyword");
   assert.ok(find(toks, "as", "keyword.control.nomic"), "`as` in an import");
-  assert.ok(find(toks, "game_over", "entity.name.function.rule.nomic"), "rule name");
+  assert.ok(find(toks, '"game over"', "entity.name.function.rule.nomic"), "quoted rule label");
   assert.ok(find(toks, "drop", "entity.name.function.occurrence.nomic"), "occurrence in a rule head");
   assert.ok(find(toks, "Player", "entity.name.type.nomic"), "declared type name");
   assert.ok(find(toks, "Column", "entity.name.type.nomic"), "type in an annotation");
@@ -71,7 +71,7 @@ test("connect four tokenizes with the intended scopes", async () => {
   assert.ok(find(toks, "drop", "entity.name.function.call.nomic"), "lowercase action call in a scenario");
   assert.ok(find(toks, "==", "keyword.operator.comparison.nomic"), "comparison");
   assert.ok(toks.some((t) => has(t, "comment.line.documentation.nomic") && t.text.includes("Connect Four")), "doc comment");
-  assert.ok(find(toks, "turn_order", "entity.name.function.rule.nomic"), "`rejected by rule`");
+  assert.ok(find(toks, '"turn order"', "entity.name.function.rule.nomic"), "`rejected by \"label\"`");
   assert.ok(toks.some((t) => has(t, "entity.name.section.scenario.nomic")), "scenario name");
   assert.ok(find(toks, "WON", "entity.name.function.event.nomic"), "ALL_CAPS event in a rule head and emits");
 });
@@ -105,7 +105,7 @@ test("every example tokenizes without leaving text unscoped", async () => {
 test("markdown fences tagged nomic or nom embed the Nomic grammar", async () => {
   const grammar = await (await registry()).loadGrammar("markdown.nomic.codeblock");
   for (const tag of ["nomic", "nom", "Nomic"]) {
-    const md = "```" + tag + "\nrule Place on Drop(p, c) {\n  require Turn == p \"not your turn\"\n}\n```\nafter";
+    const md = "```" + tag + "\nrule \"place\" on Drop(p, c) {\n  require Turn == p \"not your turn\"\n}\n```\nafter";
     const toks = tokenize(grammar, md);
     const rule = toks.find((t) => t.text === "rule");
     assert.ok(rule, `${tag}: no rule token`);

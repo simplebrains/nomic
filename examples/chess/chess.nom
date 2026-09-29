@@ -6,7 +6,7 @@
 /// distinct action, and the rule that a move may not leave one's own king
 /// attacked. The last is expressed as an `ensure` postcondition rather than a
 /// precondition: the machine applies the move's effects, evaluates
-/// `king_safe` on the result, and rejects the move if it fails. Checkmate and
+/// `"king safe"` on the result, and rejects the move if it fails. Checkmate and
 /// stalemate then fall out as edge-triggered events over `legal(...)`.
 ///
 /// Not modeled: the fifty-move and threefold-repetition draw claims (the
@@ -139,18 +139,18 @@ action promote(f1: File, r1: Rank, f2: File, r2: Rank, to: Kind)
 action castle(wing: Wing)
 action resign(side: Side)
 
-rule move_game_over on move(f1, r1, f2, r2) { deny if over "the game is over" }
-rule move_own_piece on move(f1, r1, f2, r2) {
+rule "move game over" on move(f1, r1, f2, r2) { deny if over "the game is over" }
+rule "move own piece" on move(f1, r1, f2, r2) {
   require Color(f1, r1) == Turn "no piece of the side to move there"
 }
-rule move_geometry on move(f1, r1, f2, r2) {
+rule "move geometry" on move(f1, r1, f2, r2) {
   require movable(f1, r1, f2, r2) "that piece cannot move there"
 }
-rule move_must_promote on move(f1, r1, f2, r2) {
+rule "move must promote" on move(f1, r1, f2, r2) {
   deny if
     Piece(f1, r1) == Pawn && r2 == last_rank(Turn) "a pawn reaching the last rank must promote"
 }
-rule make_move on move(f1, r1, f2, r2) {
+rule "make move" on move(f1, r1, f2, r2) {
   require Color(f1, r1) == Turn && movable(f1, r1, f2, r2)
   let s = Turn
   let k = Piece(f1, r1) ?? Pawn
@@ -180,19 +180,19 @@ rule make_move on move(f1, r1, f2, r2) {
   assert Turn = other(s)
 }
 
-rule promote_game_over on promote(f1, r1, f2, r2, to) { deny if over "the game is over" }
-rule promote_own_pawn on promote(f1, r1, f2, r2, to) {
+rule "promote game over" on promote(f1, r1, f2, r2, to) { deny if over "the game is over" }
+rule "promote own pawn" on promote(f1, r1, f2, r2, to) {
   require
     Color(f1, r1) == Turn && Piece(f1, r1) == Pawn "only a pawn of the side to move can promote"
 }
-rule promote_geometry on promote(f1, r1, f2, r2, to) {
+rule "promote geometry" on promote(f1, r1, f2, r2, to) {
   require movable(f1, r1, f2, r2) && r2 == last_rank(Turn) "the pawn must move onto the last rank"
 }
-rule promote_piece on promote(f1, r1, f2, r2, to) {
+rule "promote piece" on promote(f1, r1, f2, r2, to) {
   require
     to == Knight || to == Bishop || to == Rook || to == Queen "promote to a knight, bishop, rook, or queen"
 }
-rule make_promotion on promote(f1, r1, f2, r2, to) {
+rule "make promotion" on promote(f1, r1, f2, r2, to) {
   require
     Color(f1, r1) == Turn
     && Piece(f1, r1) == Pawn
@@ -210,24 +210,24 @@ rule make_promotion on promote(f1, r1, f2, r2, to) {
   assert Turn = other(s)
 }
 
-rule castle_game_over on castle(w) { deny if over "the game is over" }
-rule castle_rights on castle(w) {
+rule "castle game over" on castle(w) { deny if over "the game is over" }
+rule "castle rights" on castle(w) {
   require CastleRight(Turn, w) "castling rights on that wing are gone"
 }
-rule castle_pieces on castle(w) {
+rule "castle pieces" on castle(w) {
   require
     Piece(4, back_rank(Turn)) == King
     && Color(4, back_rank(Turn)) == Turn
     && Piece(rook_file(w), back_rank(Turn)) == Rook
     && Color(rook_file(w), back_rank(Turn)) == Turn "king and rook must be on their home squares"
 }
-rule castle_path on castle(w) {
+rule "castle path" on castle(w) {
   require castle_path_clear(Turn, w) "the squares between king and rook must be empty"
 }
-rule castle_not_through_check on castle(w) {
+rule "castle not through check" on castle(w) {
   require castle_safe(Turn, w) "may not castle out of, through, or into check"
 }
-rule make_castle on castle(w) {
+rule "make castle" on castle(w) {
   require CastleRight(Turn, w) && castle_path_clear(Turn, w)
   let s = Turn
   let r = back_rank(s)
@@ -246,11 +246,11 @@ rule make_castle on castle(w) {
   assert Turn = other(s)
 }
 
-rule resign_game_over on resign(s) { deny if over "the game is over" }
-rule make_resign on resign(s) { assert Outcome = s == White ? BlackWins : WhiteWins }
+rule "resign game over" on resign(s) { deny if over "the game is over" }
+rule "make resign" on resign(s) { assert Outcome = s == White ? BlackWins : WhiteWins }
 
 /// The side that just moved may not leave its own king attacked.
-ensure king_safe: !in_check(other(Turn))
+ensure "king safe": !in_check(other(Turn))
 
 event CHECK(s: Side) when Turn == s && in_check(s)
 event CHECKMATE(s: Side) when !over && Turn == s && in_check(s) && !has_legal_move(s)
@@ -259,8 +259,8 @@ event STALEMATE(s: Side) when !over && Turn == s && !in_check(s) && !has_legal_m
 /// Fifty moves without capture or pawn move: a draw may be claimed (not modeled).
 event FIFTY_MOVES when (HalfmoveClock ?? 0) >= 100
 
-rule record_checkmate on CHECKMATE(s) { assert Outcome = s == White ? BlackWins : WhiteWins }
-rule record_stalemate on STALEMATE(s) { assert Outcome = Draw }
+rule "record checkmate" on CHECKMATE(s) { assert Outcome = s == White ? BlackWins : WhiteWins }
+rule "record stalemate" on STALEMATE(s) { assert Outcome = Draw }
 
 invariant one_king_each:
   count(f: File, r: Rank => Piece(f, r) == King && Color(f, r) == White) == 1
@@ -290,14 +290,14 @@ scenario "scholar's mate" {
   move(5, 0, 2, 3); move(6, 7, 5, 5)
   move(7, 4, 5, 6) emits CHECK(Black), CHECKMATE(Black)
   expect Outcome == WhiteWins && over
-  move(4, 7, 3, 6) rejected by move_game_over
+  move(4, 7, 3, 6) rejected by "move game over"
 }
 
 scenario "a check must be answered and the king may not walk into attack" {
   move(4, 1, 4, 3); move(3, 6, 3, 4)
   move(5, 0, 1, 4) emits CHECK(Black)
   expect in_check(Black) && Turn == Black
-  move(0, 6, 0, 5) rejected by king_safe
+  move(0, 6, 0, 5) rejected by "king safe"
   move(1, 7, 2, 5)
   expect !in_check(Black) && Turn == White
 }
@@ -308,7 +308,7 @@ scenario "the king cannot step into a rook's line" {
   given Piece(4, 0) = King; given Color(4, 0) = White
   given Piece(4, 7) = King; given Color(4, 7) = Black
   given Piece(0, 1) = Rook; given Color(0, 1) = Black
-  move(4, 0, 4, 1) rejected by king_safe
+  move(4, 0, 4, 1) rejected by "king safe"
   move(4, 0, 5, 0)
   expect Piece(5, 0) == King && Turn == Black
 }
@@ -321,8 +321,8 @@ scenario "castling kingside and its preconditions" {
   castle(Kingside)
   expect Piece(6, 0) == King && Piece(5, 0) == Rook && Piece(4, 0) == none && Piece(7, 0) == none
   expect !CastleRight(White, Kingside) && !CastleRight(White, Queenside)
-  castle(Queenside) rejected by castle_path
-  castle(Kingside) rejected by castle_path
+  castle(Queenside) rejected by "castle path"
+  castle(Kingside) rejected by "castle path"
 }
 
 scenario "en passant" {
@@ -340,9 +340,9 @@ scenario "promotion" {
   given Piece(4, 0) = King; given Color(4, 0) = White
   given Piece(4, 7) = King; given Color(4, 7) = Black
   given Piece(0, 6) = Pawn; given Color(0, 6) = White
-  move(0, 6, 0, 7) rejected by move_must_promote
-  promote(0, 6, 0, 7, King) rejected by promote_piece
-  promote(0, 6, 0, 7, Pawn) rejected by promote_piece
+  move(0, 6, 0, 7) rejected by "move must promote"
+  promote(0, 6, 0, 7, King) rejected by "promote piece"
+  promote(0, 6, 0, 7, Pawn) rejected by "promote piece"
   promote(0, 6, 0, 7, Queen) emits CHECK(Black)
   expect Piece(0, 7) == Queen && Color(0, 7) == White && Turn == Black
 }
@@ -361,12 +361,12 @@ scenario "resignation ends the game" {
   move(4, 1, 4, 3)
   resign(Black)
   expect Outcome == WhiteWins
-  move(4, 6, 4, 4) rejected by move_game_over
+  move(4, 6, 4, 4) rejected by "move game over"
 }
 
 scenario "pieces obey their geometry" {
-  move(0, 0, 0, 2) rejected by move_geometry
-  move(1, 0, 3, 1) rejected by move_geometry
+  move(0, 0, 0, 2) rejected by "move geometry"
+  move(1, 0, 3, 1) rejected by "move geometry"
   move(1, 0, 2, 2)
   move(4, 6, 4, 4)
   move(2, 2, 4, 3)

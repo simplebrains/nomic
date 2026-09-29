@@ -6,21 +6,21 @@
       "scenario": "chain of command",
       "steps": [
         {
-          "description": "set_alert(Ensign, Red) rejected by alert_command",
+          "description": "set_alert(Ensign, Red) rejected by \"alert command\"",
           "passed": true,
           "accepted": false,
           "denied_by": [
-            "alert_command",
-            "do_set_alert"
+            "alert command",
+            "do set alert"
           ]
         },
         {
-          "description": "set_alert(Doctor, Red) rejected by alert_command",
+          "description": "set_alert(Doctor, Red) rejected by \"alert command\"",
           "passed": true,
           "accepted": false,
           "denied_by": [
-            "alert_command",
-            "do_set_alert"
+            "alert command",
+            "do set alert"
           ]
         },
         {
@@ -36,12 +36,12 @@
           "passed": true
         },
         {
-          "description": "allocate_power(Ensign, Sensors, 0) rejected by power_authority",
+          "description": "allocate_power(Ensign, Sensors, 0) rejected by \"power authority\"",
           "passed": true,
           "accepted": false,
           "denied_by": [
-            "power_authority",
-            "do_allocate"
+            "power authority",
+            "do allocate"
           ]
         },
         {
@@ -77,11 +77,11 @@
       "scenario": "the power budget is a hard limit, except for the observed red-alert overdraw",
       "steps": [
         {
-          "description": "allocate_power(ChiefEngineer, Phasers, 2) rejected by power_budget",
+          "description": "allocate_power(ChiefEngineer, Phasers, 2) rejected by \"power budget\"",
           "passed": true,
           "accepted": false,
           "denied_by": [
-            "power_budget"
+            "power budget"
           ]
         },
         {
@@ -105,19 +105,19 @@
           "passed": true
         },
         {
-          "description": "allocate_power(ChiefEngineer, Torpedoes, 2) rejected by power_budget",
+          "description": "allocate_power(ChiefEngineer, Torpedoes, 2) rejected by \"power budget\"",
           "passed": true,
           "accepted": false,
           "denied_by": [
-            "power_budget"
+            "power budget"
           ]
         },
         {
-          "description": "set_alert(Captain, Green) rejected by stand_down_within_budget",
+          "description": "set_alert(Captain, Green) rejected by \"stand down within budget\"",
           "passed": true,
           "accepted": false,
           "denied_by": [
-            "stand_down_within_budget"
+            "stand down within budget"
           ]
         },
         {
@@ -162,12 +162,12 @@
       "scenario": "shields absorb fire and a breach raises the alarm",
       "steps": [
         {
-          "description": "raise_shields(Ensign) rejected by shields_command",
+          "description": "raise_shields(Ensign) rejected by \"shields command\"",
           "passed": true,
           "accepted": false,
           "denied_by": [
-            "shields_command",
-            "do_raise"
+            "shields command",
+            "do raise"
           ]
         },
         {
@@ -255,19 +255,19 @@
           ]
         },
         {
-          "description": "allocate_power(ChiefEngineer, Shields, 1) rejected by shields_stay_powered",
+          "description": "allocate_power(ChiefEngineer, Shields, 1) rejected by \"shields stay powered\"",
           "passed": true,
           "accepted": false,
           "denied_by": [
-            "shields_stay_powered"
+            "shields stay powered"
           ]
         },
         {
-          "description": "allocate_power(ChiefEngineer, LifeSupport, 1) rejected by life_support_minimum",
+          "description": "allocate_power(ChiefEngineer, LifeSupport, 1) rejected by \"life support minimum\"",
           "passed": true,
           "accepted": false,
           "denied_by": [
-            "life_support_minimum"
+            "life support minimum"
           ]
         },
         {
@@ -287,12 +287,12 @@
           ]
         },
         {
-          "description": "raise_shields(Captain) rejected by shields_operational",
+          "description": "raise_shields(Captain) rejected by \"shields operational\"",
           "passed": true,
           "accepted": false,
           "denied_by": [
-            "shields_operational",
-            "do_raise"
+            "shields operational",
+            "do raise"
           ]
         }
       ],
@@ -324,29 +324,29 @@
           ]
         },
         {
-          "description": "report_damage(Shields) rejected by do_report_damage",
+          "description": "report_damage(Shields) rejected by \"do report damage\"",
           "passed": true,
           "accepted": false,
           "denied_by": [
-            "do_report_damage"
+            "do report damage"
           ]
         },
         {
-          "description": "raise_shields(Captain) rejected by shields_operational",
+          "description": "raise_shields(Captain) rejected by \"shields operational\"",
           "passed": true,
           "accepted": false,
           "denied_by": [
-            "shields_operational",
-            "do_raise"
+            "shields operational",
+            "do raise"
           ]
         },
         {
-          "description": "repair(Ensign, Shields) rejected by repair_authority",
+          "description": "repair(Ensign, Shields) rejected by \"repair authority\"",
           "passed": true,
           "accepted": false,
           "denied_by": [
-            "repair_authority",
-            "do_repair"
+            "repair authority",
+            "do repair"
           ]
         },
         {
@@ -358,12 +358,12 @@
           ]
         },
         {
-          "description": "repair(ChiefEngineer, Shields) rejected by repair_needed",
+          "description": "repair(ChiefEngineer, Shields) rejected by \"repair needed\"",
           "passed": true,
           "accepted": false,
           "denied_by": [
-            "repair_needed",
-            "do_repair"
+            "repair needed",
+            "do repair"
           ]
         },
         {
@@ -400,12 +400,12 @@
       "scenario": "warp needs coils powered for the factor",
       "steps": [
         {
-          "description": "engage_warp(Captain, 5) rejected by warp_power",
+          "description": "engage_warp(Captain, 5) rejected by \"warp power\"",
           "passed": true,
           "accepted": false,
           "denied_by": [
-            "warp_power",
-            "do_warp"
+            "warp power",
+            "do warp"
           ]
         },
         {
@@ -421,11 +421,11 @@
           "passed": true
         },
         {
-          "description": "allocate_power(ChiefEngineer, Warp, 2) rejected by warp_needs_power",
+          "description": "allocate_power(ChiefEngineer, Warp, 2) rejected by \"warp needs power\"",
           "passed": true,
           "accepted": false,
           "denied_by": [
-            "warp_needs_power"
+            "warp needs power"
           ]
         },
         {
@@ -445,20 +445,20 @@
           ]
         },
         {
-          "description": "engage_warp(Captain, 2) rejected by warp_operational",
+          "description": "engage_warp(Captain, 2) rejected by \"warp operational\"",
           "passed": true,
           "accepted": false,
           "denied_by": [
-            "warp_operational",
-            "do_warp"
+            "warp operational",
+            "do warp"
           ]
         },
         {
-          "description": "allocate_power(ChiefEngineer, Warp, 5) rejected by power_budget",
+          "description": "allocate_power(ChiefEngineer, Warp, 5) rejected by \"power budget\"",
           "passed": true,
           "accepted": false,
           "denied_by": [
-            "power_budget"
+            "power budget"
           ]
         },
         {
@@ -511,12 +511,12 @@
       "scenario": "weapons are locked outside red alert",
       "steps": [
         {
-          "description": "fire_torpedo(Captain) rejected by torpedo_red_alert",
+          "description": "fire_torpedo(Captain) rejected by \"torpedo red alert\"",
           "passed": true,
           "accepted": false,
           "denied_by": [
-            "torpedo_red_alert",
-            "do_fire_torpedo"
+            "torpedo red alert",
+            "do fire torpedo"
           ]
         },
         {
@@ -540,12 +540,12 @@
           "passed": true
         },
         {
-          "description": "fire_phasers(Captain) rejected by phaser_ready",
+          "description": "fire_phasers(Captain) rejected by \"phaser ready\"",
           "passed": true,
           "accepted": false,
           "denied_by": [
-            "phaser_ready",
-            "do_fire_phasers"
+            "phaser ready",
+            "do fire phasers"
           ]
         },
         {
@@ -570,12 +570,12 @@
           ]
         },
         {
-          "description": "fire_torpedo(Captain) rejected by torpedo_ready",
+          "description": "fire_torpedo(Captain) rejected by \"torpedo ready\"",
           "passed": true,
           "accepted": false,
           "denied_by": [
-            "torpedo_ready",
-            "do_fire_torpedo"
+            "torpedo ready",
+            "do fire torpedo"
           ]
         }
       ],
@@ -601,12 +601,12 @@
       "scenario": "self-destruct needs two senior officers and only the captain cancels",
       "steps": [
         {
-          "description": "authorize_self_destruct(Ensign) rejected by destruct_authority",
+          "description": "authorize_self_destruct(Ensign) rejected by \"destruct authority\"",
           "passed": true,
           "accepted": false,
           "denied_by": [
-            "destruct_authority",
-            "do_authorize"
+            "destruct authority",
+            "do authorize"
           ]
         },
         {
@@ -618,20 +618,20 @@
           ]
         },
         {
-          "description": "authorize_self_destruct(Captain) rejected by destruct_once",
+          "description": "authorize_self_destruct(Captain) rejected by \"destruct once\"",
           "passed": true,
           "accepted": false,
           "denied_by": [
-            "destruct_once",
-            "do_authorize"
+            "destruct once",
+            "do authorize"
           ]
         },
         {
-          "description": "tick rejected by do_tick",
+          "description": "tick rejected by \"do tick\"",
           "passed": true,
           "accepted": false,
           "denied_by": [
-            "do_tick"
+            "do tick"
           ]
         },
         {
@@ -671,12 +671,12 @@
           "passed": true
         },
         {
-          "description": "cancel_self_destruct(FirstOfficer) rejected by cancel_is_captains",
+          "description": "cancel_self_destruct(FirstOfficer) rejected by \"cancel is captains\"",
           "passed": true,
           "accepted": false,
           "denied_by": [
-            "cancel_is_captains",
-            "do_cancel"
+            "cancel is captains",
+            "do cancel"
           ]
         },
         {
@@ -769,19 +769,19 @@
           "passed": true
         },
         {
-          "description": "set_alert(Captain, Green) rejected by alert_command",
+          "description": "set_alert(Captain, Green) rejected by \"alert command\"",
           "passed": true,
           "accepted": false,
           "denied_by": [
-            "alert_command"
+            "alert command"
           ]
         },
         {
-          "description": "tick rejected by do_tick",
+          "description": "tick rejected by \"do tick\"",
           "passed": true,
           "accepted": false,
           "denied_by": [
-            "do_tick"
+            "do tick"
           ]
         }
       ],
@@ -897,11 +897,11 @@
           "passed": true
         },
         {
-          "description": "take_hit(5) rejected by do_take_hit",
+          "description": "take_hit(5) rejected by \"do take hit\"",
           "passed": true,
           "accepted": false,
           "denied_by": [
-            "do_take_hit"
+            "do take hit"
           ]
         }
       ],

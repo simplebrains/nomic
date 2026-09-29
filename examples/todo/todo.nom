@@ -45,54 +45,56 @@ action unblock(id: TaskId, by: TaskId)
 action nest(child: TaskId, parent: TaskId)
 action set_wip_limit(n: Limit)
 
-rule create_fresh on create(id, l) { require Task(id) == none "that task id is already in use" }
-rule do_create on create(id, l) when Task(id) == none {
+rule "create fresh" on create(id, l) { require Task(id) == none "that task id is already in use" }
+rule "do create" on create(id, l) when Task(id) == none {
   assert Task(id) = Draft
   assert Priority(id) = l
 }
 
-rule advance_exists on advance(id, to) { require task_exists(id) "no such task" }
-rule advance_forward on advance(id, to) {
+rule "advance exists" on advance(id, to) { require task_exists(id) "no such task" }
+rule "advance forward" on advance(id, to) {
   require (Task(id) ?? Done) < to "a task only moves forward in its lifecycle"
 }
-rule advance_not_cancel on advance(id, to) { require to != Cancelled "use Cancel to cancel" }
-rule not_blocked on advance(id, to) {
+rule "advance not cancel" on advance(id, to) { require to != Cancelled "use Cancel to cancel" }
+rule "not blocked" on advance(id, to) {
   require to != Doing || blockers(id) == 0 "blocked by an open task"
 }
-rule within_wip on advance(id, to) {
+rule "within wip" on advance(id, to) {
   require to != Doing || in_progress < wip "work-in-progress limit reached"
 }
-rule do_advance on advance(id, to) when task_exists(id) && (Task(id) ?? Done) < to {
+rule "do advance" on advance(id, to) when task_exists(id) && (Task(id) ?? Done) < to {
   assert Task(id) = to
 }
 
-rule cancel_open on cancel(id) { require open(id) "only an open task can be cancelled" }
-rule do_cancel on cancel(id) when open(id) {
+rule "cancel open" on cancel(id) { require open(id) "only an open task can be cancelled" }
+rule "do cancel" on cancel(id) when open(id) {
   assert Task(id) = Cancelled
   for ((t, b) in Blocked where t == id) { retract Blocked(t, b) }
 }
 
-rule block_tasks on block(id, by) {
+rule "block tasks" on block(id, by) {
   require task_exists(id) && task_exists(by) && id != by "both must be distinct existing tasks"
 }
-rule block_open on block(id, by) {
+rule "block open" on block(id, by) {
   require open(id) && open(by) "only open tasks take part in blocking"
 }
-rule do_block on block(id, by) when open(id) && open(by) && id != by { assert Blocked(id, by) }
-rule do_unblock on unblock(id, by) {
+rule "do block" on block(id, by) when open(id) && open(by) && id != by { assert Blocked(id, by) }
+rule "do unblock" on unblock(id, by) {
   require Blocked(id, by) "not blocked by that task"
   retract Blocked(id, by)
 }
 
-rule nest_tasks on nest(c, p) {
+rule "nest tasks" on nest(c, p) {
   require task_exists(c) && task_exists(p) && c != p "both must be distinct existing tasks"
 }
-rule nest_acyclic on nest(c, p) { require Parent(p) != c "that would make each the other's parent" }
-rule do_nest on nest(c, p) when task_exists(c) && task_exists(p) && c != p && Parent(p) != c {
+rule "nest acyclic" on nest(c, p) {
+  require Parent(p) != c "that would make each the other's parent"
+}
+rule "do nest" on nest(c, p) when task_exists(c) && task_exists(p) && c != p && Parent(p) != c {
   assert Parent(c) = p
 }
 
-rule do_set_wip on set_wip_limit(n) {
+rule "do set wip" on set_wip_limit(n) {
   require n >= in_progress "lower the work in progress first"
   assert WipLimit = n
 }
@@ -106,12 +108,12 @@ event UNBLOCKED(id: TaskId) when
   open(id) && blockers(id) == 0 && exists((t, b) in Blocked => t == id)
 
 /// A finished task releases everything it was blocking.
-rule release_blocked on FINISHED(id) {
+rule "release blocked" on FINISHED(id) {
   for ((t, b) in Blocked where b == id) { retract Blocked(t, b) }
 }
 
 /// At most one task per priority level may be in progress.
-ensure one_per_level_in_progress: unique(t in Task where Task(t) == Doing => Priority(t))
+ensure "one per level in progress": unique(t in Task where Task(t) == Doing => Priority(t))
 
 invariant wip_respected: in_progress <= wip
 invariant every_task_has_priority: all(t in Task => Priority(t) != none)
@@ -127,35 +129,35 @@ scenario "a task moves forward through its lifecycle, never backward" {
   create(TaskId("write-spec"), High)
   expect Task(TaskId("write-spec")) == Draft && count(t in Task => true) == 1
   advance(TaskId("write-spec"), Ready)
-  advance(TaskId("write-spec"), Draft) rejected by advance_forward
+  advance(TaskId("write-spec"), Draft) rejected by "advance forward"
   advance(TaskId("write-spec"), Doing) emits STARTED(TaskId("write-spec"))
   advance(TaskId("write-spec"), Done) emits FINISHED(TaskId("write-spec"))
-  advance(TaskId("write-spec"), Cancelled) rejected by advance_forward
+  advance(TaskId("write-spec"), Cancelled) rejected by "advance forward"
 }
 
 scenario "done and cancelled are incomparable" {
   create(TaskId("a"), Normal)
   advance(TaskId("a"), Ready)
   cancel(TaskId("a"))
-  advance(TaskId("a"), Done) rejected by advance_forward
+  advance(TaskId("a"), Done) rejected by "advance forward"
   expect !((Task(TaskId("a")) ?? Draft) < Done) && !(Done < (Task(TaskId("a")) ?? Draft))
   expect Cancelled > Ready && Cancelled > Draft && !(Cancelled < Done) && !(Done < Cancelled)
-  cancel(TaskId("a")) rejected by cancel_open
+  cancel(TaskId("a")) rejected by "cancel open"
 }
 
 scenario "identities compare by representation and are never enumerated" {
   create(TaskId("x"), Low)
-  create(TaskId("x"), High) rejected by create_fresh
+  create(TaskId("x"), High) rejected by "create fresh"
   expect TaskId("x") == TaskId("x") && TaskId("x") != TaskId("y") && task_exists(TaskId("x")) && !task_exists(TaskId("y"))
-  advance(TaskId("y"), Ready) rejected by advance_exists
+  advance(TaskId("y"), Ready) rejected by "advance exists"
 }
 
 scenario "work in progress is limited and the limit is a fact" {
   create(TaskId("a"), Low); create(TaskId("b"), Normal); create(TaskId("c"), High)
   advance(TaskId("a"), Ready); advance(TaskId("b"), Ready); advance(TaskId("c"), Ready)
   advance(TaskId("a"), Doing); advance(TaskId("b"), Doing)
-  advance(TaskId("c"), Doing) rejected by within_wip
-  set_wip_limit(1) rejected by do_set_wip
+  advance(TaskId("c"), Doing) rejected by "within wip"
+  set_wip_limit(1) rejected by "do set wip"
   set_wip_limit(3)
   advance(TaskId("c"), Doing)
   expect in_progress == 3
@@ -165,15 +167,15 @@ scenario "at most one task per priority level in progress" {
   create(TaskId("a"), High); create(TaskId("b"), High)
   advance(TaskId("a"), Ready); advance(TaskId("b"), Ready)
   advance(TaskId("a"), Doing)
-  advance(TaskId("b"), Doing) rejected by one_per_level_in_progress
+  advance(TaskId("b"), Doing) rejected by "one per level in progress"
 }
 
 scenario "blocked tasks wait; finishing the blocker releases them" {
   create(TaskId("deploy"), High); create(TaskId("review"), Normal)
   block(TaskId("deploy"), TaskId("review"))
-  block(TaskId("deploy"), TaskId("deploy")) rejected by block_tasks
+  block(TaskId("deploy"), TaskId("deploy")) rejected by "block tasks"
   advance(TaskId("deploy"), Ready)
-  advance(TaskId("deploy"), Doing) rejected by not_blocked
+  advance(TaskId("deploy"), Doing) rejected by "not blocked"
   advance(TaskId("review"), Ready); advance(TaskId("review"), Doing)
   advance(TaskId("review"), Done) emits FINISHED(TaskId("review")), UNBLOCKED(TaskId("deploy"))
   expect blockers(TaskId("deploy")) == 0 && none((t, b) in Blocked => true)
@@ -191,6 +193,6 @@ scenario "cancelling a blocked task drops its blocking records" {
 scenario "subtasks nest without two-cycles" {
   create(TaskId("epic"), High); create(TaskId("story"), Normal)
   nest(TaskId("story"), TaskId("epic"))
-  nest(TaskId("epic"), TaskId("story")) rejected by nest_acyclic
+  nest(TaskId("epic"), TaskId("story")) rejected by "nest acyclic"
   expect Parent(TaskId("story")) == TaskId("epic") && all(c in Parent => task_exists(c))
 }

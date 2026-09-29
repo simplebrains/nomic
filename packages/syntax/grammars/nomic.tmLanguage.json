@@ -78,8 +78,8 @@
           }
         },
         {
-          "comment": "rule Name on Occurrence / exception Name on Invariant",
-          "match": "\\b(observed|required|expected|assumed)?\\s*\\b(rule|exception)\\s+([A-Za-z_][A-Za-z0-9_]*)\\s+(on)\\s+([A-Za-z_][A-Za-z0-9_]*)",
+          "comment": "rule \"label\" on Occurrence (rules carry quoted labels)",
+          "match": "\\b(observed|required|expected|assumed)?\\s*\\b(rule)\\s+(\"(?:[^\"\\\\]|\\\\.)*\")\\s+(on)\\s+([A-Za-z_][A-Za-z0-9_]*)",
           "captures": {
             "1": {
               "name": "storage.modifier.status.nomic"
@@ -88,13 +88,49 @@
               "name": "storage.type.declaration.nomic"
             },
             "3": {
-              "name": "entity.name.function.rule.nomic"
+              "name": "entity.name.function.rule.nomic string.quoted.double.nomic"
             },
             "4": {
               "name": "keyword.control.nomic"
             },
             "5": {
               "name": "entity.name.function.occurrence.nomic"
+            }
+          }
+        },
+        {
+          "comment": "exception Name on Invariant",
+          "match": "\\b(observed|required|expected|assumed)?\\s*\\b(exception)\\s+([A-Za-z_][A-Za-z0-9_]*)\\s+(on)\\s+([A-Za-z_][A-Za-z0-9_]*)",
+          "captures": {
+            "1": {
+              "name": "storage.modifier.status.nomic"
+            },
+            "2": {
+              "name": "storage.type.declaration.nomic"
+            },
+            "3": {
+              "name": "entity.name.function.declaration.nomic"
+            },
+            "4": {
+              "name": "keyword.control.nomic"
+            },
+            "5": {
+              "name": "entity.name.function.declaration.nomic"
+            }
+          }
+        },
+        {
+          "comment": "ensure \"label\" (ensures carry quoted labels)",
+          "match": "\\b(observed|required|expected|assumed)?\\s*\\b(ensure)\\s+(\"(?:[^\"\\\\]|\\\\.)*\")",
+          "captures": {
+            "1": {
+              "name": "storage.modifier.status.nomic"
+            },
+            "2": {
+              "name": "storage.type.declaration.nomic"
+            },
+            "3": {
+              "name": "entity.name.function.rule.nomic string.quoted.double.nomic"
             }
           }
         },
@@ -114,8 +150,8 @@
           }
         },
         {
-          "comment": "fact / derive / action / invariant / ensure Name",
-          "match": "\\b(observed|required|expected|assumed)?\\s*\\b(fact|derive|action|invariant|ensure)\\s+([A-Za-z_][A-Za-z0-9_]*)",
+          "comment": "fact / derive / action / invariant Name",
+          "match": "\\b(observed|required|expected|assumed)?\\s*\\b(fact|derive|action|invariant)\\s+([A-Za-z_][A-Za-z0-9_]*)",
           "captures": {
             "1": {
               "name": "storage.modifier.status.nomic"
@@ -210,7 +246,8 @@
     "scenario-steps": {
       "patterns": [
         {
-          "match": "\\b(rejected)\\s+(by)\\s+([A-Za-z_][A-Za-z0-9_]*)",
+          "comment": "rejected by \"label\": a rule or ensure label, or a require/deny reason",
+          "match": "\\b(rejected)\\s+(by)\\s+(\"(?:[^\"\\\\]|\\\\.)*\")",
           "captures": {
             "1": {
               "name": "keyword.control.nomic"
@@ -219,7 +256,7 @@
               "name": "keyword.control.nomic"
             },
             "3": {
-              "name": "entity.name.function.rule.nomic"
+              "name": "entity.name.function.rule.nomic string.quoted.double.nomic"
             }
           }
         }

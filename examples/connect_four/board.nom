@@ -20,8 +20,8 @@ derive full: Bool = all(c: Column => height(c) == 6)
 /// Drop a disc for `player` into `col`.
 action drop(player: Player, col: Column)
 
-rule turn_order on drop(p, c) { require Turn == p "not your turn" }
-rule place on drop(p, c) {
+rule "turn order" on drop(p, c) { require Turn == p "not your turn" }
+rule "place" on drop(p, c) {
   require height(c) < 6 "column is full"
   assert Cell(c, height(c)) = p
   assert Turn = other(p)
@@ -42,6 +42,6 @@ scenario "discs stack from the bottom" {
 scenario "a full column rejects further drops" {
   drop(Red, 0); drop(Yellow, 0); drop(Red, 0); drop(Yellow, 0); drop(Red, 0); drop(Yellow, 0)
   expect height(0) == 6
-  drop(Red, 0) rejected by place
+  drop(Red, 0) rejected by "place"
   drop(Red, 1)
 }

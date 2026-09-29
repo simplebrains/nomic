@@ -76,7 +76,7 @@ Commands:
 | `fixture <model> [--out f.json]` | generate a language-neutral conformance fixture from the scenarios |
 | `conform <model> <fixture.json>` | check the model against a stored fixture |
 | `report <model>` | knowledge status (required/observed/expected/assumed), exceptions, citations, description coverage |
-| `fmt <model>... [--check] [--fix] [--stdout] [--no-style]` | rewrite models in canonical form and warn about names that break the naming convention; `--fix` renames them to the conventional spelling (references, patterns, `rejected by`, citations, and backticked doc mentions follow); `--check` fails if anything would change (CI runs it) |
+| `fmt <model>... [--check] [--fix] [--stdout] [--no-style]` | rewrite models in canonical form and warn about names that break the naming convention; `--fix` renames them to the conventional spelling (references, patterns, citations, and backticked doc mentions follow); `--check` fails if anything would change (CI runs it) |
 | `cite <model> [--root DIR] [--pin] [--index]` | resolve every citation against the repository, report `current`, `stale`, `unverified`, or `unresolved`; `--pin` writes the current content hash into each locator; `--index` groups citations by cited file |
 
 Models use the `.nom` extension.
@@ -99,15 +99,15 @@ derive other(p: Player): Player = match p { Red => Yellow, Yellow => Red }
 
 action drop(player: Player, col: Column)     // an attempted occurrence
 
-rule turn_order on drop(p, c) { require Turn == p "not your turn" }
-rule place on drop(p, c) {
+rule "turn order" on drop(p, c) { require Turn == p "not your turn" }   // rules carry a label, not a name
+rule "place" on drop(p, c) {
   require height(c) < 6 "column is full"
   assert Cell(c, height(c)) = p           // explicit effects, evaluated against the pre-state
   assert Turn = other(p)
 }
 
 event WON(p: Player) when four_in_a_row(p)   // edge-triggered: emitted once, when it becomes true
-rule record_winner on WON(p) { assert Winner = p }   // reaction, same transition
+rule "record winner" on WON(p) { assert Winner = p }   // reaction, same transition
 
 invariant no_floating_discs:
   all(c: Column, r: 0..5 where r > 0 && Cell(c, r) != none => Cell(c, r - 1) != none)
@@ -117,7 +117,7 @@ init { assert Turn = Red }
 scenario "vertical win" {
   drop(Red, 0); drop(Yellow, 1); drop(Red, 0); drop(Yellow, 1); drop(Red, 0); drop(Yellow, 1)
   drop(Red, 0) emits WON(Red)
-  drop(Yellow, 2) rejected by game_over
+  drop(Yellow, 2) rejected by "the game is over"   // a rule label, or the reason the rule gave
   expect Winner == Red
 }
 ```
@@ -126,14 +126,14 @@ Other constructs, each introduced by one of the example models:
 
 - `??` none-coalescing, `T?` optional derive results, `first(...)` deterministic selection, `sum`, `exists`, `all`, `count`.
 - `for (x: T where cond) { effects }` bounded effect comprehension (checkers, chess initial positions).
-- `ensure name: expr` postcondition over an action's own effects that **rejects** the action if it fails (chess: a move may not leave one's own king in check). Distinct from `invariant`, whose violation is a model error.
+- `ensure "label": expr` postcondition over an action's own effects that **rejects** the action if it fails (chess: a move may not leave one's own king in check). Distinct from `invariant`, whose violation is a model error.
 - `legal(Action(args))` built-in predicate: would the action be accepted now? Lets "no legal move" be a derived value (checkmate, stalemate).
 - `observed | expected | assumed` status prefixes on declarations, and `exception Name on Invariant when cond` naming a known departure from a normative invariant. The verifier reports when an exception is exercised instead of failing (inventory audits, the ship's red-alert power overdraw).
 - `given nothing` / `given Fact(k) = v` scenario steps to start from a constructed state.
 - `type TaskId = opaque`: an open domain of identities. Values enter as `TaskId("u-17")`, compare only for equality, can be stored and passed, and are never enumerated. The explorer draws them from identities already in the state plus `--fresh N` new ones.
 - `order Status: Draft < Ready < Doing < Done, Ready < Cancelled`: a declared precedence over an enum, as chains. Its transitive closure is the order; pairs it does not relate are incomparable, so `<` is simply false for them and a partial order needs no third truth value. Enums without an `order` keep declaration order. The machine's canonical evaluation order is separate and never modeled.
 - `x in Fact` and `(a, b) in Fact` binders: quantifiers and `for` range over a fact's current keys, its population, instead of a type. This is what makes opaque keys quantifiable, and it is how cardinality is stated: `count(t in Task => Task(t) == Doing) <= wip`. `none(...)` and `unique(x in F => Key(x))` complete the set. Facts are the only collection substrate; a query result never becomes stored state.
-- `rule r on a(p) when cond { ... }`: an applicability guard. False means the rule does not match, unlike `require`, which means the occurrence is forbidden. Needed for anything that dispatches on state, such as a stage machine.
+- `rule "r" on a(p) when cond { ... }`: an applicability guard. False means the rule does not match, unlike `require`, which means the occurrence is forbidden. Needed for anything that dispatches on state, such as a stage machine.
 - **Citations.** Any declaration (or the model) may carry trailing `realizes | derives_from | evidences | contradicts | configures | documents "path#Lstart-Lend[@pin]" ["note"]` clauses grounding it in a file. `nomic cite` resolves them and detects drift by content hash; `contradicts` records a known gap between intent and code. `examples/nomic/nomic.nom` describes this machine's own pipeline with 22 citations into `src/`.
 
 ## Modules
@@ -199,8 +199,15 @@ variants, facts) are `CamelCase`. **Events** are `ALL_CAPS` moments (`WON`,
 `JUMP_ENDED`), which lets a state and the edge into it share a word: `fact
 Drawn` records the condition, `event DRAWN` marks it becoming true.
 **Everything callable or sentence-like** is `snake_case`: actions
-(`set_focus(id, text, at)`), derives (`height(c)`), rules, invariants,
-ensures, exceptions (`rule set_focus_non_empty`), and every local name.
+(`set_focus(id, text, at)`), derives (`height(c)`), invariants, exceptions,
+and every local name. **Rules and ensures are not names at all** but quoted
+labels, like scenarios (`rule "turn order" on drop(p, c)`, `ensure "king
+safe": …`): nothing in a model ever refers to a rule except a scenario's
+`rejected by`, which accepts either the label or the reason string the
+denying `require`/`deny` gave, so `rejected by "not your turn"` says why an
+attempt failed without naming which guard caught it. The label still has to
+be unique, still anchors trailing citations, and still appears in traces and
+reports.
 Facts and derives share expression positions, so their case tells stored
 from computed (`Cell(c, r)` versus `height(c)`); a rule head's occurrence
 tells whether it governs an action (`on drop(p, c)`) or reacts to an event

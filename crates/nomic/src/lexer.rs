@@ -301,7 +301,7 @@ mod tests {
 
     #[test]
     fn lexes_basic_tokens() {
-        let toks = lex("rule X on Drop(p, c) { require Turn == p \"no\" }").unwrap();
+        let toks = lex("rule \"x\" on Drop(p, c) { require Turn == p \"no\" }").unwrap();
         let kinds: Vec<&Tok> = toks.iter().map(|t| &t.tok).collect();
         assert!(matches!(kinds[0], Tok::Ident(s) if s == "rule"));
         assert!(kinds.contains(&&Tok::Eq));

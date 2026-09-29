@@ -556,11 +556,12 @@ impl<'a> Checker<'a> {
                     };
                     self.args_against(args, &a.params.clone(), &mut env, *pos, &format!("action `{action}`"));
                     match outcome {
-                        Outcome::Rejected { by: Some(rule) } => {
-                            if !self.model.rules.iter().any(|r| &r.name == rule)
-                                && !self.model.ensures.iter().any(|e| &e.name == rule)
+                        Outcome::Rejected { by: Some(label) } => {
+                            if !self.model.rules.iter().any(|r| &r.name == label)
+                                && !self.model.ensures.iter().any(|e| &e.name == label)
+                                && !self.model.rules.iter().any(|r| reasons(&r.body).contains(&label.as_str()))
                             {
-                                self.error(*pos, format!("`rejected by {rule}`: no such rule or ensure"));
+                                self.error(*pos, format!("`rejected by {label:?}`: no rule, ensure, or `require`/`deny` reason has that text"));
                             }
                         }
                         Outcome::Accepted { emits: Some(evs) } => {
@@ -852,4 +853,25 @@ fn stmt_pos(s: &Stmt) -> Pos {
         | Stmt::For { pos, .. }
         | Stmt::If { pos, .. } => *pos,
     }
+}
+
+/// Every literal `require`/`deny` reason in a block, recursively. A scenario's
+/// `rejected by "…"` may name one of these instead of the rule.
+pub fn reasons(stmts: &[Stmt]) -> Vec<&str> {
+    let mut out = Vec::new();
+    fn walk<'a>(stmts: &'a [Stmt], out: &mut Vec<&'a str>) {
+        for s in stmts {
+            match s {
+                Stmt::Require { reason: Some(r), .. } | Stmt::Deny { reason: Some(r), .. } => out.push(r.as_str()),
+                Stmt::If { then, els, .. } => {
+                    walk(then, out);
+                    walk(els, out);
+                }
+                Stmt::For { body, .. } => walk(body, out),
+                _ => {}
+            }
+        }
+    }
+    walk(stmts, &mut out);
+    out
 }

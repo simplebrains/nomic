@@ -139,11 +139,11 @@
           "passed": true
         },
         {
-          "description": "advance rejected by advance_not_done",
+          "description": "advance rejected by \"advance not done\"",
           "passed": true,
           "accepted": false,
           "denied_by": [
-            "advance_not_done"
+            "advance not done"
           ]
         }
       ],
@@ -261,11 +261,11 @@
           ]
         },
         {
-          "description": "rule_matches(2, Allow, true) rejected by match_once",
+          "description": "rule_matches(2, Allow, true) rejected by \"match once\"",
           "passed": true,
           "accepted": false,
           "denied_by": [
-            "match_once"
+            "match once"
           ]
         },
         {
@@ -400,11 +400,11 @@
           "passed": true
         },
         {
-          "description": "advance rejected by advance_not_done",
+          "description": "advance rejected by \"advance not done\"",
           "passed": true,
           "accepted": false,
           "denied_by": [
-            "advance_not_done"
+            "advance not done"
           ]
         }
       ],
@@ -523,11 +523,11 @@
           "passed": true
         },
         {
-          "description": "event_detected(1) rejected by once_per_transition",
+          "description": "event_detected(1) rejected by \"once per transition\"",
           "passed": true,
           "accepted": false,
           "denied_by": [
-            "once_per_transition"
+            "once per transition"
           ]
         },
         {
@@ -839,43 +839,43 @@
       "scenario": "inputs are only accepted in their stage",
       "steps": [
         {
-          "description": "rule_matches(1, Allow, true) rejected by match_only_during_match",
+          "description": "rule_matches(1, Allow, true) rejected by \"match only during match\"",
           "passed": true,
           "accepted": false,
           "denied_by": [
-            "match_only_during_match"
+            "match only during match"
           ]
         },
         {
-          "description": "event_detected(1) rejected by detect_only_when_detecting",
+          "description": "event_detected(1) rejected by \"detect only when detecting\"",
           "passed": true,
           "accepted": false,
           "denied_by": [
-            "detect_only_when_detecting"
+            "detect only when detecting"
           ]
         },
         {
-          "description": "invariant_fails(1, false) rejected by fail_only_in_verify",
+          "description": "invariant_fails(1, false) rejected by \"fail only in verify\"",
           "passed": true,
           "accepted": false,
           "denied_by": [
-            "fail_only_in_verify"
+            "fail only in verify"
           ]
         },
         {
-          "description": "effects_conflict rejected by conflict_only_in_transition",
+          "description": "effects_conflict rejected by \"conflict only in transition\"",
           "passed": true,
           "accepted": false,
           "denied_by": [
-            "conflict_only_in_transition"
+            "conflict only in transition"
           ]
         },
         {
-          "description": "advance rejected by advance_not_idle",
+          "description": "advance rejected by \"advance not idle\"",
           "passed": true,
           "accepted": false,
           "denied_by": [
-            "advance_not_idle"
+            "advance not idle"
           ]
         },
         {
@@ -888,11 +888,11 @@
           ]
         },
         {
-          "description": "begin rejected by do_begin",
+          "description": "begin rejected by \"do begin\"",
           "passed": true,
           "accepted": false,
           "denied_by": [
-            "do_begin"
+            "do begin"
           ]
         }
       ],

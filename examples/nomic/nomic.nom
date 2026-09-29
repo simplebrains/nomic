@@ -15,7 +15,7 @@
 /// rules was added for it, realizing the "match against occurrence and
 /// current state" wording of the core semantics.
 model NomicMachine
-  documents "README.md#L226-L240@77de0c9701bc" "the pipeline section of the README"
+  documents "README.md#L233-L247@77de0c9701bc" "the pipeline section of the README"
   realizes "crates/nomic/src/machine.rs#L1-L15@eb1871a676c8" "the module doc lists the ten stages"
   evidences "crates/nomic/tests/examples.rs#L77-L85@eedf5b4d87bc" "tic-tac-toe: 5478 positions, 958 terminal"
   evidences "crates/nomic/tests/examples.rs#L87-L94@c341eb0d5d74" "Connect Four ply counts match OEIS A212693"
@@ -34,7 +34,7 @@ type InvariantId = 1..2
 fact At: Stage
 /// Rule `r` matched the occurrence's pattern.
 fact Matched(r: RuleId)
-  realizes "crates/nomic/src/machine.rs#L442-L461@c05e641f91fc" "match_pattern: bind, wildcard, literal per parameter"
+  realizes "crates/nomic/src/machine.rs#L444-L463@c05e641f91fc" "match_pattern: bind, wildcard, literal per parameter"
 fact Ruled(r: RuleId): Disposition
 fact HasEffects(r: RuleId)
 /// Two allowing rules disagree about one key in the same round.
@@ -60,7 +60,7 @@ derive done: Bool = Outcome != none
 /// action can be legal and still end in a model error at Verify. The cited
 /// code contradicts this description; closing the gap flips the relation.
 derive is_legal: Bool = any_match && !any_denial
-  contradicts "crates/nomic/src/machine.rs#L825-L844@60313ea43af5" "is_legal stops after dispositions and ensures"
+  contradicts "crates/nomic/src/machine.rs#L827-L846@60313ea43af5" "is_legal stops after dispositions and ensures"
 /// Reaction rounds are capped so a non-settling cascade is an error, not a hang.
 derive max_rounds: Int = 64
   configures "crates/nomic/src/machine.rs#L27@a5b0ef35796c"
@@ -78,102 +78,102 @@ action event_detected(e: EventId)
 /// The model under test reports an invariant failing, excused or not.
 action invariant_fails(i: InvariantId, excused: Bool)
 
-rule do_begin on begin {
+rule "do begin" on begin {
   require At == Idle && !done "a transition is already in progress"
   assert At = Typecheck
   assert Round = 0
 }
-  realizes "crates/nomic/src/machine.rs#L278-L284@6ec6b409d343" "apply: typecheck the occurrence first"
+  realizes "crates/nomic/src/machine.rs#L280-L286@6ec6b409d343" "apply: typecheck the occurrence first"
 
-rule match_only_during_match on rule_matches(r, d, fx) {
+rule "match only during match" on rule_matches(r, d, fx) {
   require At == Match "rules are matched only in the Match stage"
 }
-rule match_once on rule_matches(r, d, fx) {
+rule "match once" on rule_matches(r, d, fx) {
   require !Matched(r) "a rule matches an occurrence at most once"
 }
-rule do_match on rule_matches(r, d, fx) when At == Match && !Matched(r) {
+rule "do match" on rule_matches(r, d, fx) when At == Match && !Matched(r) {
   assert Matched(r)
   assert Ruled(r) = d
   if fx && d == Allow { assert HasEffects(r) }
 }
-  realizes "crates/nomic/src/machine.rs#L401-L440@b5155c272b11" "evaluate_rules: one trace per matched rule; a denied rule's effects are dropped"
+  realizes "crates/nomic/src/machine.rs#L403-L442@b5155c272b11" "evaluate_rules: one trace per matched rule; a denied rule's effects are dropped"
 
-rule advance_not_done on advance { deny if done "the transition has ended" }
-rule advance_not_idle on advance { require At != Idle "nothing in progress" }
-rule to_match on advance when At == Typecheck { assert At = Match }
-rule to_check on advance when At == Match { assert At = Check }
-rule to_resolve on advance when At == Check { assert At = Resolve }
+rule "advance not done" on advance { deny if done "the transition has ended" }
+rule "advance not idle" on advance { require At != Idle "nothing in progress" }
+rule "to match" on advance when At == Typecheck { assert At = Match }
+rule "to check" on advance when At == Match { assert At = Check }
+rule "to resolve" on advance when At == Check { assert At = Resolve }
 /// Resolve: no matching rule rejects; any denial rejects; otherwise proceed.
-rule resolve_rejects on advance when At == Resolve && (!any_match || any_denial) {
+rule "resolve rejects" on advance when At == Resolve && (!any_match || any_denial) {
   assert Outcome = Rejected
 }
-  realizes "crates/nomic/src/machine.rs#L296-L303@cc501716d1d3"
-rule resolve_proceeds on advance when At == Resolve && any_match && !any_denial {
+  realizes "crates/nomic/src/machine.rs#L298-L305@cc501716d1d3"
+rule "resolve proceeds" on advance when At == Resolve && any_match && !any_denial {
   assert At = Transition
 }
 /// Transition: union the effects and apply them, unless they conflict.
-rule apply_effects on advance when At == Transition && !Conflict {
+rule "apply effects" on advance when At == Transition && !Conflict {
   assert Applied
   assert At = Detect
 }
-  realizes "crates/nomic/src/machine.rs#L650-L691@59bfffaf4500" "apply_effects: keyed by fact and key tuple"
-rule conflict_only_in_transition on effects_conflict {
+  realizes "crates/nomic/src/machine.rs#L652-L693@59bfffaf4500" "apply_effects: keyed by fact and key tuple"
+rule "conflict only in transition" on effects_conflict {
   require At == Transition && !done "conflicts arise while applying effects"
 }
-rule do_conflict on effects_conflict when At == Transition {
+rule "do conflict" on effects_conflict when At == Transition {
   assert Conflict
   assert Outcome = ModelError
 }
-  realizes "crates/nomic/src/machine.rs#L661-L671@65d7f7ffb997" "two effects on one key that differ is MachineError::Conflict"
-rule to_react on advance when At == Detect { assert At = React }
+  realizes "crates/nomic/src/machine.rs#L663-L673@65d7f7ffb997" "two effects on one key that differ is MachineError::Conflict"
+rule "to react" on advance when At == Detect { assert At = React }
 /// React: every pending event fires in one round; detection runs again after.
-rule reaction_round on advance when At == React && any_pending && Round < max_rounds {
+rule "reaction round" on advance when At == React && any_pending && Round < max_rounds {
   for (e: EventId where Pending(e)) {
     retract Pending(e)
     assert Fired(e)
   }
   assert Round = (Round ?? 0) + 1
 }
-  realizes "crates/nomic/src/machine.rs#L323-L380@9d43c76b0e76"
-rule reaction_limit on advance when At == React && any_pending && Round >= max_rounds {
+  realizes "crates/nomic/src/machine.rs#L325-L382@9d43c76b0e76"
+rule "reaction limit" on advance when At == React && any_pending && Round >= max_rounds {
   assert Outcome = ModelError
 }
-  realizes "crates/nomic/src/machine.rs#L328-L331@98dcf1d12ba7"
-rule settled on advance when At == React && !any_pending {
+  realizes "crates/nomic/src/machine.rs#L330-L333@98dcf1d12ba7"
+rule "settled" on advance when At == React && !any_pending {
   assert At = Verify
 }
 /// Verify: an unexcused violation is a model error; otherwise commit.
-rule verify_fails on advance when At == Verify && unexcused {
+rule "verify fails" on advance when At == Verify && unexcused {
   assert Outcome = ModelError
 }
-  realizes "crates/nomic/src/machine.rs#L382-L392@a4bd1efc0367"
-rule do_commit on advance when At == Verify && !unexcused {
+  realizes "crates/nomic/src/machine.rs#L384-L394@a4bd1efc0367"
+rule "do commit" on advance when At == Verify && !unexcused {
   assert At = Commit
   assert Outcome = Accepted
 }
-  realizes "crates/nomic/src/machine.rs#L394-L397@302162979bd9"
+  realizes "crates/nomic/src/machine.rs#L396-L399@302162979bd9"
 
-rule detect_only_when_detecting on event_detected(e) {
+rule "detect only when detecting" on event_detected(e) {
   require (At == Detect || At == React) && !done "events are detected after effects apply"
 }
 /// Edge semantics: one event instance fires at most once per transition.
-rule once_per_transition on event_detected(e) {
+rule "once per transition" on event_detected(e) {
   deny if Fired(e) || Pending(e) "already fired this transition"
 }
-  realizes "crates/nomic/src/machine.rs#L368-L373@205680706e7f" "the implementation drops the duplicate silently rather than refusing it"
-rule do_detect on event_detected(e) when (At == Detect || At == React) && !Fired(e) && !Pending(e) {
+  realizes "crates/nomic/src/machine.rs#L370-L375@205680706e7f" "the implementation drops the duplicate silently rather than refusing it"
+rule "do detect" on event_detected(e) when (At == Detect || At == React) && !Fired(e) && !Pending(e) {
   assert Pending(e)
 }
-  realizes "crates/nomic/src/machine.rs#L694-L732@296cc3982bda" "detect: false in the previous state, true in the new one"
+  realizes "crates/nomic/src/machine.rs#L696-L734@296cc3982bda" "detect: false in the previous state, true in the new one"
 
-rule fail_only_in_verify on invariant_fails(i, x) {
+rule "fail only in verify" on invariant_fails(i, x) {
   require At == Verify && !done "invariants are checked at Verify"
 }
-rule do_fail on invariant_fails(i, x) when At == Verify {
+rule "do fail" on invariant_fails(i, x) when At == Verify {
   assert Violated(i)
   if x { assert Excused(i) }
 }
-  realizes "crates/nomic/src/machine.rs#L736-L760@9722bdc69159" "verify: exceptions are consulted only for failures"
+  realizes "crates/nomic/src/machine.rs#L738-L762@9722bdc69159" "verify: exceptions are consulted only for failures"
 
 event TRANSITION_COMMITTED when Outcome == Accepted
 event TRANSITION_REJECTED when Outcome == Rejected
@@ -182,7 +182,7 @@ event MODEL_DEFECT when Outcome == ModelError
 invariant accepted_means_committed: Outcome != Accepted || At == Commit
 /// A rejected occurrence changes nothing.
 invariant rejected_applies_nothing: Outcome != Rejected || !Applied
-  realizes "crates/nomic/src/machine.rs#L296-L303@cc501716d1d3"
+  realizes "crates/nomic/src/machine.rs#L298-L305@cc501716d1d3"
 invariant nothing_fires_twice: all(e: EventId => !(Fired(e) && Pending(e)))
 invariant rounds_bounded: (Round ?? 0) <= max_rounds
 invariant excused_implies_violated: all(i: InvariantId where Excused(i) => Violated(i))
@@ -204,7 +204,7 @@ scenario "an accepted transition passes through every stage in order" {
   advance; expect At == Verify
   advance emits TRANSITION_COMMITTED
   expect Outcome == Accepted && At == Commit
-  advance rejected by advance_not_done
+  advance rejected by "advance not done"
 }
 
 scenario "no matching rule rejects" {
@@ -218,7 +218,7 @@ scenario "any denial rejects, whatever the other rules say" {
   begin; advance
   rule_matches(1, Allow, true)
   rule_matches(2, Deny, false)
-  rule_matches(2, Allow, true) rejected by match_once
+  rule_matches(2, Allow, true) rejected by "match once"
   advance; advance
   expect !is_legal
   advance emits TRANSITION_REJECTED
@@ -231,7 +231,7 @@ scenario "conflicting effects are a model error, not a resolution" {
   expect At == Transition
   effects_conflict emits MODEL_DEFECT
   expect Outcome == ModelError && !Applied
-  advance rejected by advance_not_done
+  advance rejected by "advance not done"
 }
 
 scenario "reactions cascade in rounds and each event fires once" {
@@ -240,7 +240,7 @@ scenario "reactions cascade in rounds and each event fires once" {
   event_detected(1)
   advance; expect At == React && Round == 0
   advance; expect Fired(1) && !Pending(1) && Round == 1
-  event_detected(1) rejected by once_per_transition
+  event_detected(1) rejected by "once per transition"
   event_detected(2)
   advance; expect Round == 2 && Fired(2)
   advance; expect At == Verify
@@ -264,11 +264,11 @@ scenario "an unexcused invariant failure is a model error" {
 }
 
 scenario "inputs are only accepted in their stage" {
-  rule_matches(1, Allow, true) rejected by match_only_during_match
-  event_detected(1) rejected by detect_only_when_detecting
-  invariant_fails(1, false) rejected by fail_only_in_verify
-  effects_conflict rejected by conflict_only_in_transition
-  advance rejected by advance_not_idle
+  rule_matches(1, Allow, true) rejected by "match only during match"
+  event_detected(1) rejected by "detect only when detecting"
+  invariant_fails(1, false) rejected by "fail only in verify"
+  effects_conflict rejected by "conflict only in transition"
+  advance rejected by "advance not idle"
   begin
-  begin rejected by do_begin
+  begin rejected by "do begin"
 }

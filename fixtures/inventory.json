@@ -80,12 +80,12 @@
           "passed": true
         },
         {
-          "description": "ship(1) rejected by ship_reserved",
+          "description": "ship(1) rejected by \"ship reserved\"",
           "passed": true,
           "accepted": false,
           "denied_by": [
-            "ship_reserved",
-            "do_ship"
+            "ship reserved",
+            "do ship"
           ]
         }
       ],
@@ -140,12 +140,12 @@
           ]
         },
         {
-          "description": "reserve(1) rejected by reserve_stock",
+          "description": "reserve(1) rejected by \"reserve stock\"",
           "passed": true,
           "accepted": false,
           "denied_by": [
-            "reserve_stock",
-            "do_reserve"
+            "reserve stock",
+            "do reserve"
           ]
         },
         {
@@ -238,12 +238,12 @@
           "passed": true
         },
         {
-          "description": "transfer(Warehouse, StoreSouth, Widget, 1) rejected by transfer_available",
+          "description": "transfer(Warehouse, StoreSouth, Widget, 1) rejected by \"transfer available\"",
           "passed": true,
           "accepted": false,
           "denied_by": [
-            "transfer_available",
-            "do_transfer"
+            "transfer available",
+            "do transfer"
           ]
         },
         {
@@ -260,20 +260,20 @@
           "passed": true
         },
         {
-          "description": "cancel(2) rejected by cancel_live",
+          "description": "cancel(2) rejected by \"cancel live\"",
           "passed": true,
           "accepted": false,
           "denied_by": [
-            "cancel_live",
-            "do_cancel"
+            "cancel live",
+            "do cancel"
           ]
         },
         {
-          "description": "add_line(2, Gadget, 1) rejected by line_on_open_order",
+          "description": "add_line(2, Gadget, 1) rejected by \"line on open order\"",
           "passed": true,
           "accepted": false,
           "denied_by": [
-            "line_on_open_order"
+            "line on open order"
           ]
         }
       ],
@@ -309,39 +309,39 @@
           ]
         },
         {
-          "description": "place_order(3, Warehouse) rejected by order_id_free",
+          "description": "place_order(3, Warehouse) rejected by \"order id free\"",
           "passed": true,
           "accepted": false,
           "denied_by": [
-            "order_id_free"
+            "order id free"
           ]
         },
         {
-          "description": "reserve(3) rejected by reserve_non_empty",
+          "description": "reserve(3) rejected by \"reserve non empty\"",
           "passed": true,
           "accepted": false,
           "denied_by": [
-            "reserve_non_empty",
-            "do_reserve"
+            "reserve non empty",
+            "do reserve"
           ]
         },
         {
-          "description": "reserve(4) rejected by reserve_open",
+          "description": "reserve(4) rejected by \"reserve open\"",
           "passed": true,
           "accepted": false,
           "denied_by": [
-            "reserve_open",
-            "reserve_non_empty",
-            "do_reserve"
+            "reserve open",
+            "reserve non empty",
+            "do reserve"
           ]
         },
         {
-          "description": "transfer(Warehouse, Warehouse, Widget, 1) rejected by transfer_sites",
+          "description": "transfer(Warehouse, Warehouse, Widget, 1) rejected by \"transfer sites\"",
           "passed": true,
           "accepted": false,
           "denied_by": [
-            "transfer_sites",
-            "do_transfer"
+            "transfer sites",
+            "do transfer"
           ]
         }
       ],
@@ -366,12 +366,12 @@
       "scenario": "adjustments happen under audit and may go negative until reconciled",
       "steps": [
         {
-          "description": "adjust(Warehouse, Gadget, -3) rejected by adjust_under_audit",
+          "description": "adjust(Warehouse, Gadget, -3) rejected by \"adjust under audit\"",
           "passed": true,
           "accepted": false,
           "denied_by": [
-            "adjust_under_audit",
-            "do_adjust"
+            "adjust under audit",
+            "do adjust"
           ]
         },
         {
@@ -383,11 +383,11 @@
           ]
         },
         {
-          "description": "begin_audit(Warehouse) rejected by do_begin_audit",
+          "description": "begin_audit(Warehouse) rejected by \"do begin audit\"",
           "passed": true,
           "accepted": false,
           "denied_by": [
-            "do_begin_audit"
+            "do begin audit"
           ]
         },
         {
@@ -406,11 +406,11 @@
           "passed": true
         },
         {
-          "description": "end_audit(Warehouse) rejected by end_audit_reconciled",
+          "description": "end_audit(Warehouse) rejected by \"end audit reconciled\"",
           "passed": true,
           "accepted": false,
           "denied_by": [
-            "end_audit_reconciled"
+            "end audit reconciled"
           ]
         },
         {

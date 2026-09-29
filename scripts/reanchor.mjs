@@ -132,7 +132,9 @@ const rewrite = (re, replacement) => {
 // `<relation> "<file>#L…"` clause for it. We match on relation + file and rewrite the range.
 const lines = src.split("\n");
 for (const [target, relation, file, key] of ANCHORS) {
-  const declRe = new RegExp(`^(?:\\w+ )*(?:model|type|fact|derive|action|event|rule|invariant|ensure|exception) ${target}\\b`);
+  // Rules and ensures carry quoted labels (`rule "do begin"`); the table names them with underscores.
+  const label = target.replace(/_/g, " ");
+  const declRe = new RegExp(`^(?:\\w+ )*(?:(?:model|type|fact|derive|action|event|invariant|exception) ${target}\\b|(?:rule|ensure) "${label}")`);
   let start = lines.findIndex((l) => declRe.test(l));
   if (start < 0) throw new Error(`declaration ${target} not found in the meta model`);
   for (let i = start; i < lines.length; i++) {

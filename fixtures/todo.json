@@ -27,11 +27,11 @@
           ]
         },
         {
-          "description": "advance(TaskId(\"write-spec\"), Draft) rejected by advance_forward",
+          "description": "advance(TaskId(\"write-spec\"), Draft) rejected by \"advance forward\"",
           "passed": true,
           "accepted": false,
           "denied_by": [
-            "advance_forward"
+            "advance forward"
           ]
         },
         {
@@ -57,12 +57,12 @@
           ]
         },
         {
-          "description": "advance(TaskId(\"write-spec\"), Cancelled) rejected by advance_forward",
+          "description": "advance(TaskId(\"write-spec\"), Cancelled) rejected by \"advance forward\"",
           "passed": true,
           "accepted": false,
           "denied_by": [
-            "advance_forward",
-            "advance_not_cancel"
+            "advance forward",
+            "advance not cancel"
           ]
         }
       ],
@@ -101,11 +101,11 @@
           ]
         },
         {
-          "description": "advance(TaskId(\"a\"), Done) rejected by advance_forward",
+          "description": "advance(TaskId(\"a\"), Done) rejected by \"advance forward\"",
           "passed": true,
           "accepted": false,
           "denied_by": [
-            "advance_forward"
+            "advance forward"
           ]
         },
         {
@@ -117,11 +117,11 @@
           "passed": true
         },
         {
-          "description": "cancel(TaskId(\"a\")) rejected by cancel_open",
+          "description": "cancel(TaskId(\"a\")) rejected by \"cancel open\"",
           "passed": true,
           "accepted": false,
           "denied_by": [
-            "cancel_open"
+            "cancel open"
           ]
         }
       ],
@@ -144,11 +144,11 @@
           ]
         },
         {
-          "description": "create(TaskId(\"x\"), High) rejected by create_fresh",
+          "description": "create(TaskId(\"x\"), High) rejected by \"create fresh\"",
           "passed": true,
           "accepted": false,
           "denied_by": [
-            "create_fresh"
+            "create fresh"
           ]
         },
         {
@@ -156,12 +156,12 @@
           "passed": true
         },
         {
-          "description": "advance(TaskId(\"y\"), Ready) rejected by advance_exists",
+          "description": "advance(TaskId(\"y\"), Ready) rejected by \"advance exists\"",
           "passed": true,
           "accepted": false,
           "denied_by": [
-            "advance_exists",
-            "advance_forward"
+            "advance exists",
+            "advance forward"
           ]
         }
       ],
@@ -248,19 +248,19 @@
           ]
         },
         {
-          "description": "advance(TaskId(\"c\"), Doing) rejected by within_wip",
+          "description": "advance(TaskId(\"c\"), Doing) rejected by \"within wip\"",
           "passed": true,
           "accepted": false,
           "denied_by": [
-            "within_wip"
+            "within wip"
           ]
         },
         {
-          "description": "set_wip_limit(1) rejected by do_set_wip",
+          "description": "set_wip_limit(1) rejected by \"do set wip\"",
           "passed": true,
           "accepted": false,
           "denied_by": [
-            "do_set_wip"
+            "do set wip"
           ]
         },
         {
@@ -346,11 +346,11 @@
           ]
         },
         {
-          "description": "advance(TaskId(\"b\"), Doing) rejected by one_per_level_in_progress",
+          "description": "advance(TaskId(\"b\"), Doing) rejected by \"one per level in progress\"",
           "passed": true,
           "accepted": false,
           "denied_by": [
-            "one_per_level_in_progress"
+            "one per level in progress"
           ]
         }
       ],
@@ -392,11 +392,11 @@
           ]
         },
         {
-          "description": "block(TaskId(\"deploy\"), TaskId(\"deploy\")) rejected by block_tasks",
+          "description": "block(TaskId(\"deploy\"), TaskId(\"deploy\")) rejected by \"block tasks\"",
           "passed": true,
           "accepted": false,
           "denied_by": [
-            "block_tasks"
+            "block tasks"
           ]
         },
         {
@@ -408,11 +408,11 @@
           ]
         },
         {
-          "description": "advance(TaskId(\"deploy\"), Doing) rejected by not_blocked",
+          "description": "advance(TaskId(\"deploy\"), Doing) rejected by \"not blocked\"",
           "passed": true,
           "accepted": false,
           "denied_by": [
-            "not_blocked"
+            "not blocked"
           ]
         },
         {
@@ -560,11 +560,11 @@
           ]
         },
         {
-          "description": "nest(TaskId(\"epic\"), TaskId(\"story\")) rejected by nest_acyclic",
+          "description": "nest(TaskId(\"epic\"), TaskId(\"story\")) rejected by \"nest acyclic\"",
           "passed": true,
           "accepted": false,
           "denied_by": [
-            "nest_acyclic"
+            "nest acyclic"
           ]
         },
         {

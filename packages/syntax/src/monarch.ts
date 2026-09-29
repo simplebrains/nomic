@@ -65,19 +65,24 @@ export const nomicMonarch: MonarchLanguage = {
     root: [
       { include: "@whitespace" },
 
-      // declaration heads: `rule Name on Occurrence`
+      // declaration heads: `rule "label" on Occurrence` (quoted label), `exception Name on Invariant`
       [
-        /\b(rule|exception)(\s+)([A-Za-z_]\w*)(\s+)(on)(\s+)([A-Za-z_]\w*)/,
+        /\b(rule)(\s+)("(?:[^"\\]|\\.)*")(\s+)(on)(\s+)([A-Za-z_]\w*)/,
+        ["keyword.declaration", "", "string", "", "keyword", "", "entity.name.function"],
+      ],
+      [
+        /\b(exception)(\s+)([A-Za-z_]\w*)(\s+)(on)(\s+)([A-Za-z_]\w*)/,
         ["keyword.declaration", "", "entity.name.function", "", "keyword", "", "entity.name.function"],
       ],
+      [/\b(ensure)(\s+)("(?:[^"\\]|\\.)*")/, ["keyword.declaration", "", "string"]],
       [/\b(type)(\s+)([A-Za-z_]\w*)/, ["keyword.declaration", "", "type.identifier"]],
       [/\b(model)(\s+)([A-Za-z_]\w*)/, ["keyword.declaration", "", "namespace"]],
       [
-        /\b(fact|derive|action|event|invariant|ensure|cite)(\s+)([A-Za-z_]\w*)/,
+        /\b(fact|derive|action|event|invariant|cite)(\s+)([A-Za-z_]\w*)/,
         ["keyword.declaration", "", "entity.name.function"],
       ],
       [/\b(scenario)(\s+)(?=")/, ["keyword.declaration", ""]],
-      [/\b(rejected)(\s+)(by)(\s+)([A-Za-z_]\w*)/, ["keyword", "", "keyword", "", "entity.name.function"]],
+      [/\b(rejected)(\s+)(by)(\s+)("(?:[^"\\]|\\.)*")/, ["keyword", "", "keyword", "", "string"]],
 
       // citations: relation followed by a locator string
       [/\b(realizes|derives_from|evidences|contradicts|configures|documents)\b(?=\s+")/, "keyword.relation", "@locator"],

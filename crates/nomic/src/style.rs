@@ -247,7 +247,6 @@ pub fn plan(model: &Model) -> Vec<Rename> {
         }
     }
     for (i, r) in model.rules.iter().enumerate() {
-        l.want(Style::Snake, "rule", &r.name, Scope::Global, r.pos);
         for a in &r.on.args {
             if let PatArg::Bind { name } = a {
                 l.want(Style::Snake, "pattern binding", name, Scope::Rule(i), r.pos);
@@ -263,7 +262,6 @@ pub fn plan(model: &Model) -> Vec<Rename> {
         l.expr(&i.body, &Scope::Invariant(k));
     }
     for (k, i) in model.ensures.iter().enumerate() {
-        l.want(Style::Snake, "ensure", &i.name, Scope::Global, i.pos);
         l.expr(&i.body, &Scope::Ensure(k));
     }
     for (k, x) in model.exceptions.iter().enumerate() {
@@ -380,8 +378,7 @@ fn global_names(m: &Model) -> std::collections::BTreeSet<String> {
     s.extend(m.derives.iter().map(|d| d.name.clone()));
     s.extend(m.actions.iter().map(|d| d.name.clone()));
     s.extend(m.events.iter().map(|d| d.name.clone()));
-    s.extend(m.rules.iter().map(|d| d.name.clone()));
-    s.extend(m.invariants.iter().chain(&m.ensures).map(|d| d.name.clone()));
+    s.extend(m.invariants.iter().map(|d| d.name.clone()));
     s.extend(m.exceptions.iter().map(|d| d.name.clone()));
     s
 }
@@ -465,7 +462,7 @@ mod tests {
         assert_eq!(rename_backticked("the `Height` of `Height(c)` but not Height", "Height", "height"), "the `height` of `height(c)` but not Height");
     }
 
-    const BAD: &str = "/// About `SetFocus` and `cell`.\nmodel bad_model\ntype player = red | Yellow\nfact cell(Col: Int): player\nderive Height(c: Int): Int = c\naction SetFocus(Text_in: Int)\nevent Win(p: player)\nrule GameOver on SetFocus(myVar) { let X = 1; assert cell(myVar) = red }\ninvariant NoFloat: all(Q: 0..3 => Q == Q)\nscenario \"s\" { SetFocus(1) rejected by GameOver; SetFocus(2) emits Win(red) }\n";
+    const BAD: &str = "/// About `SetFocus` and `cell`.\nmodel bad_model\ntype player = red | Yellow\nfact cell(Col: Int): player\nderive Height(c: Int): Int = c\naction SetFocus(Text_in: Int)\nevent Win(p: player)\nrule \"game over\" on SetFocus(myVar) { let X = 1; assert cell(myVar) = red }\ninvariant NoFloat: all(Q: 0..3 => Q == Q)\nscenario \"s\" { SetFocus(1) rejected by \"game over\"; SetFocus(2) emits Win(red) }\n";
 
     #[test]
     fn lint_reports_each_kind_with_a_suggestion() {
@@ -481,7 +478,6 @@ mod tests {
             "action `SetFocus` should be snake_case (`set_focus`)",
             "parameter `Text_in` should be snake_case (`text_in`)",
             "event `Win` should be ALL_CAPS (`WIN`)",
-            "rule `GameOver` should be snake_case (`game_over`)",
             "pattern binding `myVar` should be snake_case (`my_var`)",
             "`let` name `X` should be snake_case (`x`)",
             "invariant `NoFloat` should be snake_case (`no_float`)",
@@ -497,11 +493,11 @@ mod tests {
         let mut m = crate::parse(BAD).unwrap();
         let (applied, skipped) = fix(&mut m);
         assert!(skipped.is_empty(), "{skipped:?}");
-        assert!(applied.len() >= 14);
+        assert!(applied.len() >= 13);
         assert!(lint(&m).is_empty(), "second pass finds nothing: {:?}", lint(&m));
         let out = nomic_fmt_free_render(&m);
-        assert!(out.contains("rule game_over on set_focus(my_var) { let x = 1; assert Cell(my_var) = Red }"), "{out}");
-        assert!(out.contains("set_focus(1) rejected by game_over; set_focus(2) emits WIN(Red)"), "{out}");
+        assert!(out.contains("rule \"game over\" on set_focus(my_var) { let x = 1; assert Cell(my_var) = Red }"), "{out}");
+        assert!(out.contains("set_focus(1) rejected by \"game over\"; set_focus(2) emits WIN(Red)"), "{out}");
         assert_eq!(m.doc.as_deref(), Some("About `set_focus` and `Cell`."));
         // The fixed model still checks.
         crate::check::check_ok(&m).unwrap();
@@ -516,7 +512,7 @@ mod tests {
             Step::Act { action, args, outcome, .. } => {
                 let a: Vec<String> = args.iter().map(|e| match e { Expr::Lit { value: Literal::Int { value }, .. } => value.to_string(), _ => "?".into() }).collect();
                 let o = match outcome {
-                    Outcome::Rejected { by: Some(x) } => format!(" rejected by {x}"),
+                    Outcome::Rejected { by: Some(x) } => format!(" rejected by {x:?}"),
                     Outcome::Accepted { emits: Some(evs) } => {
                         let e = &evs[0];
                         let arg = match &e.args[0] { Expr::Name { name, .. } => name.clone(), _ => "?".into() };
@@ -533,7 +529,7 @@ mod tests {
             other => panic!("unexpected body shape: {other:?}"),
         };
         format!(
-            "rule {} on {}({b}) {{ let {letname} = 1; assert {fact}({b}) = {val} }}\n{}; {}",
+            "rule {:?} on {}({b}) {{ let {letname} = 1; assert {fact}({b}) = {val} }}\n{}; {}",
             r.name,
             r.on.name,
             step(&sc.steps[0]),
