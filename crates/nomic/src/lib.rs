@@ -39,6 +39,7 @@ pub mod link;
 pub mod machine;
 pub mod parser;
 pub mod scenario;
+pub mod style;
 pub mod value;
 
 pub use ast::Model;

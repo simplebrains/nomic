@@ -16,7 +16,7 @@ type Roll = 1..6
 
 fact Alive(a: Actor)
 fact Location(a: Actor): Room
-fact HP(a: Actor): Int
+fact HitPoints(a: Actor): Int
 fact Carrying(a: Actor, i: Item)
 /// Items lying on the floor of a room.
 fact ItemAt(i: Item): Room
@@ -46,7 +46,7 @@ derive min(x: Int, y: Int): Int = x < y ? x : y
 /// Damage dealt for a given roll: base plus weapon, roll adjusts by -2..+3, armor absorbs.
 derive damage(attacker: Actor, target: Actor, roll: Roll): Int =
   max(0, base_damage(attacker) + weapon(attacker) + roll - 3 - armor(target))
-derive health(a: Actor): Int = HP(a) ?? 0
+derive health(a: Actor): Int = HitPoints(a) ?? 0
 derive hostile(a: Actor, b: Actor): Bool = (a == Hero) != (b == Hero)
 derive same_room(a: Actor, b: Actor): Bool = Location(a) != none && Location(a) == Location(b)
 /// Next living actor after `a` in initiative order, wrapping around.
@@ -84,7 +84,7 @@ rule attack_target on attack(a, t, roll) {
 }
 rule do_attack on attack(a, t, roll) {
   require Turn == a && Alive(a) && Alive(t) && hostile(a, t) && same_room(a, t)
-  assert HP(t) = health(t) - damage(a, t, roll)
+  assert HitPoints(t) = health(t) - damage(a, t, roll)
   assert Turn = next(a)
 }
 
@@ -108,7 +108,7 @@ rule do_drink on drink(a) {
   require Turn == a && Alive(a) && Carrying(a, Potion)
   retract Carrying(a, Potion)
   assert Consumed(Potion)
-  assert HP(a) = min(max_hp(a), health(a) + 10)
+  assert HitPoints(a) = min(max_hp(a), health(a) + 10)
   assert Turn = next(a)
 }
 
@@ -157,7 +157,7 @@ invariant items_in_one_place:
 invariant turn_is_alive: !Alive(Hero) || Alive(Turn ?? Hero)
 
 init {
-  for (a: Actor) { assert Alive(a); assert HP(a) = max_hp(a) }
+  for (a: Actor) { assert Alive(a); assert HitPoints(a) = max_hp(a) }
   assert Location(Hero) = Entrance
   assert Location(Goblin) = Hall
   assert Location(Orc) = Armory
@@ -223,8 +223,8 @@ scenario "a potion heals but never past the maximum" {
 
 scenario "armor and weapons change the damage" {
   given nothing
-  given Alive(Hero); given HP(Hero) = 20; given Location(Hero) = Armory
-  given Alive(Orc); given HP(Orc) = 12; given Location(Orc) = Armory
+  given Alive(Hero); given HitPoints(Hero) = 20; given Location(Hero) = Armory
+  given Alive(Orc); given HitPoints(Orc) = 12; given Location(Orc) = Armory
   given ItemAt(Sword) = Armory; given ItemAt(Shield) = Armory
   given ItemAt(Potion) = Hall; given ItemAt(Key) = Lair; given ItemAt(Gold) = Treasury
   given Turn = Hero
@@ -240,8 +240,8 @@ scenario "armor and weapons change the damage" {
 
 scenario "the dragon can kill the hero, which ends the game" {
   given nothing
-  given Alive(Hero); given HP(Hero) = 5; given Location(Hero) = Lair
-  given Alive(Dragon); given HP(Dragon) = 40; given Location(Dragon) = Lair
+  given Alive(Hero); given HitPoints(Hero) = 5; given Location(Hero) = Lair
+  given Alive(Dragon); given HitPoints(Dragon) = 40; given Location(Dragon) = Lair
   given ItemAt(Sword) = Armory; given ItemAt(Shield) = Armory
   given ItemAt(Potion) = Hall; given ItemAt(Key) = Lair; given ItemAt(Gold) = Treasury
   given Turn = Dragon
@@ -252,7 +252,7 @@ scenario "the dragon can kill the hero, which ends the game" {
 
 scenario "escaping with the gold is victory" {
   given nothing
-  given Alive(Hero); given HP(Hero) = 20; given Location(Hero) = Hall
+  given Alive(Hero); given HitPoints(Hero) = 20; given Location(Hero) = Hall
   given Carrying(Hero, Key)
   given ItemAt(Sword) = Armory; given ItemAt(Shield) = Armory; given ItemAt(Potion) = Hall
   given ItemAt(Gold) = Treasury

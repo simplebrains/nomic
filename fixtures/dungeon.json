@@ -69,10 +69,10 @@
         "Alive(Goblin)",
         "Alive(Hero)",
         "Alive(Orc)",
-        "HP(Dragon) = 40",
-        "HP(Goblin) = 6",
-        "HP(Hero) = 20",
-        "HP(Orc) = 12",
+        "HitPoints(Dragon) = 40",
+        "HitPoints(Goblin) = 6",
+        "HitPoints(Hero) = 20",
+        "HitPoints(Orc) = 12",
         "ItemAt(Gold) = Treasury",
         "ItemAt(Key) = Lair",
         "ItemAt(Potion) = Hall",
@@ -155,10 +155,10 @@
         "Alive(Goblin)",
         "Alive(Hero)",
         "Alive(Orc)",
-        "HP(Dragon) = 40",
-        "HP(Goblin) = 6",
-        "HP(Hero) = 20",
-        "HP(Orc) = 12",
+        "HitPoints(Dragon) = 40",
+        "HitPoints(Goblin) = 6",
+        "HitPoints(Hero) = 20",
+        "HitPoints(Orc) = 12",
         "ItemAt(Gold) = Treasury",
         "ItemAt(Key) = Lair",
         "ItemAt(Potion) = Hall",
@@ -189,7 +189,7 @@
           "passed": true,
           "accepted": true,
           "effects": [
-            "assert HP(Hero) = 15",
+            "assert HitPoints(Hero) = 15",
             "assert Turn = Orc"
           ]
         },
@@ -218,7 +218,7 @@
           "passed": true,
           "accepted": true,
           "effects": [
-            "assert HP(Goblin) = 5",
+            "assert HitPoints(Goblin) = 5",
             "assert Turn = Goblin"
           ]
         },
@@ -231,7 +231,7 @@
           "passed": true,
           "accepted": true,
           "effects": [
-            "assert HP(Hero) = 15",
+            "assert HitPoints(Hero) = 15",
             "assert Turn = Orc"
           ]
         },
@@ -263,7 +263,7 @@
             "DIED(Goblin)"
           ],
           "effects": [
-            "assert HP(Goblin) = -1",
+            "assert HitPoints(Goblin) = -1",
             "assert Turn = Goblin",
             "retract Alive(Goblin)",
             "retract Location(Goblin)",
@@ -325,10 +325,10 @@
         "Alive(Hero)",
         "Alive(Orc)",
         "Carrying(Hero, Potion)",
-        "HP(Dragon) = 40",
-        "HP(Goblin) = -1",
-        "HP(Hero) = 15",
-        "HP(Orc) = 12",
+        "HitPoints(Dragon) = 40",
+        "HitPoints(Goblin) = -1",
+        "HitPoints(Hero) = 15",
+        "HitPoints(Orc) = 12",
         "ItemAt(Gold) = Treasury",
         "ItemAt(Key) = Lair",
         "ItemAt(Shield) = Armory",
@@ -357,7 +357,7 @@
           "passed": true,
           "accepted": true,
           "effects": [
-            "assert HP(Hero) = 15",
+            "assert HitPoints(Hero) = 15",
             "assert Turn = Orc"
           ]
         },
@@ -422,7 +422,7 @@
           "effects": [
             "retract Carrying(Hero, Potion)",
             "assert Consumed(Potion) = true",
-            "assert HP(Hero) = 20",
+            "assert HitPoints(Hero) = 20",
             "assert Turn = Goblin"
           ]
         },
@@ -470,10 +470,10 @@
         "Alive(Hero)",
         "Alive(Orc)",
         "Consumed(Potion)",
-        "HP(Dragon) = 40",
-        "HP(Goblin) = 6",
-        "HP(Hero) = 20",
-        "HP(Orc) = 12",
+        "HitPoints(Dragon) = 40",
+        "HitPoints(Goblin) = 6",
+        "HitPoints(Hero) = 20",
+        "HitPoints(Orc) = 12",
         "ItemAt(Gold) = Treasury",
         "ItemAt(Key) = Lair",
         "ItemAt(Shield) = Armory",
@@ -498,7 +498,7 @@
           "passed": true
         },
         {
-          "description": "given HP",
+          "description": "given HitPoints",
           "passed": true
         },
         {
@@ -510,7 +510,7 @@
           "passed": true
         },
         {
-          "description": "given HP",
+          "description": "given HitPoints",
           "passed": true
         },
         {
@@ -556,7 +556,7 @@
           "passed": true,
           "accepted": true,
           "effects": [
-            "assert HP(Hero) = 16",
+            "assert HitPoints(Hero) = 16",
             "assert Turn = Hero"
           ]
         },
@@ -579,7 +579,7 @@
           "passed": true,
           "accepted": true,
           "effects": [
-            "assert HP(Hero) = 14",
+            "assert HitPoints(Hero) = 14",
             "assert Turn = Hero"
           ]
         },
@@ -592,7 +592,7 @@
           "passed": true,
           "accepted": true,
           "effects": [
-            "assert HP(Orc) = 6",
+            "assert HitPoints(Orc) = 6",
             "assert Turn = Orc"
           ]
         },
@@ -606,8 +606,8 @@
         "Alive(Orc)",
         "Carrying(Hero, Shield)",
         "Carrying(Hero, Sword)",
-        "HP(Hero) = 14",
-        "HP(Orc) = 6",
+        "HitPoints(Hero) = 14",
+        "HitPoints(Orc) = 6",
         "ItemAt(Gold) = Treasury",
         "ItemAt(Key) = Lair",
         "ItemAt(Potion) = Hall",
@@ -628,7 +628,7 @@
           "passed": true
         },
         {
-          "description": "given HP",
+          "description": "given HitPoints",
           "passed": true
         },
         {
@@ -640,7 +640,7 @@
           "passed": true
         },
         {
-          "description": "given HP",
+          "description": "given HitPoints",
           "passed": true
         },
         {
@@ -680,7 +680,7 @@
             "DIED(Hero)"
           ],
           "effects": [
-            "assert HP(Hero) = -4",
+            "assert HitPoints(Hero) = -4",
             "assert Turn = Hero",
             "retract Alive(Hero)",
             "retract Location(Hero)",
@@ -702,8 +702,8 @@
       ],
       "final_state": [
         "Alive(Dragon)",
-        "HP(Dragon) = 40",
-        "HP(Hero) = -4",
+        "HitPoints(Dragon) = 40",
+        "HitPoints(Hero) = -4",
         "ItemAt(Gold) = Treasury",
         "ItemAt(Key) = Lair",
         "ItemAt(Potion) = Hall",
@@ -725,7 +725,7 @@
           "passed": true
         },
         {
-          "description": "given HP",
+          "description": "given HitPoints",
           "passed": true
         },
         {
@@ -828,7 +828,7 @@
         "Carrying(Hero, Gold)",
         "Carrying(Hero, Key)",
         "Escaped",
-        "HP(Hero) = 20",
+        "HitPoints(Hero) = 20",
         "ItemAt(Potion) = Hall",
         "ItemAt(Shield) = Armory",
         "ItemAt(Sword) = Armory",

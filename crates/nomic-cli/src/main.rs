@@ -24,9 +24,10 @@ USAGE:
   nomic fixture <model.nom> [--out f.json]  generate a conformance fixture from the scenarios
   nomic conform <model.nom> <fixture.json>  check the model against a stored fixture
   nomic report  <model.nom>                 knowledge-status, exception, and citation report
-  nomic fmt     <model.nom>... [--check] [--stdout]
-                                              rewrite models in canonical form; --check exits 1 if any
-                                              file would change; --stdout prints instead of writing
+  nomic fmt     <model.nom>... [--check] [--stdout] [--no-style]
+                                              rewrite models in canonical form and warn about names that
+                                              break the naming convention; --check exits 1 if any file
+                                              would change; --stdout prints instead of writing
   nomic cite    <model.nom> [--root DIR] [--pin] [--index] [--json]
                                               resolve every citation against the repository root and
                                               report current/stale/unverified/unresolved; --pin rewrites
@@ -290,10 +291,18 @@ fn run(args: &[String]) -> Result<ExitCode, String> {
             }
             let check = flag(args, "--check");
             let stdout = flag(args, "--stdout");
+            let style = !flag(args, "--no-style");
             let mut changed = 0usize;
             for f in files {
                 let src = std::fs::read_to_string(f).map_err(|e| format!("cannot read {f}: {e}"))?;
                 let out = nomic_fmt::format(&src).map_err(|e| format!("{f}:{e}"))?;
+                if style {
+                    if let Ok(model) = nomic::parse(&out) {
+                        for d in nomic::style::lint(&model) {
+                            eprintln!("{f}:{d}");
+                        }
+                    }
+                }
                 if stdout {
                     print!("{out}");
                     continue;

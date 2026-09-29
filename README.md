@@ -76,7 +76,7 @@ Commands:
 | `fixture <model> [--out f.json]` | generate a language-neutral conformance fixture from the scenarios |
 | `conform <model> <fixture.json>` | check the model against a stored fixture |
 | `report <model>` | knowledge status (required/observed/expected/assumed), exceptions, citations, description coverage |
-| `fmt <model>... [--check] [--stdout]` | rewrite models in canonical form; `--check` fails if anything would change (CI runs it) |
+| `fmt <model>... [--check] [--stdout] [--no-style]` | rewrite models in canonical form and warn about names that break the naming convention; `--check` fails if anything would change (CI runs it) |
 | `cite <model> [--root DIR] [--pin] [--index]` | resolve every citation against the repository, report `current`, `stale`, `unverified`, or `unresolved`; `--pin` writes the current content hash into each locator; `--index` groups citations by cited file |
 
 Models use the `.nom` extension.
@@ -204,7 +204,8 @@ head reads as a proposition about a command, `rule set_focus_non_empty on
 setFocus(id, text, at)`, and the case of the occurrence tells you whether a
 rule governs an action (`on drop(p, c)`) or reacts to an event (`on WON(p)`). The checker enforces only
 what the grammar needs (variants capitalized) and one hygiene rule: a local
-name (parameter, binding, `let`) may not shadow a global.
+name (parameter, binding, `let`) may not shadow a global. `nomic fmt` warns
+about names that break the convention and suggests the conventional spelling.
 
 Nine words are reserved and can never be names: `match`, `legal`, `true`,
 `false`, `none`, `given`, `expect`, `emits`, `rejected`. Every other keyword is
