@@ -43,7 +43,7 @@ action cancel(id: TaskId)
 action block(id: TaskId, by: TaskId)
 action unblock(id: TaskId, by: TaskId)
 action nest(child: TaskId, parent: TaskId)
-action setWipLimit(n: Limit)
+action set_wip_limit(n: Limit)
 
 rule create_fresh on create(id, l) { require Task(id) == none "that task id is already in use" }
 rule do_create on create(id, l) when Task(id) == none {
@@ -92,7 +92,7 @@ rule do_nest on nest(c, p) when task_exists(c) && task_exists(p) && c != p && Pa
   assert Parent(c) = p
 }
 
-rule do_set_wip on setWipLimit(n) {
+rule do_set_wip on set_wip_limit(n) {
   require n >= in_progress "lower the work in progress first"
   assert WipLimit = n
 }
@@ -155,8 +155,8 @@ scenario "work in progress is limited and the limit is a fact" {
   advance(TaskId("a"), Ready); advance(TaskId("b"), Ready); advance(TaskId("c"), Ready)
   advance(TaskId("a"), Doing); advance(TaskId("b"), Doing)
   advance(TaskId("c"), Doing) rejected by within_wip
-  setWipLimit(1) rejected by do_set_wip
-  setWipLimit(3)
+  set_wip_limit(1) rejected by do_set_wip
+  set_wip_limit(3)
   advance(TaskId("c"), Doing)
   expect in_progress == 3
 }

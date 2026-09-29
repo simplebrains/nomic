@@ -31,7 +31,7 @@
           "passed": true
         },
         {
-          "description": "ruleMatches(1, Allow, true) accepted",
+          "description": "rule_matches(1, Allow, true) accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -41,7 +41,7 @@
           ]
         },
         {
-          "description": "ruleMatches(2, Allow, false) accepted",
+          "description": "rule_matches(2, Allow, false) accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -242,7 +242,7 @@
           ]
         },
         {
-          "description": "ruleMatches(1, Allow, true) accepted",
+          "description": "rule_matches(1, Allow, true) accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -252,7 +252,7 @@
           ]
         },
         {
-          "description": "ruleMatches(2, Deny, false) accepted",
+          "description": "rule_matches(2, Deny, false) accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -261,7 +261,7 @@
           ]
         },
         {
-          "description": "ruleMatches(2, Allow, true) rejected by match_once",
+          "description": "rule_matches(2, Allow, true) rejected by match_once",
           "passed": true,
           "accepted": false,
           "denied_by": [
@@ -336,7 +336,7 @@
           ]
         },
         {
-          "description": "ruleMatches(1, Allow, true) accepted",
+          "description": "rule_matches(1, Allow, true) accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -346,7 +346,7 @@
           ]
         },
         {
-          "description": "ruleMatches(3, Allow, true) accepted",
+          "description": "rule_matches(3, Allow, true) accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -384,7 +384,7 @@
           "passed": true
         },
         {
-          "description": "effectsConflict accepted with events",
+          "description": "effects_conflict accepted with events",
           "passed": true,
           "accepted": true,
           "events": [
@@ -442,7 +442,7 @@
           ]
         },
         {
-          "description": "ruleMatches(1, Allow, true) accepted",
+          "description": "rule_matches(1, Allow, true) accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -489,7 +489,7 @@
           "passed": true
         },
         {
-          "description": "eventDetected(1) accepted",
+          "description": "event_detected(1) accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -523,7 +523,7 @@
           "passed": true
         },
         {
-          "description": "eventDetected(1) rejected by once_per_transition",
+          "description": "event_detected(1) rejected by once_per_transition",
           "passed": true,
           "accepted": false,
           "denied_by": [
@@ -531,7 +531,7 @@
           ]
         },
         {
-          "description": "eventDetected(2) accepted",
+          "description": "event_detected(2) accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -610,7 +610,7 @@
           ]
         },
         {
-          "description": "ruleMatches(1, Allow, true) accepted",
+          "description": "rule_matches(1, Allow, true) accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -673,7 +673,7 @@
           "passed": true
         },
         {
-          "description": "invariantFails(1, true) accepted",
+          "description": "invariant_fails(1, true) accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -731,7 +731,7 @@
           ]
         },
         {
-          "description": "ruleMatches(1, Allow, true) accepted",
+          "description": "rule_matches(1, Allow, true) accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -790,7 +790,7 @@
           ]
         },
         {
-          "description": "invariantFails(1, true) accepted",
+          "description": "invariant_fails(1, true) accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -799,7 +799,7 @@
           ]
         },
         {
-          "description": "invariantFails(2, false) accepted",
+          "description": "invariant_fails(2, false) accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -839,7 +839,7 @@
       "scenario": "inputs are only accepted in their stage",
       "steps": [
         {
-          "description": "ruleMatches(1, Allow, true) rejected by match_only_during_match",
+          "description": "rule_matches(1, Allow, true) rejected by match_only_during_match",
           "passed": true,
           "accepted": false,
           "denied_by": [
@@ -847,7 +847,7 @@
           ]
         },
         {
-          "description": "eventDetected(1) rejected by detect_only_when_detecting",
+          "description": "event_detected(1) rejected by detect_only_when_detecting",
           "passed": true,
           "accepted": false,
           "denied_by": [
@@ -855,7 +855,7 @@
           ]
         },
         {
-          "description": "invariantFails(1, false) rejected by fail_only_in_verify",
+          "description": "invariant_fails(1, false) rejected by fail_only_in_verify",
           "passed": true,
           "accepted": false,
           "denied_by": [
@@ -863,7 +863,7 @@
           ]
         },
         {
-          "description": "effectsConflict rejected by conflict_only_in_transition",
+          "description": "effects_conflict rejected by conflict_only_in_transition",
           "passed": true,
           "accepted": false,
           "denied_by": [

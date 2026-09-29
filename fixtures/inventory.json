@@ -14,7 +14,7 @@
           ]
         },
         {
-          "description": "placeOrder(1, Warehouse) accepted",
+          "description": "place_order(1, Warehouse) accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -23,7 +23,7 @@
           ]
         },
         {
-          "description": "addLine(1, Widget, 12) accepted",
+          "description": "add_line(1, Widget, 12) accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -31,7 +31,7 @@
           ]
         },
         {
-          "description": "addLine(1, Gadget, 4) accepted",
+          "description": "add_line(1, Gadget, 4) accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -115,7 +115,7 @@
       "scenario": "reservation is all or nothing",
       "steps": [
         {
-          "description": "placeOrder(1, StoreNorth) accepted",
+          "description": "place_order(1, StoreNorth) accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -124,7 +124,7 @@
           ]
         },
         {
-          "description": "addLine(1, Widget, 4) accepted",
+          "description": "add_line(1, Widget, 4) accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -132,7 +132,7 @@
           ]
         },
         {
-          "description": "addLine(1, Gadget, 1) accepted",
+          "description": "add_line(1, Gadget, 1) accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -205,7 +205,7 @@
       "scenario": "cancelling a reserved order releases its stock",
       "steps": [
         {
-          "description": "placeOrder(2, Warehouse) accepted",
+          "description": "place_order(2, Warehouse) accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -214,7 +214,7 @@
           ]
         },
         {
-          "description": "addLine(2, Widget, 20) accepted",
+          "description": "add_line(2, Widget, 20) accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -269,7 +269,7 @@
           ]
         },
         {
-          "description": "addLine(2, Gadget, 1) rejected by line_on_open_order",
+          "description": "add_line(2, Gadget, 1) rejected by line_on_open_order",
           "passed": true,
           "accepted": false,
           "denied_by": [
@@ -300,7 +300,7 @@
       "scenario": "order ids are single use and lines need an open order",
       "steps": [
         {
-          "description": "placeOrder(3, StoreSouth) accepted",
+          "description": "place_order(3, StoreSouth) accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -309,7 +309,7 @@
           ]
         },
         {
-          "description": "placeOrder(3, Warehouse) rejected by order_id_free",
+          "description": "place_order(3, Warehouse) rejected by order_id_free",
           "passed": true,
           "accepted": false,
           "denied_by": [
@@ -375,7 +375,7 @@
           ]
         },
         {
-          "description": "beginAudit(Warehouse) accepted",
+          "description": "begin_audit(Warehouse) accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -383,7 +383,7 @@
           ]
         },
         {
-          "description": "beginAudit(Warehouse) rejected by do_begin_audit",
+          "description": "begin_audit(Warehouse) rejected by do_begin_audit",
           "passed": true,
           "accepted": false,
           "denied_by": [
@@ -406,7 +406,7 @@
           "passed": true
         },
         {
-          "description": "endAudit(Warehouse) rejected by end_audit_reconciled",
+          "description": "end_audit(Warehouse) rejected by end_audit_reconciled",
           "passed": true,
           "accepted": false,
           "denied_by": [
@@ -425,7 +425,7 @@
           ]
         },
         {
-          "description": "endAudit(Warehouse) accepted",
+          "description": "end_audit(Warehouse) accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -456,7 +456,7 @@
       "scenario": "stock-out and low-stock are announced once each",
       "steps": [
         {
-          "description": "placeOrder(1, StoreNorth) accepted",
+          "description": "place_order(1, StoreNorth) accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -465,7 +465,7 @@
           ]
         },
         {
-          "description": "addLine(1, Widget, 6) accepted",
+          "description": "add_line(1, Widget, 6) accepted",
           "passed": true,
           "accepted": true,
           "effects": [

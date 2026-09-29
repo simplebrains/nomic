@@ -38,11 +38,18 @@ impl std::error::Error for FormatError {}
 /// Format Nomic source. Errors only if the source does not parse.
 pub fn format(src: &str) -> Result<String, FormatError> {
     let (model, comments) = nomic::parse_with_comments(src).map_err(|e| FormatError(e.to_string()))?;
-    let mut p = Printer { out: Vec::new(), comments, model: &model, src_lines: src.lines().collect() };
+    Ok(format_model(&model, comments, src))
+}
+
+/// Format a model that was parsed from `src` (whose comments are `comments`)
+/// and possibly edited since, as `nomic fmt --fix` does. Layout decisions
+/// (blank lines, same-line groups) still come from `src`.
+pub fn format_model(model: &Model, comments: Vec<Comment>, src: &str) -> String {
+    let mut p = Printer { out: Vec::new(), comments, model, src_lines: src.lines().collect() };
     p.model();
     let mut text = p.out.join("\n");
     text.push('\n');
-    Ok(text)
+    text
 }
 
 /// One top-level item, in source order.

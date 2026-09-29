@@ -256,7 +256,7 @@
           ]
         },
         {
-          "description": "setWipLimit(1) rejected by do_set_wip",
+          "description": "set_wip_limit(1) rejected by do_set_wip",
           "passed": true,
           "accepted": false,
           "denied_by": [
@@ -264,7 +264,7 @@
           ]
         },
         {
-          "description": "setWipLimit(3) accepted",
+          "description": "set_wip_limit(3) accepted",
           "passed": true,
           "accepted": true,
           "effects": [

@@ -433,15 +433,55 @@ fn collect_expr(m: &Model, e: &Expr, out: &mut BTreeSet<String>) {
 
 // ---- renaming ------------------------------------------------------------------
 
-/// Rename global `from` to `to` throughout a model fragment. Enum variants are
-/// not renamed (aliasing a type keeps its variants). Locals are assumed not
-/// to shadow globals, per the capitalization convention.
+/// Rename global `from` to `to` throughout a model fragment: types, facts,
+/// derives, actions, events, and also rule-like names (rules, invariants,
+/// ensures, exceptions) where scenarios and exceptions refer to them. Enum
+/// variants are not renamed here (see `rename_variant`). Locals are assumed
+/// not to shadow globals, which the checker enforces.
 pub fn rename(m: &mut Model, from: &str, to: &str) {
     let r = |s: &mut String| {
         if s == from {
             *s = to.to_string();
         }
     };
+    for d in &mut m.rules {
+        r(&mut d.name);
+    }
+    for d in m.invariants.iter_mut().chain(m.ensures.iter_mut()) {
+        r(&mut d.name);
+    }
+    for d in &mut m.exceptions {
+        r(&mut d.name);
+    }
+    for sc in &mut m.scenarios {
+        for st in &mut sc.steps {
+            match st {
+                Step::Act { action, args, outcome, .. } => {
+                    r(action);
+                    args.iter_mut().for_each(|a| rename_expr(a, from, to));
+                    match outcome {
+                        Outcome::Rejected { by: Some(b) } => r(b),
+                        Outcome::Accepted { emits: Some(evs) } => {
+                            for e in evs {
+                                r(&mut e.name);
+                                e.args.iter_mut().for_each(|a| rename_expr(a, from, to));
+                            }
+                        }
+                        _ => {}
+                    }
+                }
+                Step::Given { fact, keys, value, .. } => {
+                    r(fact);
+                    keys.iter_mut().for_each(|k| rename_expr(k, from, to));
+                    if let Some(v) = value {
+                        rename_expr(v, from, to);
+                    }
+                }
+                Step::Expect { expr, .. } => rename_expr(expr, from, to),
+                Step::Clear { .. } => {}
+            }
+        }
+    }
     for d in &mut m.types {
         r(&mut d.name);
     }
@@ -489,6 +529,240 @@ pub fn rename(m: &mut Model, from: &str, to: &str) {
     m.init.iter_mut().for_each(|s| rename_stmt(s, from, to));
     for c in &mut m.citations {
         r(&mut c.target);
+    }
+}
+
+/// Rename enum variant `from` to `to` wherever it appears as a literal:
+/// the type's variant list, expression literals, match arms, pattern arguments.
+pub fn rename_variant(m: &mut Model, from: &str, to: &str) {
+    for t in &mut m.types {
+        if let TypeDef::Enum { variants } = &mut t.def {
+            for v in variants.iter_mut() {
+                if v == from {
+                    *v = to.to_string();
+                }
+            }
+        }
+    }
+    let lit = |l: &mut Literal| {
+        if let Literal::Variant { name } = l {
+            if name == from {
+                *name = to.to_string();
+            }
+        }
+    };
+    fn walk_expr(e: &mut Expr, f: &dyn Fn(&mut Literal)) {
+        match e {
+            Expr::Lit { value, .. } => f(value),
+            Expr::Name { name, .. } => {
+                // A bare variant in an expression is a Name until evaluation.
+                let mut probe = Literal::Variant { name: name.clone() };
+                f(&mut probe);
+                if let Literal::Variant { name: n } = probe {
+                    *name = n;
+                }
+            }
+            Expr::Call { args, .. } | Expr::Legal { args, .. } => args.iter_mut().for_each(|a| walk_expr(a, f)),
+            Expr::Unary { expr, .. } => walk_expr(expr, f),
+            Expr::Binary { left, right, .. } => {
+                walk_expr(left, f);
+                walk_expr(right, f);
+            }
+            Expr::Ternary { cond, then, els, .. } => {
+                walk_expr(cond, f);
+                walk_expr(then, f);
+                walk_expr(els, f);
+            }
+            Expr::Quant { filter, body, .. } => {
+                if let Some(x) = filter {
+                    walk_expr(x, f);
+                }
+                walk_expr(body, f);
+            }
+            Expr::Match { subject, arms, .. } => {
+                walk_expr(subject, f);
+                for a in arms {
+                    if let PatArg::Literal { value } = &mut a.pattern {
+                        f(value);
+                    }
+                    walk_expr(&mut a.body, f);
+                }
+            }
+        }
+    }
+    fn walk_stmt(s: &mut Stmt, f: &dyn Fn(&mut Literal)) {
+        match s {
+            Stmt::Require { cond, .. } => walk_expr(cond, f),
+            Stmt::Deny { cond: Some(c), .. } => walk_expr(c, f),
+            Stmt::Deny { .. } | Stmt::Allow { .. } => {}
+            Stmt::Assert { keys, value, .. } => {
+                keys.iter_mut().for_each(|k| walk_expr(k, f));
+                if let Some(v) = value {
+                    walk_expr(v, f);
+                }
+            }
+            Stmt::Retract { keys, .. } => keys.iter_mut().for_each(|k| walk_expr(k, f)),
+            Stmt::Emit { args, .. } => args.iter_mut().for_each(|a| walk_expr(a, f)),
+            Stmt::Let { value, .. } => walk_expr(value, f),
+            Stmt::If { cond, then, els, .. } => {
+                walk_expr(cond, f);
+                then.iter_mut().for_each(|s| walk_stmt(s, f));
+                els.iter_mut().for_each(|s| walk_stmt(s, f));
+            }
+            Stmt::For { filter, body, .. } => {
+                if let Some(x) = filter {
+                    walk_expr(x, f);
+                }
+                body.iter_mut().for_each(|s| walk_stmt(s, f));
+            }
+        }
+    }
+    for d in &mut m.derives {
+        walk_expr(&mut d.body, &lit);
+    }
+    for d in &mut m.events {
+        if let Some(w) = &mut d.when {
+            walk_expr(w, &lit);
+        }
+    }
+    for d in &mut m.rules {
+        for a in &mut d.on.args {
+            if let PatArg::Literal { value } = a {
+                lit(value);
+            }
+        }
+        if let Some(w) = &mut d.when {
+            walk_expr(w, &lit);
+        }
+        d.body.iter_mut().for_each(|s| walk_stmt(s, &lit));
+    }
+    for d in m.invariants.iter_mut().chain(m.ensures.iter_mut()) {
+        walk_expr(&mut d.body, &lit);
+    }
+    for d in &mut m.exceptions {
+        walk_expr(&mut d.when, &lit);
+    }
+    m.init.iter_mut().for_each(|s| walk_stmt(s, &lit));
+    for o in &mut m.orders {
+        for chain in &mut o.chains {
+            for v in chain.iter_mut() {
+                if v == from {
+                    *v = to.to_string();
+                }
+            }
+        }
+    }
+    for sc in &mut m.scenarios {
+        for st in &mut sc.steps {
+            match st {
+                Step::Act { args, outcome, .. } => {
+                    args.iter_mut().for_each(|a| walk_expr(a, &lit));
+                    if let Outcome::Accepted { emits: Some(evs) } = outcome {
+                        for e in evs {
+                            e.args.iter_mut().for_each(|a| walk_expr(a, &lit));
+                        }
+                    }
+                }
+                Step::Given { keys, value, .. } => {
+                    keys.iter_mut().for_each(|k| walk_expr(k, &lit));
+                    if let Some(v) = value {
+                        walk_expr(v, &lit);
+                    }
+                }
+                Step::Expect { expr, .. } => walk_expr(expr, &lit),
+                Step::Clear { .. } => {}
+            }
+        }
+    }
+}
+
+/// Rename a local name inside one expression: locals appear only as bare names.
+pub fn rename_local_expr(e: &mut Expr, from: &str, to: &str) {
+    match e {
+        Expr::Name { name, .. } => {
+            if name == from {
+                *name = to.to_string();
+            }
+        }
+        Expr::Lit { .. } => {}
+        Expr::Call { args, .. } | Expr::Legal { args, .. } => args.iter_mut().for_each(|a| rename_local_expr(a, from, to)),
+        Expr::Unary { expr, .. } => rename_local_expr(expr, from, to),
+        Expr::Binary { left, right, .. } => {
+            rename_local_expr(left, from, to);
+            rename_local_expr(right, from, to);
+        }
+        Expr::Ternary { cond, then, els, .. } => {
+            rename_local_expr(cond, from, to);
+            rename_local_expr(then, from, to);
+            rename_local_expr(els, from, to);
+        }
+        Expr::Quant { binders, filter, body, .. } => {
+            for b in binders {
+                for n in &mut b.names {
+                    if n == from {
+                        *n = to.to_string();
+                    }
+                }
+            }
+            if let Some(f) = filter {
+                rename_local_expr(f, from, to);
+            }
+            rename_local_expr(body, from, to);
+        }
+        Expr::Match { subject, arms, .. } => {
+            rename_local_expr(subject, from, to);
+            for a in arms {
+                if let PatArg::Bind { name } = &mut a.pattern {
+                    if name == from {
+                        *name = to.to_string();
+                    }
+                }
+                rename_local_expr(&mut a.body, from, to);
+            }
+        }
+    }
+}
+
+/// Rename a local name inside statements (keys, values, conditions, binders, `let`).
+pub fn rename_local_stmts(stmts: &mut [Stmt], from: &str, to: &str) {
+    for s in stmts {
+        match s {
+            Stmt::Require { cond, .. } => rename_local_expr(cond, from, to),
+            Stmt::Deny { cond: Some(c), .. } => rename_local_expr(c, from, to),
+            Stmt::Deny { .. } | Stmt::Allow { .. } => {}
+            Stmt::Assert { keys, value, .. } => {
+                keys.iter_mut().for_each(|k| rename_local_expr(k, from, to));
+                if let Some(v) = value {
+                    rename_local_expr(v, from, to);
+                }
+            }
+            Stmt::Retract { keys, .. } => keys.iter_mut().for_each(|k| rename_local_expr(k, from, to)),
+            Stmt::Emit { args, .. } => args.iter_mut().for_each(|a| rename_local_expr(a, from, to)),
+            Stmt::Let { name, value, .. } => {
+                if name == from {
+                    *name = to.to_string();
+                }
+                rename_local_expr(value, from, to);
+            }
+            Stmt::If { cond, then, els, .. } => {
+                rename_local_expr(cond, from, to);
+                rename_local_stmts(then, from, to);
+                rename_local_stmts(els, from, to);
+            }
+            Stmt::For { binders, filter, body, .. } => {
+                for b in binders {
+                    for n in &mut b.names {
+                        if n == from {
+                            *n = to.to_string();
+                        }
+                    }
+                }
+                if let Some(f) = filter {
+                    rename_local_expr(f, from, to);
+                }
+                rename_local_stmts(body, from, to);
+            }
+        }
     }
 }
 

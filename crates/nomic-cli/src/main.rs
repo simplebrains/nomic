@@ -24,10 +24,11 @@ USAGE:
   nomic fixture <model.nom> [--out f.json]  generate a conformance fixture from the scenarios
   nomic conform <model.nom> <fixture.json>  check the model against a stored fixture
   nomic report  <model.nom>                 knowledge-status, exception, and citation report
-  nomic fmt     <model.nom>... [--check] [--stdout] [--no-style]
+  nomic fmt     <model.nom>... [--check] [--fix] [--stdout] [--no-style]
                                               rewrite models in canonical form and warn about names that
-                                              break the naming convention; --check exits 1 if any file
-                                              would change; --stdout prints instead of writing
+                                              break the naming convention; --fix renames them to the
+                                              conventional spelling; --check exits 1 if any file would
+                                              change; --stdout prints instead of writing
   nomic cite    <model.nom> [--root DIR] [--pin] [--index] [--json]
                                               resolve every citation against the repository root and
                                               report current/stale/unverified/unresolved; --pin rewrites
@@ -292,11 +293,27 @@ fn run(args: &[String]) -> Result<ExitCode, String> {
             let check = flag(args, "--check");
             let stdout = flag(args, "--stdout");
             let style = !flag(args, "--no-style");
+            let fix = flag(args, "--fix");
             let mut changed = 0usize;
             for f in files {
                 let src = std::fs::read_to_string(f).map_err(|e| format!("cannot read {f}: {e}"))?;
-                let out = nomic_fmt::format(&src).map_err(|e| format!("{f}:{e}"))?;
-                if style {
+                let out = if fix {
+                    let (mut model, comments) = nomic::parse_with_comments(&src).map_err(|e| format!("{f}:{e}"))?;
+                    let (applied, skipped) = nomic::style::fix(&mut model);
+                    for r in &applied {
+                        eprintln!("{f}: renamed {} `{}` to `{}`", r.kind, r.from, r.to);
+                    }
+                    for sk in &skipped {
+                        eprintln!("{f}: could not fix {sk}");
+                    }
+                    if !applied.is_empty() && (!model.imports.is_empty() || !model.includes.is_empty()) {
+                        eprintln!("{f}: note: this file has imports; files that import its renamed names need the same rename");
+                    }
+                    nomic_fmt::format_model(&model, comments, &src)
+                } else {
+                    nomic_fmt::format(&src).map_err(|e| format!("{f}:{e}"))?
+                };
+                if style && !fix {
                     if let Ok(model) = nomic::parse(&out) {
                         for d in nomic::style::lint(&model) {
                             eprintln!("{f}:{d}");

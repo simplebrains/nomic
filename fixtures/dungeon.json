@@ -310,7 +310,7 @@
           ]
         },
         {
-          "description": "pickUp(Hero, Potion) accepted",
+          "description": "pick_up(Hero, Potion) accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -378,7 +378,7 @@
           ]
         },
         {
-          "description": "pickUp(Hero, Potion) accepted",
+          "description": "pick_up(Hero, Potion) accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -542,7 +542,7 @@
           "passed": true
         },
         {
-          "description": "pickUp(Hero, Sword) accepted",
+          "description": "pick_up(Hero, Sword) accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -565,7 +565,7 @@
           "passed": true
         },
         {
-          "description": "pickUp(Hero, Shield) accepted",
+          "description": "pick_up(Hero, Shield) accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -779,7 +779,7 @@
           ]
         },
         {
-          "description": "pickUp(Hero, Gold) accepted",
+          "description": "pick_up(Hero, Gold) accepted",
           "passed": true,
           "accepted": true,
           "effects": [

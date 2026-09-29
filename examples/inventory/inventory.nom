@@ -40,8 +40,8 @@ derive can_fill(id: OrderId): Bool =
 derive threshold(s: Site, k: Sku): Int = ReorderPoint(s, k) ?? 0
 
 action receive(site: Site, sku: Sku, qty: Amount)
-action placeOrder(id: OrderId, site: Site)
-action addLine(id: OrderId, sku: Sku, qty: Amount)
+action place_order(id: OrderId, site: Site)
+action add_line(id: OrderId, sku: Sku, qty: Amount)
 /// Reserve every line of the order at its site, all or nothing.
 action reserve(id: OrderId)
 action ship(id: OrderId)
@@ -49,23 +49,23 @@ action cancel(id: OrderId)
 action transfer(from: Site, to: Site, sku: Sku, qty: Amount)
 /// Correct on-hand after a physical count. Only during an audit.
 action adjust(site: Site, sku: Sku, delta: Delta)
-action beginAudit(site: Site)
-action endAudit(site: Site)
+action begin_audit(site: Site)
+action end_audit(site: Site)
 
 rule do_receive on receive(s, k, q) {
   assert OnHand(s, k) = stock(s, k) + q
 }
 
-rule order_id_free on placeOrder(id, s) { require Order(id) == none "order id already used" }
-rule do_place_order on placeOrder(id, s) {
+rule order_id_free on place_order(id, s) { require Order(id) == none "order id already used" }
+rule do_place_order on place_order(id, s) {
   assert Order(id) = Open
   assert OrderSite(id) = s
 }
 
-rule line_on_open_order on addLine(id, k, q) {
+rule line_on_open_order on add_line(id, k, q) {
   require Order(id) == Open "lines can only be added to an open order"
 }
-rule do_add_line on addLine(id, k, q) {
+rule do_add_line on add_line(id, k, q) {
   assert Line(id, k) = wanted(id, k) + q
 }
 
@@ -125,11 +125,11 @@ rule do_adjust on adjust(s, k, d) {
   assert OnHand(s, k) = stock(s, k) + d
 }
 
-rule do_begin_audit on beginAudit(s) {
+rule do_begin_audit on begin_audit(s) {
   require !Auditing(s) "an audit is already running"
   assert Auditing(s)
 }
-rule end_audit_reconciled on endAudit(s) {
+rule end_audit_reconciled on end_audit(s) {
   require Auditing(s) "no audit is running"
   require all(k: Sku => stock(s, k) >= 0) "reconcile negative counts before closing the audit"
   retract Auditing(s)
@@ -166,9 +166,9 @@ init {
 
 scenario "receive, order, reserve, ship" {
   receive(StoreSouth, Gizmo, 10)
-  placeOrder(1, Warehouse)
-  addLine(1, Widget, 12)
-  addLine(1, Gadget, 4)
+  place_order(1, Warehouse)
+  add_line(1, Widget, 12)
+  add_line(1, Gadget, 4)
   reserve(1) emits LOW_STOCK(Warehouse, Gadget)
   expect held(Warehouse, Widget) == 12 && available(Warehouse, Widget) == 8 && Order(1) == Reserved
   ship(1) emits ORDER_SHIPPED(1)
@@ -178,9 +178,9 @@ scenario "receive, order, reserve, ship" {
 }
 
 scenario "reservation is all or nothing" {
-  placeOrder(1, StoreNorth)
-  addLine(1, Widget, 4)
-  addLine(1, Gadget, 1)
+  place_order(1, StoreNorth)
+  add_line(1, Widget, 4)
+  add_line(1, Gadget, 1)
   reserve(1) rejected by reserve_stock
   expect held(StoreNorth, Widget) == 0 && Order(1) == Open
   transfer(Warehouse, StoreNorth, Gadget, 2)
@@ -189,20 +189,20 @@ scenario "reservation is all or nothing" {
 }
 
 scenario "cancelling a reserved order releases its stock" {
-  placeOrder(2, Warehouse)
-  addLine(2, Widget, 20)
+  place_order(2, Warehouse)
+  add_line(2, Widget, 20)
   reserve(2) emits LOW_STOCK(Warehouse, Widget)
   expect available(Warehouse, Widget) == 0
   transfer(Warehouse, StoreSouth, Widget, 1) rejected by transfer_available
   cancel(2)
   expect available(Warehouse, Widget) == 20 && Order(2) == Cancelled
   cancel(2) rejected by cancel_live
-  addLine(2, Gadget, 1) rejected by line_on_open_order
+  add_line(2, Gadget, 1) rejected by line_on_open_order
 }
 
 scenario "order ids are single use and lines need an open order" {
-  placeOrder(3, StoreSouth)
-  placeOrder(3, Warehouse) rejected by order_id_free
+  place_order(3, StoreSouth)
+  place_order(3, Warehouse) rejected by order_id_free
   reserve(3) rejected by reserve_non_empty
   reserve(4) rejected by reserve_open
   transfer(Warehouse, Warehouse, Widget, 1) rejected by transfer_sites
@@ -210,19 +210,19 @@ scenario "order ids are single use and lines need an open order" {
 
 scenario "adjustments happen under audit and may go negative until reconciled" {
   adjust(Warehouse, Gadget, -3) rejected by adjust_under_audit
-  beginAudit(Warehouse)
-  beginAudit(Warehouse) rejected by do_begin_audit
+  begin_audit(Warehouse)
+  begin_audit(Warehouse) rejected by do_begin_audit
   adjust(Warehouse, Gadget, -10) emits LOW_STOCK(Warehouse, Gadget)
   expect stock(Warehouse, Gadget) == -2
-  endAudit(Warehouse) rejected by end_audit_reconciled
+  end_audit(Warehouse) rejected by end_audit_reconciled
   receive(Warehouse, Gadget, 2) emits STOCK_OUT(Warehouse, Gadget)
-  endAudit(Warehouse)
+  end_audit(Warehouse)
   expect !Auditing(Warehouse) && stock(Warehouse, Gadget) == 0
 }
 
 scenario "stock-out and low-stock are announced once each" {
-  placeOrder(1, StoreNorth)
-  addLine(1, Widget, 6)
+  place_order(1, StoreNorth)
+  add_line(1, Widget, 6)
   reserve(1) emits LOW_STOCK(StoreNorth, Widget)
   ship(1) emits ORDER_SHIPPED(1), STOCK_OUT(StoreNorth, Widget)
   receive(StoreNorth, Widget, 1) emits nothing

@@ -76,7 +76,7 @@ Commands:
 | `fixture <model> [--out f.json]` | generate a language-neutral conformance fixture from the scenarios |
 | `conform <model> <fixture.json>` | check the model against a stored fixture |
 | `report <model>` | knowledge status (required/observed/expected/assumed), exceptions, citations, description coverage |
-| `fmt <model>... [--check] [--stdout] [--no-style]` | rewrite models in canonical form and warn about names that break the naming convention; `--check` fails if anything would change (CI runs it) |
+| `fmt <model>... [--check] [--fix] [--stdout] [--no-style]` | rewrite models in canonical form and warn about names that break the naming convention; `--fix` renames them to the conventional spelling (references, patterns, `rejected by`, citations, and backticked doc mentions follow); `--check` fails if anything would change (CI runs it) |
 | `cite <model> [--root DIR] [--pin] [--index]` | resolve every citation against the repository, report `current`, `stale`, `unverified`, or `unresolved`; `--pin` writes the current content hash into each locator; `--index` groups citations by cited file |
 
 Models use the `.nom` extension.
@@ -194,18 +194,23 @@ Dependents follow automatically: a bump to `nomic` patches `nomic-fmt` and
 
 ## Names and words
 
-Naming convention, by what a name is: **things** (types, variants, facts) are
-`CamelCase`; **events** are `ALL_CAPS` moments (`WON`, `JUMP_ENDED`), which
-lets a state and the edge into it share a word: `fact Drawn` records the
-condition, `event DRAWN` marks it becoming true; **actions** look like
-functions, `lowerCamelCase(x, y)`; **derives** are `snake_case(v)`; **rules,
-invariants, ensures, and exceptions** are `snake_case_sentences`. So a rule
-head reads as a proposition about a command, `rule set_focus_non_empty on
-setFocus(id, text, at)`, and the case of the occurrence tells you whether a
-rule governs an action (`on drop(p, c)`) or reacts to an event (`on WON(p)`). The checker enforces only
+Three naming styles, by what a name is. **Things** (the model, types,
+variants, facts) are `CamelCase`. **Events** are `ALL_CAPS` moments (`WON`,
+`JUMP_ENDED`), which lets a state and the edge into it share a word: `fact
+Drawn` records the condition, `event DRAWN` marks it becoming true.
+**Everything callable or sentence-like** is `snake_case`: actions
+(`set_focus(id, text, at)`), derives (`height(c)`), rules, invariants,
+ensures, exceptions (`rule set_focus_non_empty`), and every local name.
+Facts and derives share expression positions, so their case tells stored
+from computed (`Cell(c, r)` versus `height(c)`); a rule head's occurrence
+tells whether it governs an action (`on drop(p, c)`) or reacts to an event
+(`on WON(p)`). Three styles rather than four: actions and derives never share
+a position, so a separate action style would carry no information, and
+mixing two lowercase styles is what most readers parse as inconsistency. The checker enforces only
 what the grammar needs (variants capitalized) and one hygiene rule: a local
 name (parameter, binding, `let`) may not shadow a global. `nomic fmt` warns
-about names that break the convention and suggests the conventional spelling.
+about names that break the convention and suggests the conventional spelling;
+`nomic fmt --fix` applies it.
 
 Nine words are reserved and can never be names: `match`, `legal`, `true`,
 `false`, `none`, `given`, `expect`, `emits`, `rejected`. Every other keyword is

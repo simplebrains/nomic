@@ -15,7 +15,7 @@
 /// rules was added for it, realizing the "match against occurrence and
 /// current state" wording of the core semantics.
 model NomicMachine
-  documents "README.md#L221-L235@77de0c9701bc" "the pipeline section of the README"
+  documents "README.md#L226-L240@77de0c9701bc" "the pipeline section of the README"
   realizes "crates/nomic/src/machine.rs#L1-L15@eb1871a676c8" "the module doc lists the ten stages"
   evidences "crates/nomic/tests/examples.rs#L77-L85@eedf5b4d87bc" "tic-tac-toe: 5478 positions, 958 terminal"
   evidences "crates/nomic/tests/examples.rs#L87-L94@c341eb0d5d74" "Connect Four ply counts match OEIS A212693"
@@ -68,15 +68,15 @@ derive max_rounds: Int = 64
 /// Start a transition for some occurrence.
 action begin
 /// The model under test reports that rule `r` matched with disposition `d`.
-action ruleMatches(r: RuleId, d: Disposition, effects: Bool)
+action rule_matches(r: RuleId, d: Disposition, effects: Bool)
 /// Move the pipeline to its next stage.
 action advance
 /// The model under test reports two rules disagreeing about a key.
-action effectsConflict
+action effects_conflict
 /// The model under test reports an event whose condition went false to true.
-action eventDetected(e: EventId)
+action event_detected(e: EventId)
 /// The model under test reports an invariant failing, excused or not.
-action invariantFails(i: InvariantId, excused: Bool)
+action invariant_fails(i: InvariantId, excused: Bool)
 
 rule do_begin on begin {
   require At == Idle && !done "a transition is already in progress"
@@ -85,13 +85,13 @@ rule do_begin on begin {
 }
   realizes "crates/nomic/src/machine.rs#L278-L284@6ec6b409d343" "apply: typecheck the occurrence first"
 
-rule match_only_during_match on ruleMatches(r, d, fx) {
+rule match_only_during_match on rule_matches(r, d, fx) {
   require At == Match "rules are matched only in the Match stage"
 }
-rule match_once on ruleMatches(r, d, fx) {
+rule match_once on rule_matches(r, d, fx) {
   require !Matched(r) "a rule matches an occurrence at most once"
 }
-rule do_match on ruleMatches(r, d, fx) when At == Match && !Matched(r) {
+rule do_match on rule_matches(r, d, fx) when At == Match && !Matched(r) {
   assert Matched(r)
   assert Ruled(r) = d
   if fx && d == Allow { assert HasEffects(r) }
@@ -117,10 +117,10 @@ rule apply_effects on advance when At == Transition && !Conflict {
   assert At = Detect
 }
   realizes "crates/nomic/src/machine.rs#L650-L691@59bfffaf4500" "apply_effects: keyed by fact and key tuple"
-rule conflict_only_in_transition on effectsConflict {
+rule conflict_only_in_transition on effects_conflict {
   require At == Transition && !done "conflicts arise while applying effects"
 }
-rule do_conflict on effectsConflict when At == Transition {
+rule do_conflict on effects_conflict when At == Transition {
   assert Conflict
   assert Outcome = ModelError
 }
@@ -153,23 +153,23 @@ rule do_commit on advance when At == Verify && !unexcused {
 }
   realizes "crates/nomic/src/machine.rs#L394-L397@302162979bd9"
 
-rule detect_only_when_detecting on eventDetected(e) {
+rule detect_only_when_detecting on event_detected(e) {
   require (At == Detect || At == React) && !done "events are detected after effects apply"
 }
 /// Edge semantics: one event instance fires at most once per transition.
-rule once_per_transition on eventDetected(e) {
+rule once_per_transition on event_detected(e) {
   deny if Fired(e) || Pending(e) "already fired this transition"
 }
   realizes "crates/nomic/src/machine.rs#L368-L373@205680706e7f" "the implementation drops the duplicate silently rather than refusing it"
-rule do_detect on eventDetected(e) when (At == Detect || At == React) && !Fired(e) && !Pending(e) {
+rule do_detect on event_detected(e) when (At == Detect || At == React) && !Fired(e) && !Pending(e) {
   assert Pending(e)
 }
   realizes "crates/nomic/src/machine.rs#L694-L732@296cc3982bda" "detect: false in the previous state, true in the new one"
 
-rule fail_only_in_verify on invariantFails(i, x) {
+rule fail_only_in_verify on invariant_fails(i, x) {
   require At == Verify && !done "invariants are checked at Verify"
 }
-rule do_fail on invariantFails(i, x) when At == Verify {
+rule do_fail on invariant_fails(i, x) when At == Verify {
   assert Violated(i)
   if x { assert Excused(i) }
 }
@@ -194,8 +194,8 @@ scenario "an accepted transition passes through every stage in order" {
   begin
   expect At == Typecheck
   advance; expect At == Match
-  ruleMatches(1, Allow, true)
-  ruleMatches(2, Allow, false)
+  rule_matches(1, Allow, true)
+  rule_matches(2, Allow, false)
   advance; expect At == Check
   advance; expect At == Resolve
   advance; expect At == Transition && is_legal
@@ -216,9 +216,9 @@ scenario "no matching rule rejects" {
 
 scenario "any denial rejects, whatever the other rules say" {
   begin; advance
-  ruleMatches(1, Allow, true)
-  ruleMatches(2, Deny, false)
-  ruleMatches(2, Allow, true) rejected by match_once
+  rule_matches(1, Allow, true)
+  rule_matches(2, Deny, false)
+  rule_matches(2, Allow, true) rejected by match_once
   advance; advance
   expect !is_legal
   advance emits TRANSITION_REJECTED
@@ -226,48 +226,48 @@ scenario "any denial rejects, whatever the other rules say" {
 }
 
 scenario "conflicting effects are a model error, not a resolution" {
-  begin; advance; ruleMatches(1, Allow, true); ruleMatches(3, Allow, true)
+  begin; advance; rule_matches(1, Allow, true); rule_matches(3, Allow, true)
   advance; advance; advance
   expect At == Transition
-  effectsConflict emits MODEL_DEFECT
+  effects_conflict emits MODEL_DEFECT
   expect Outcome == ModelError && !Applied
   advance rejected by advance_not_done
 }
 
 scenario "reactions cascade in rounds and each event fires once" {
-  begin; advance; ruleMatches(1, Allow, true); advance; advance; advance; advance
+  begin; advance; rule_matches(1, Allow, true); advance; advance; advance; advance
   expect At == Detect
-  eventDetected(1)
+  event_detected(1)
   advance; expect At == React && Round == 0
   advance; expect Fired(1) && !Pending(1) && Round == 1
-  eventDetected(1) rejected by once_per_transition
-  eventDetected(2)
+  event_detected(1) rejected by once_per_transition
+  event_detected(2)
   advance; expect Round == 2 && Fired(2)
   advance; expect At == Verify
   advance emits TRANSITION_COMMITTED
 }
 
 scenario "an excused invariant failure still commits; an unexcused one is a defect" {
-  begin; advance; ruleMatches(1, Allow, true); advance; advance; advance; advance; advance; advance
+  begin; advance; rule_matches(1, Allow, true); advance; advance; advance; advance; advance; advance
   expect At == Verify
-  invariantFails(1, true)
+  invariant_fails(1, true)
   advance emits TRANSITION_COMMITTED
   expect Outcome == Accepted
 }
 
 scenario "an unexcused invariant failure is a model error" {
-  begin; advance; ruleMatches(1, Allow, true); advance; advance; advance; advance; advance; advance
-  invariantFails(1, true)
-  invariantFails(2, false)
+  begin; advance; rule_matches(1, Allow, true); advance; advance; advance; advance; advance; advance
+  invariant_fails(1, true)
+  invariant_fails(2, false)
   advance emits MODEL_DEFECT
   expect Outcome == ModelError && Applied
 }
 
 scenario "inputs are only accepted in their stage" {
-  ruleMatches(1, Allow, true) rejected by match_only_during_match
-  eventDetected(1) rejected by detect_only_when_detecting
-  invariantFails(1, false) rejected by fail_only_in_verify
-  effectsConflict rejected by conflict_only_in_transition
+  rule_matches(1, Allow, true) rejected by match_only_during_match
+  event_detected(1) rejected by detect_only_when_detecting
+  invariant_fails(1, false) rejected by fail_only_in_verify
+  effects_conflict rejected by conflict_only_in_transition
   advance rejected by advance_not_idle
   begin
   begin rejected by do_begin

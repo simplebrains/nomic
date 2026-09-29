@@ -58,7 +58,7 @@ derive holder(i: Item): Actor? = first(a: Actor where Carrying(a, i) => a)
 action move(actor: Actor, to: Room)
 /// Attack a hostile in the same room; `roll` is the die, supplied from outside.
 action attack(attacker: Actor, target: Actor, roll: Roll)
-action pickUp(actor: Actor, item: Item)
+action pick_up(actor: Actor, item: Item)
 action drink(actor: Actor)
 action unlock(actor: Actor, room: Room)
 action wait(actor: Actor)
@@ -88,14 +88,14 @@ rule do_attack on attack(a, t, roll) {
   assert Turn = next(a)
 }
 
-rule pick_up_turn on pickUp(a, i) {
+rule pick_up_turn on pick_up(a, i) {
   require !game_over && Turn == a && Alive(a) "not this actor's turn"
 }
-rule pick_up_here on pickUp(a, i) {
+rule pick_up_here on pick_up(a, i) {
   require ItemAt(i) != none && ItemAt(i) == Location(a) "the item is not here"
 }
-rule only_heroes_loot on pickUp(a, i) { require a == Hero "monsters do not pick things up" }
-rule do_pick_up on pickUp(a, i) {
+rule only_heroes_loot on pick_up(a, i) { require a == Hero "monsters do not pick things up" }
+rule do_pick_up on pick_up(a, i) {
   require Turn == a && Alive(a) && a == Hero && ItemAt(i) != none && ItemAt(i) == Location(a)
   retract ItemAt(i)
   assert Carrying(a, i)
@@ -205,14 +205,14 @@ scenario "combat with dice, a kill, and dropped loot" {
   attack(Goblin, Hero, 3) rejected by attack_turn
   wait(Orc); wait(Dragon)
   attack(Hero, Dragon, 6) rejected by attack_target
-  pickUp(Hero, Potion)
+  pick_up(Hero, Potion)
 }
 
 scenario "a potion heals but never past the maximum" {
   move(Hero, Hall)
   attack(Goblin, Hero, 6)
   wait(Orc); wait(Dragon)
-  pickUp(Hero, Potion)
+  pick_up(Hero, Potion)
   wait(Goblin); wait(Orc); wait(Dragon)
   expect health(Hero) == 15
   drink(Hero)
@@ -228,10 +228,10 @@ scenario "armor and weapons change the damage" {
   given ItemAt(Sword) = Armory; given ItemAt(Shield) = Armory
   given ItemAt(Potion) = Hall; given ItemAt(Key) = Lair; given ItemAt(Gold) = Treasury
   given Turn = Hero
-  pickUp(Hero, Sword)
+  pick_up(Hero, Sword)
   attack(Orc, Hero, 3)
   expect health(Hero) == 16
-  pickUp(Hero, Shield)
+  pick_up(Hero, Shield)
   attack(Orc, Hero, 3)
   expect health(Hero) == 14
   attack(Hero, Orc, 3)
@@ -260,7 +260,7 @@ scenario "escaping with the gold is victory" {
   given Turn = Hero
   unlock(Hero, Treasury)
   move(Hero, Treasury)
-  pickUp(Hero, Gold)
+  pick_up(Hero, Gold)
   move(Hero, Hall)
   move(Hero, Entrance) emits ESCAPED
   expect Escaped && game_over
