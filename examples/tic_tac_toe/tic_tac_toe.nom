@@ -11,58 +11,58 @@ fact Turn: Mark
 fact Winner: Mark
 fact Drawn
 
-derive Other(m: Mark): Mark = match m { X => O, O => X }
-derive Marks(m: Mark): Int = count(c: Pos, r: Pos => Cell(c, r) == m)
-derive Filled: Int = count(c: Pos, r: Pos => Cell(c, r) != none)
-derive Row(m: Mark, r: Pos): Bool = all(c: Pos => Cell(c, r) == m)
-derive Col(m: Mark, c: Pos): Bool = all(r: Pos => Cell(c, r) == m)
-derive Diag(m: Mark): Bool = all(i: Pos => Cell(i, i) == m) || all(i: Pos => Cell(i, 2 - i) == m)
-derive Wins(m: Mark): Bool = exists(i: Pos => Row(m, i) || Col(m, i)) || Diag(m)
-derive Over: Bool = Winner != none || Drawn
+derive other(m: Mark): Mark = match m { X => O, O => X }
+derive marks(m: Mark): Int = count(c: Pos, r: Pos => Cell(c, r) == m)
+derive filled: Int = count(c: Pos, r: Pos => Cell(c, r) != none)
+derive row_line(m: Mark, r: Pos): Bool = all(c: Pos => Cell(c, r) == m)
+derive col_line(m: Mark, c: Pos): Bool = all(r: Pos => Cell(c, r) == m)
+derive diag(m: Mark): Bool = all(i: Pos => Cell(i, i) == m) || all(i: Pos => Cell(i, 2 - i) == m)
+derive wins(m: Mark): Bool = exists(i: Pos => row_line(m, i) || col_line(m, i)) || diag(m)
+derive over: Bool = Winner != none || Drawn
 
-action Play(mark: Mark, col: Pos, row: Pos)
+action play(mark: Mark, col: Pos, row: Pos)
 
-rule GameOver on Play(m, c, r) {
-  deny if Over "the game is over"
+rule game_over on play(m, c, r) {
+  deny if over "the game is over"
 }
-rule TurnOrder on Play(m, c, r) {
+rule turn_order on play(m, c, r) {
   require Turn == m "not your turn"
 }
-rule Place on Play(m, c, r) {
+rule place on play(m, c, r) {
   require Cell(c, r) == none "square is taken"
   assert Cell(c, r) = m
-  assert Turn = Other(m)
+  assert Turn = other(m)
 }
 
-event Win(m: Mark) when Wins(m)
-event Draw when Filled == 9 && !Wins(X) && !Wins(O)
+event Win(m: Mark) when wins(m)
+event Draw when filled == 9 && !wins(X) && !wins(O)
 
-rule RecordWinner on Win(m) { assert Winner = m }
-rule RecordDraw on Draw { assert Drawn }
+rule record_winner on Win(m) { assert Winner = m }
+rule record_draw on Draw { assert Drawn }
 
-invariant TurnMatchesMarks: Turn == X ? Marks(X) == Marks(O) : Marks(X) == Marks(O) + 1
-invariant OneWinner: !(Wins(X) && Wins(O))
-invariant WinnerWins: Winner == none || Wins(Winner)
-invariant DrawIsFull: !Drawn || Filled == 9
+invariant turn_matches_marks: Turn == X ? marks(X) == marks(O) : marks(X) == marks(O) + 1
+invariant one_winner: !(wins(X) && wins(O))
+invariant winner_wins: Winner == none || wins(Winner)
+invariant draw_is_full: !Drawn || filled == 9
 
 init { assert Turn = X }
 
 scenario "X wins the first column" {
-  Play(X, 0, 0); Play(O, 1, 0); Play(X, 0, 1); Play(O, 1, 1)
-  Play(X, 0, 2) emits Win(X)
+  play(X, 0, 0); play(O, 1, 0); play(X, 0, 1); play(O, 1, 1)
+  play(X, 0, 2) emits Win(X)
   expect Winner == X
-  Play(O, 2, 2) rejected by GameOver
+  play(O, 2, 2) rejected by game_over
 }
 
 scenario "a drawn game" {
-  Play(X, 0, 0); Play(O, 1, 1); Play(X, 2, 2); Play(O, 0, 1); Play(X, 2, 1)
-  Play(O, 2, 0); Play(X, 0, 2); Play(O, 1, 2)
-  Play(X, 1, 0) emits Draw
+  play(X, 0, 0); play(O, 1, 1); play(X, 2, 2); play(O, 0, 1); play(X, 2, 1)
+  play(O, 2, 0); play(X, 0, 2); play(O, 1, 2)
+  play(X, 1, 0) emits Draw
   expect Drawn && Winner == none
 }
 
 scenario "taken squares and wrong turns are rejected" {
-  Play(O, 0, 0) rejected by TurnOrder
-  Play(X, 0, 0)
-  Play(O, 0, 0) rejected by Place
+  play(O, 0, 0) rejected by turn_order
+  play(X, 0, 0)
+  play(O, 0, 0) rejected by place
 }

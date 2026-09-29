@@ -120,6 +120,9 @@ impl<'a> Checker<'a> {
             self.order(o);
         }
         for d in &self.model.derives {
+            for p in &d.params {
+                self.local(&p.name, d.pos, "parameter");
+            }
             let mut env = self.env_from(&d.params);
             let t = self.infer(&d.body, &mut env);
             let want = Ty::from_ref(&d.result, self.model);
@@ -128,6 +131,9 @@ impl<'a> Checker<'a> {
             }
         }
         for e in &self.model.events {
+            for p in &e.params {
+                self.local(&p.name, e.pos, "parameter");
+            }
             if let Some(w) = &e.when {
                 for p in &e.params {
                     if inhabitants(&p.ty, self.model).is_none() && !self.is_opaque_ref(&p.ty) {
@@ -187,6 +193,9 @@ impl<'a> Checker<'a> {
             }
         }
         for a in &self.model.actions {
+            for p in &a.params {
+                self.local(&p.name, a.pos, "parameter");
+            }
             if !self.model.rules.iter().any(|r| r.on.name == a.name) {
                 self.warn(a.pos, format!("action `{}` has no rule; it can never be accepted", a.name));
             }
@@ -299,6 +308,27 @@ impl<'a> Checker<'a> {
         }
     }
 
+    /// A local (parameter, pattern binding, binder, `let`) may not reuse the
+    /// name of a fact, derive, action, event, or type: the evaluator would
+    /// resolve the local and silently hide the global, and the linker's alias
+    /// renaming assumes it never happens.
+    fn local(&mut self, name: &str, pos: Pos, what: &str) {
+        let global = if self.model.fact(name).is_some() {
+            "fact"
+        } else if self.model.derive(name).is_some() {
+            "derive"
+        } else if self.model.action(name).is_some() {
+            "action"
+        } else if self.model.event(name).is_some() {
+            "event"
+        } else if self.model.type_decl(name).is_some() {
+            "type"
+        } else {
+            return;
+        };
+        self.error(pos, format!("{what} `{name}` shadows the {global} of the same name; rename one of them"));
+    }
+
     fn is_opaque_ref(&self, t: &TypeRef) -> bool {
         matches!(t, TypeRef::Named { name } if self.model.is_opaque(name))
     }
@@ -326,6 +356,9 @@ impl<'a> Checker<'a> {
 
     /// Bind a quantifier or `for` binder into `env`, checking its source.
     fn bind(&mut self, b: &Binder, env: &mut BTreeMap<String, Ty>, pos: Pos, what: &str) {
+        for n in &b.names {
+            self.local(n, pos, "binder");
+        }
         match &b.source {
             BinderSource::Type { ty } => {
                 self.type_ref(ty, pos);
@@ -399,6 +432,7 @@ impl<'a> Checker<'a> {
             let pty = Ty::from_ref(&p.ty, self.model);
             match a {
                 PatArg::Bind { name } => {
+                    self.local(name, r.pos, "pattern binding");
                     env.insert(name.clone(), pty);
                 }
                 PatArg::Wildcard => {}
@@ -469,7 +503,8 @@ impl<'a> Checker<'a> {
                 }
                 self.args_against(args, &e.params.clone(), env, *pos, &format!("event `{event}`"));
             }
-            Stmt::Let { name, value, .. } => {
+            Stmt::Let { name, value, pos } => {
+                self.local(name, *pos, "`let`");
                 let t = self.infer(value, env);
                 env.insert(name.clone(), t);
             }

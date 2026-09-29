@@ -94,30 +94,30 @@ fact Cell(col: Column, row: 0..5): Player   // functional: key tuple -> value, o
 fact Turn: Player                            // zero keys: a variable
 fact Drawn                                   // no value: a flag (present or absent)
 
-derive Height(c: Column): Int = count(r: 0..5 => Cell(c, r) != none)   // pure
-derive Other(p: Player): Player = match p { Red => Yellow, Yellow => Red }
+derive height(c: Column): Int = count(r: 0..5 => Cell(c, r) != none)   // pure
+derive other(p: Player): Player = match p { Red => Yellow, Yellow => Red }
 
-action Drop(player: Player, col: Column)     // an attempted occurrence
+action drop(player: Player, col: Column)     // an attempted occurrence
 
-rule TurnOrder on Drop(p, c) { require Turn == p "not your turn" }
-rule Place on Drop(p, c) {
-  require Height(c) < 6 "column is full"
-  assert Cell(c, Height(c)) = p           // explicit effects, evaluated against the pre-state
-  assert Turn = Other(p)
+rule turn_order on drop(p, c) { require Turn == p "not your turn" }
+rule place on drop(p, c) {
+  require height(c) < 6 "column is full"
+  assert Cell(c, height(c)) = p           // explicit effects, evaluated against the pre-state
+  assert Turn = other(p)
 }
 
-event Win(p: Player) when FourInARow(p)      // edge-triggered: emitted once, when it becomes true
-rule RecordWinner on Win(p) { assert Winner = p }   // reaction, same transition
+event Win(p: Player) when four_in_a_row(p)   // edge-triggered: emitted once, when it becomes true
+rule record_winner on Win(p) { assert Winner = p }   // reaction, same transition
 
-invariant NoFloatingDiscs:
+invariant no_floating_discs:
   all(c: Column, r: 0..5 where r > 0 && Cell(c, r) != none => Cell(c, r - 1) != none)
 
 init { assert Turn = Red }
 
 scenario "vertical win" {
-  Drop(Red, 0); Drop(Yellow, 1); Drop(Red, 0); Drop(Yellow, 1); Drop(Red, 0); Drop(Yellow, 1)
-  Drop(Red, 0) emits Win(Red)
-  Drop(Yellow, 2) rejected by GameOver
+  drop(Red, 0); drop(Yellow, 1); drop(Red, 0); drop(Yellow, 1); drop(Red, 0); drop(Yellow, 1)
+  drop(Red, 0) emits Win(Red)
+  drop(Yellow, 2) rejected by game_over
   expect Winner == Red
 }
 ```
@@ -126,14 +126,14 @@ Other constructs, each introduced by one of the example models:
 
 - `??` none-coalescing, `T?` optional derive results, `first(...)` deterministic selection, `sum`, `exists`, `all`, `count`.
 - `for (x: T where cond) { effects }` bounded effect comprehension (checkers, chess initial positions).
-- `ensure Name: expr` postcondition over an action's own effects that **rejects** the action if it fails (chess: a move may not leave one's own king in check). Distinct from `invariant`, whose violation is a model error.
+- `ensure name: expr` postcondition over an action's own effects that **rejects** the action if it fails (chess: a move may not leave one's own king in check). Distinct from `invariant`, whose violation is a model error.
 - `legal(Action(args))` built-in predicate: would the action be accepted now? Lets "no legal move" be a derived value (checkmate, stalemate).
 - `observed | expected | assumed` status prefixes on declarations, and `exception Name on Invariant when cond` naming a known departure from a normative invariant. The verifier reports when an exception is exercised instead of failing (inventory audits, the ship's red-alert power overdraw).
 - `given nothing` / `given Fact(k) = v` scenario steps to start from a constructed state.
 - `type TaskId = opaque`: an open domain of identities. Values enter as `TaskId("u-17")`, compare only for equality, can be stored and passed, and are never enumerated. The explorer draws them from identities already in the state plus `--fresh N` new ones.
 - `order Status: Draft < Ready < Doing < Done, Ready < Cancelled`: a declared precedence over an enum, as chains. Its transitive closure is the order; pairs it does not relate are incomparable, so `<` is simply false for them and a partial order needs no third truth value. Enums without an `order` keep declaration order. The machine's canonical evaluation order is separate and never modeled.
-- `x in Fact` and `(a, b) in Fact` binders: quantifiers and `for` range over a fact's current keys, its population, instead of a type. This is what makes opaque keys quantifiable, and it is how cardinality is stated: `count(t in Task => Task(t) == Doing) <= Wip`. `none(...)` and `unique(x in F => Key(x))` complete the set. Facts are the only collection substrate; a query result never becomes stored state.
-- `rule R on A(p) when cond { ... }`: an applicability guard. False means the rule does not match, unlike `require`, which means the occurrence is forbidden. Needed for anything that dispatches on state, such as a stage machine.
+- `x in Fact` and `(a, b) in Fact` binders: quantifiers and `for` range over a fact's current keys, its population, instead of a type. This is what makes opaque keys quantifiable, and it is how cardinality is stated: `count(t in Task => Task(t) == Doing) <= wip`. `none(...)` and `unique(x in F => Key(x))` complete the set. Facts are the only collection substrate; a query result never becomes stored state.
+- `rule r on a(p) when cond { ... }`: an applicability guard. False means the rule does not match, unlike `require`, which means the occurrence is forbidden. Needed for anything that dispatches on state, such as a stage machine.
 - **Citations.** Any declaration (or the model) may carry trailing `realizes | derives_from | evidences | contradicts | configures | documents "path#Lstart-Lend[@pin]" ["note"]` clauses grounding it in a file. `nomic cite` resolves them and detects drift by content hash; `contradicts` records a known gap between intent and code. `examples/nomic/nomic.nom` describes this machine's own pipeline with 22 citations into `src/`.
 
 ## Modules
@@ -143,13 +143,13 @@ one file reached by two routes is one module, and cycles are errors.
 
 ```nomic
 include "board.nom"                                   // the board's vocabulary and behavior
-import "players.nom" { Player, Other as Opponent }    // named declarations, with aliases
+import "players.nom" { Player, other as opponent }    // named declarations, with aliases
 ```
 
 `include` takes a module's declarations and behavior: rules, invariants,
 ensures, exceptions, and `init`. Its scenarios stay its own. `import` takes
 named types, facts, derives, actions, or events, plus whatever they depend on
-(importing `Height` brings `Cell`). `as` renames the imported declaration and
+(importing `height` brings `Cell`). `as` renames the imported declaration and
 every reference to it in what came with it; other names keep theirs. The same
 declaration arriving twice from the same origin is one declaration; two
 different declarations with one name are a collision, fixed with `as`. Rules
@@ -166,7 +166,7 @@ binary operators, parentheses only where precedence requires them (plus around
 `&&` groups inside `||` and nested ternaries, for reading), citations on their
 own indented lines under their declaration, at most one blank line between
 items. Statements or scenario steps that shared a source line stay together
-when they fit, so `Move(4, 1, 4, 3); Move(4, 6, 4, 4)` survives as a move pair.
+when they fit, so `move(4, 1, 4, 3); move(4, 6, 4, 4)` survives as a move pair.
 Tests assert that formatting every example is idempotent and preserves its IR.
 
 ## Releasing
@@ -193,6 +193,16 @@ Dependents follow automatically: a bump to `nomic` patches `nomic-fmt` and
 - **GitHub:** cannot be taught per repository. Fences render as plain text until Nomic is added to GitHub Linguist, which requires a published grammar and real-world usage. Tag fences `nomic` anyway so they light up everywhere else.
 
 ## Names and words
+
+Naming convention, by what a name is: **things** (types, variants, facts,
+events) are `CamelCase`; **actions** look like functions, `lowerCamelCase(x, y)`;
+**derives** are `snake_case(v)`; **rules, invariants, ensures, and
+exceptions** are `snake_case_sentences`. So a rule head reads as a proposition
+about a command, `rule set_focus_non_empty on setFocus(id, text, at)`, and the
+case of the occurrence tells you whether a rule governs an action (`on
+drop(p, c)`) or reacts to an event (`on Win(p)`). The checker enforces only
+what the grammar needs (variants capitalized) and one hygiene rule: a local
+name (parameter, binding, `let`) may not shadow a global.
 
 Nine words are reserved and can never be names: `match`, `legal`, `true`,
 `false`, `none`, `given`, `expect`, `emits`, `rejected`. Every other keyword is

@@ -6,7 +6,7 @@
       "scenario": "receive, order, reserve, ship",
       "steps": [
         {
-          "description": "Receive(StoreSouth, Gizmo, 10) accepted",
+          "description": "receive(StoreSouth, Gizmo, 10) accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -14,7 +14,7 @@
           ]
         },
         {
-          "description": "PlaceOrder(1, Warehouse) accepted",
+          "description": "placeOrder(1, Warehouse) accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -23,7 +23,7 @@
           ]
         },
         {
-          "description": "AddLine(1, Widget, 12) accepted",
+          "description": "addLine(1, Widget, 12) accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -31,7 +31,7 @@
           ]
         },
         {
-          "description": "AddLine(1, Gadget, 4) accepted",
+          "description": "addLine(1, Gadget, 4) accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -39,7 +39,7 @@
           ]
         },
         {
-          "description": "Reserve(1) accepted with events",
+          "description": "reserve(1) accepted with events",
           "passed": true,
           "accepted": true,
           "events": [
@@ -56,7 +56,7 @@
           "passed": true
         },
         {
-          "description": "Ship(1) accepted with events",
+          "description": "ship(1) accepted with events",
           "passed": true,
           "accepted": true,
           "events": [
@@ -80,12 +80,12 @@
           "passed": true
         },
         {
-          "description": "Ship(1) rejected by ShipReserved",
+          "description": "ship(1) rejected by ship_reserved",
           "passed": true,
           "accepted": false,
           "denied_by": [
-            "ShipReserved",
-            "DoShip"
+            "ship_reserved",
+            "do_ship"
           ]
         }
       ],
@@ -115,7 +115,7 @@
       "scenario": "reservation is all or nothing",
       "steps": [
         {
-          "description": "PlaceOrder(1, StoreNorth) accepted",
+          "description": "placeOrder(1, StoreNorth) accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -124,7 +124,7 @@
           ]
         },
         {
-          "description": "AddLine(1, Widget, 4) accepted",
+          "description": "addLine(1, Widget, 4) accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -132,7 +132,7 @@
           ]
         },
         {
-          "description": "AddLine(1, Gadget, 1) accepted",
+          "description": "addLine(1, Gadget, 1) accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -140,12 +140,12 @@
           ]
         },
         {
-          "description": "Reserve(1) rejected by ReserveStock",
+          "description": "reserve(1) rejected by reserve_stock",
           "passed": true,
           "accepted": false,
           "denied_by": [
-            "ReserveStock",
-            "DoReserve"
+            "reserve_stock",
+            "do_reserve"
           ]
         },
         {
@@ -153,7 +153,7 @@
           "passed": true
         },
         {
-          "description": "Transfer(Warehouse, StoreNorth, Gadget, 2) accepted",
+          "description": "transfer(Warehouse, StoreNorth, Gadget, 2) accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -162,7 +162,7 @@
           ]
         },
         {
-          "description": "Reserve(1) accepted",
+          "description": "reserve(1) accepted",
           "passed": true,
           "accepted": true,
           "events": [
@@ -205,7 +205,7 @@
       "scenario": "cancelling a reserved order releases its stock",
       "steps": [
         {
-          "description": "PlaceOrder(2, Warehouse) accepted",
+          "description": "placeOrder(2, Warehouse) accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -214,7 +214,7 @@
           ]
         },
         {
-          "description": "AddLine(2, Widget, 20) accepted",
+          "description": "addLine(2, Widget, 20) accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -222,7 +222,7 @@
           ]
         },
         {
-          "description": "Reserve(2) accepted with events",
+          "description": "reserve(2) accepted with events",
           "passed": true,
           "accepted": true,
           "events": [
@@ -238,16 +238,16 @@
           "passed": true
         },
         {
-          "description": "Transfer(Warehouse, StoreSouth, Widget, 1) rejected by TransferAvailable",
+          "description": "transfer(Warehouse, StoreSouth, Widget, 1) rejected by transfer_available",
           "passed": true,
           "accepted": false,
           "denied_by": [
-            "TransferAvailable",
-            "DoTransfer"
+            "transfer_available",
+            "do_transfer"
           ]
         },
         {
-          "description": "Cancel(2) accepted",
+          "description": "cancel(2) accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -260,20 +260,20 @@
           "passed": true
         },
         {
-          "description": "Cancel(2) rejected by CancelLive",
+          "description": "cancel(2) rejected by cancel_live",
           "passed": true,
           "accepted": false,
           "denied_by": [
-            "CancelLive",
-            "DoCancel"
+            "cancel_live",
+            "do_cancel"
           ]
         },
         {
-          "description": "AddLine(2, Gadget, 1) rejected by LineOnOpenOrder",
+          "description": "addLine(2, Gadget, 1) rejected by line_on_open_order",
           "passed": true,
           "accepted": false,
           "denied_by": [
-            "LineOnOpenOrder"
+            "line_on_open_order"
           ]
         }
       ],
@@ -300,7 +300,7 @@
       "scenario": "order ids are single use and lines need an open order",
       "steps": [
         {
-          "description": "PlaceOrder(3, StoreSouth) accepted",
+          "description": "placeOrder(3, StoreSouth) accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -309,39 +309,39 @@
           ]
         },
         {
-          "description": "PlaceOrder(3, Warehouse) rejected by OrderIdFree",
+          "description": "placeOrder(3, Warehouse) rejected by order_id_free",
           "passed": true,
           "accepted": false,
           "denied_by": [
-            "OrderIdFree"
+            "order_id_free"
           ]
         },
         {
-          "description": "Reserve(3) rejected by ReserveNonEmpty",
+          "description": "reserve(3) rejected by reserve_non_empty",
           "passed": true,
           "accepted": false,
           "denied_by": [
-            "ReserveNonEmpty",
-            "DoReserve"
+            "reserve_non_empty",
+            "do_reserve"
           ]
         },
         {
-          "description": "Reserve(4) rejected by ReserveOpen",
+          "description": "reserve(4) rejected by reserve_open",
           "passed": true,
           "accepted": false,
           "denied_by": [
-            "ReserveOpen",
-            "ReserveNonEmpty",
-            "DoReserve"
+            "reserve_open",
+            "reserve_non_empty",
+            "do_reserve"
           ]
         },
         {
-          "description": "Transfer(Warehouse, Warehouse, Widget, 1) rejected by TransferSites",
+          "description": "transfer(Warehouse, Warehouse, Widget, 1) rejected by transfer_sites",
           "passed": true,
           "accepted": false,
           "denied_by": [
-            "TransferSites",
-            "DoTransfer"
+            "transfer_sites",
+            "do_transfer"
           ]
         }
       ],
@@ -366,16 +366,16 @@
       "scenario": "adjustments happen under audit and may go negative until reconciled",
       "steps": [
         {
-          "description": "Adjust(Warehouse, Gadget, -3) rejected by AdjustUnderAudit",
+          "description": "adjust(Warehouse, Gadget, -3) rejected by adjust_under_audit",
           "passed": true,
           "accepted": false,
           "denied_by": [
-            "AdjustUnderAudit",
-            "DoAdjust"
+            "adjust_under_audit",
+            "do_adjust"
           ]
         },
         {
-          "description": "BeginAudit(Warehouse) accepted",
+          "description": "beginAudit(Warehouse) accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -383,15 +383,15 @@
           ]
         },
         {
-          "description": "BeginAudit(Warehouse) rejected by DoBeginAudit",
+          "description": "beginAudit(Warehouse) rejected by do_begin_audit",
           "passed": true,
           "accepted": false,
           "denied_by": [
-            "DoBeginAudit"
+            "do_begin_audit"
           ]
         },
         {
-          "description": "Adjust(Warehouse, Gadget, -10) accepted with events",
+          "description": "adjust(Warehouse, Gadget, -10) accepted with events",
           "passed": true,
           "accepted": true,
           "events": [
@@ -406,15 +406,15 @@
           "passed": true
         },
         {
-          "description": "EndAudit(Warehouse) rejected by EndAuditReconciled",
+          "description": "endAudit(Warehouse) rejected by end_audit_reconciled",
           "passed": true,
           "accepted": false,
           "denied_by": [
-            "EndAuditReconciled"
+            "end_audit_reconciled"
           ]
         },
         {
-          "description": "Receive(Warehouse, Gadget, 2) accepted with events",
+          "description": "receive(Warehouse, Gadget, 2) accepted with events",
           "passed": true,
           "accepted": true,
           "events": [
@@ -425,7 +425,7 @@
           ]
         },
         {
-          "description": "EndAudit(Warehouse) accepted",
+          "description": "endAudit(Warehouse) accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -456,7 +456,7 @@
       "scenario": "stock-out and low-stock are announced once each",
       "steps": [
         {
-          "description": "PlaceOrder(1, StoreNorth) accepted",
+          "description": "placeOrder(1, StoreNorth) accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -465,7 +465,7 @@
           ]
         },
         {
-          "description": "AddLine(1, Widget, 6) accepted",
+          "description": "addLine(1, Widget, 6) accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -473,7 +473,7 @@
           ]
         },
         {
-          "description": "Reserve(1) accepted with events",
+          "description": "reserve(1) accepted with events",
           "passed": true,
           "accepted": true,
           "events": [
@@ -485,7 +485,7 @@
           ]
         },
         {
-          "description": "Ship(1) accepted with events",
+          "description": "ship(1) accepted with events",
           "passed": true,
           "accepted": true,
           "events": [
@@ -500,7 +500,7 @@
           ]
         },
         {
-          "description": "Receive(StoreNorth, Widget, 1) accepted with events",
+          "description": "receive(StoreNorth, Widget, 1) accepted with events",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -508,7 +508,7 @@
           ]
         },
         {
-          "description": "Receive(StoreNorth, Widget, 4) accepted with events",
+          "description": "receive(StoreNorth, Widget, 4) accepted with events",
           "passed": true,
           "accepted": true,
           "effects": [

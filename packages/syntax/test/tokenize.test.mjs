@@ -54,8 +54,8 @@ test("connect four tokenizes with the intended scopes", async () => {
   assert.ok(find(toks, "rule", "storage.type.declaration.nomic"), "`rule` is a declaration keyword");
   assert.ok(find(toks, "include", "storage.type.declaration.nomic"), "`include` is a declaration keyword");
   assert.ok(find(toks, "as", "keyword.control.nomic"), "`as` in an import");
-  assert.ok(find(toks, "Place", "entity.name.function.rule.nomic"), "rule name");
-  assert.ok(find(toks, "Drop", "entity.name.function.occurrence.nomic"), "occurrence in a rule head");
+  assert.ok(find(toks, "game_over", "entity.name.function.rule.nomic"), "rule name");
+  assert.ok(find(toks, "drop", "entity.name.function.occurrence.nomic"), "occurrence in a rule head");
   assert.ok(find(toks, "Player", "entity.name.type.nomic"), "declared type name");
   assert.ok(find(toks, "Column", "entity.name.type.nomic"), "type in an annotation");
   assert.ok(find(toks, "Int", "support.type.primitive.nomic"), "primitive type");
@@ -67,10 +67,11 @@ test("connect four tokenizes with the intended scopes", async () => {
   assert.ok(find(toks, "exists", "support.function.builtin.nomic"), "quantifier");
   assert.ok(find(toks, "none", "constant.language.nomic"), "none literal");
   assert.ok(find(toks, "Red", "variable.other.constant.nomic"), "bare variant");
-  assert.ok(find(toks, "Height", "entity.name.function.call.nomic"), "call");
+  assert.ok(find(toks, "height", "entity.name.function.call.nomic"), "lowercase derive call");
+  assert.ok(find(toks, "drop", "entity.name.function.call.nomic"), "lowercase action call in a scenario");
   assert.ok(find(toks, "==", "keyword.operator.comparison.nomic"), "comparison");
   assert.ok(toks.some((t) => has(t, "comment.line.documentation.nomic") && t.text.includes("Connect Four")), "doc comment");
-  assert.ok(find(toks, "GameOver", "entity.name.function.rule.nomic"), "`rejected by Rule`");
+  assert.ok(find(toks, "turn_order", "entity.name.function.rule.nomic"), "`rejected by rule`");
   assert.ok(toks.some((t) => has(t, "entity.name.section.scenario.nomic")), "scenario name");
 });
 

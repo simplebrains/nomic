@@ -6,7 +6,7 @@
       "scenario": "X wins the first column",
       "steps": [
         {
-          "description": "Play(X, 0, 0) accepted",
+          "description": "play(X, 0, 0) accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -15,7 +15,7 @@
           ]
         },
         {
-          "description": "Play(O, 1, 0) accepted",
+          "description": "play(O, 1, 0) accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -24,7 +24,7 @@
           ]
         },
         {
-          "description": "Play(X, 0, 1) accepted",
+          "description": "play(X, 0, 1) accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -33,7 +33,7 @@
           ]
         },
         {
-          "description": "Play(O, 1, 1) accepted",
+          "description": "play(O, 1, 1) accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -42,7 +42,7 @@
           ]
         },
         {
-          "description": "Play(X, 0, 2) accepted with events",
+          "description": "play(X, 0, 2) accepted with events",
           "passed": true,
           "accepted": true,
           "events": [
@@ -59,11 +59,11 @@
           "passed": true
         },
         {
-          "description": "Play(O, 2, 2) rejected by GameOver",
+          "description": "play(O, 2, 2) rejected by game_over",
           "passed": true,
           "accepted": false,
           "denied_by": [
-            "GameOver"
+            "game_over"
           ]
         }
       ],
@@ -81,7 +81,7 @@
       "scenario": "a drawn game",
       "steps": [
         {
-          "description": "Play(X, 0, 0) accepted",
+          "description": "play(X, 0, 0) accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -90,7 +90,7 @@
           ]
         },
         {
-          "description": "Play(O, 1, 1) accepted",
+          "description": "play(O, 1, 1) accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -99,7 +99,7 @@
           ]
         },
         {
-          "description": "Play(X, 2, 2) accepted",
+          "description": "play(X, 2, 2) accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -108,7 +108,7 @@
           ]
         },
         {
-          "description": "Play(O, 0, 1) accepted",
+          "description": "play(O, 0, 1) accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -117,7 +117,7 @@
           ]
         },
         {
-          "description": "Play(X, 2, 1) accepted",
+          "description": "play(X, 2, 1) accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -126,7 +126,7 @@
           ]
         },
         {
-          "description": "Play(O, 2, 0) accepted",
+          "description": "play(O, 2, 0) accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -135,7 +135,7 @@
           ]
         },
         {
-          "description": "Play(X, 0, 2) accepted",
+          "description": "play(X, 0, 2) accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -144,7 +144,7 @@
           ]
         },
         {
-          "description": "Play(O, 1, 2) accepted",
+          "description": "play(O, 1, 2) accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -153,7 +153,7 @@
           ]
         },
         {
-          "description": "Play(X, 1, 0) accepted with events",
+          "description": "play(X, 1, 0) accepted with events",
           "passed": true,
           "accepted": true,
           "events": [
@@ -188,15 +188,15 @@
       "scenario": "taken squares and wrong turns are rejected",
       "steps": [
         {
-          "description": "Play(O, 0, 0) rejected by TurnOrder",
+          "description": "play(O, 0, 0) rejected by turn_order",
           "passed": true,
           "accepted": false,
           "denied_by": [
-            "TurnOrder"
+            "turn_order"
           ]
         },
         {
-          "description": "Play(X, 0, 0) accepted",
+          "description": "play(X, 0, 0) accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -205,11 +205,11 @@
           ]
         },
         {
-          "description": "Play(O, 0, 0) rejected by Place",
+          "description": "play(O, 0, 0) rejected by place",
           "passed": true,
           "accepted": false,
           "denied_by": [
-            "Place"
+            "place"
           ]
         }
       ],

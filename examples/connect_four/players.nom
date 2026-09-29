@@ -4,4 +4,4 @@ model Players
 
 type Player = Red | Yellow
 
-derive Other(p: Player): Player = match p { Red => Yellow, Yellow => Red }
+derive other(p: Player): Player = match p { Red => Yellow, Yellow => Red }

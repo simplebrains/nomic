@@ -303,8 +303,8 @@
       "match": "\\\\[\"\\\\nt]"
     },
     "calls": {
-      "comment": "Name( \u2026 ): fact lookup, derive application, action or event occurrence",
-      "match": "\\b([A-Z][A-Za-z0-9_]*)(?=\\()",
+      "comment": "Name( \u2026 ): fact lookup, derive application, action or event occurrence, of any case",
+      "match": "\\b([A-Za-z_][A-Za-z0-9_]*)(?=\\()",
       "captures": {
         "1": {
           "name": "entity.name.function.call.nomic"

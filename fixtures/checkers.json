@@ -10,7 +10,7 @@
           "passed": true
         },
         {
-          "description": "Step(Red, 1, 2, 1, 1) accepted",
+          "description": "step(Red, 1, 2, 1, 1) accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -24,7 +24,7 @@
           "passed": true
         },
         {
-          "description": "Step(Black, 4, 5, -1, -1) accepted",
+          "description": "step(Black, 4, 5, -1, -1) accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -38,11 +38,11 @@
           "passed": true
         },
         {
-          "description": "Step(Red, 3, 2, 1, 1) rejected by CaptureIsMandatory",
+          "description": "step(Red, 3, 2, 1, 1) rejected by capture_is_mandatory",
           "passed": true,
           "accepted": false,
           "denied_by": [
-            "CaptureIsMandatory"
+            "capture_is_mandatory"
           ]
         }
       ],
@@ -78,7 +78,7 @@
       "scenario": "a single jump captures and hands over the turn",
       "steps": [
         {
-          "description": "Step(Red, 1, 2, 1, 1) accepted",
+          "description": "step(Red, 1, 2, 1, 1) accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -88,7 +88,7 @@
           ]
         },
         {
-          "description": "Step(Black, 4, 5, -1, -1) accepted",
+          "description": "step(Black, 4, 5, -1, -1) accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -98,7 +98,7 @@
           ]
         },
         {
-          "description": "Jump(Red, 2, 3, 1, 1) accepted with events",
+          "description": "jump(Red, 2, 3, 1, 1) accepted with events",
           "passed": true,
           "accepted": true,
           "events": [
@@ -156,43 +156,43 @@
       "scenario": "men only move forward and only onto empty dark squares",
       "steps": [
         {
-          "description": "Step(Red, 1, 2, 1, -1) rejected by MakeStep",
+          "description": "step(Red, 1, 2, 1, -1) rejected by make_step",
           "passed": true,
           "accepted": false,
           "denied_by": [
-            "MakeStep"
+            "make_step"
           ]
         },
         {
-          "description": "Step(Red, 1, 2, 0, 1) rejected by MakeStep",
+          "description": "step(Red, 1, 2, 0, 1) rejected by make_step",
           "passed": true,
           "accepted": false,
           "denied_by": [
-            "MakeStep"
+            "make_step"
           ]
         },
         {
-          "description": "Step(Red, 0, 1, 1, 1) rejected by MakeStep",
+          "description": "step(Red, 0, 1, 1, 1) rejected by make_step",
           "passed": true,
           "accepted": false,
           "denied_by": [
-            "MakeStep"
+            "make_step"
           ]
         },
         {
-          "description": "Step(Black, 4, 5, -1, -1) rejected by StepTurn",
+          "description": "step(Black, 4, 5, -1, -1) rejected by step_turn",
           "passed": true,
           "accepted": false,
           "denied_by": [
-            "StepTurn"
+            "step_turn"
           ]
         },
         {
-          "description": "Step(Red, 4, 5, -1, -1) rejected by StepOwnPiece",
+          "description": "step(Red, 4, 5, -1, -1) rejected by step_own_piece",
           "passed": true,
           "accepted": false,
           "denied_by": [
-            "StepOwnPiece"
+            "step_own_piece"
           ]
         }
       ],
@@ -256,16 +256,16 @@
           "passed": true
         },
         {
-          "description": "Step(Red, 1, 0, 1, 1) rejected by CaptureIsMandatory",
+          "description": "step(Red, 1, 0, 1, 1) rejected by capture_is_mandatory",
           "passed": true,
           "accepted": false,
           "denied_by": [
-            "CaptureIsMandatory",
-            "MakeStep"
+            "capture_is_mandatory",
+            "make_step"
           ]
         },
         {
-          "description": "Jump(Red, 1, 0, 1, 1) accepted with events",
+          "description": "jump(Red, 1, 0, 1, 1) accepted with events",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -282,24 +282,24 @@
           "passed": true
         },
         {
-          "description": "Jump(Red, 7, 0, -1, 1) rejected by JumpSamePiece",
+          "description": "jump(Red, 7, 0, -1, 1) rejected by jump_same_piece",
           "passed": true,
           "accepted": false,
           "denied_by": [
-            "JumpSamePiece"
+            "jump_same_piece"
           ]
         },
         {
-          "description": "Step(Red, 3, 2, -1, 1) rejected by StepNotMidCapture",
+          "description": "step(Red, 3, 2, -1, 1) rejected by step_not_mid_capture",
           "passed": true,
           "accepted": false,
           "denied_by": [
-            "StepNotMidCapture",
-            "CaptureIsMandatory"
+            "step_not_mid_capture",
+            "capture_is_mandatory"
           ]
         },
         {
-          "description": "Jump(Red, 3, 2, 1, 1) accepted with events",
+          "description": "jump(Red, 3, 2, 1, 1) accepted with events",
           "passed": true,
           "accepted": true,
           "events": [
@@ -353,7 +353,7 @@
           "passed": true
         },
         {
-          "description": "Jump(Red, 2, 5, 1, 1) accepted with events",
+          "description": "jump(Red, 2, 5, 1, 1) accepted with events",
           "passed": true,
           "accepted": true,
           "events": [
@@ -413,7 +413,7 @@
           "passed": true
         },
         {
-          "description": "Step(Black, 3, 4, 1, 1) accepted",
+          "description": "step(Black, 3, 4, 1, 1) accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -456,7 +456,7 @@
           "passed": true
         },
         {
-          "description": "Jump(Red, 2, 3, 1, 1) accepted with events",
+          "description": "jump(Red, 2, 3, 1, 1) accepted with events",
           "passed": true,
           "accepted": true,
           "events": [
@@ -481,12 +481,12 @@
           "passed": true
         },
         {
-          "description": "Step(Red, 4, 5, 1, 1) rejected by StepGameOver",
+          "description": "step(Red, 4, 5, 1, 1) rejected by step_game_over",
           "passed": true,
           "accepted": false,
           "denied_by": [
-            "StepGameOver",
-            "StepTurn"
+            "step_game_over",
+            "step_turn"
           ]
         }
       ],
@@ -524,11 +524,11 @@
           "passed": true
         },
         {
-          "description": "Step(Red, 1, 0, 1, 1) rejected by MakeStep",
+          "description": "step(Red, 1, 0, 1, 1) rejected by make_step",
           "passed": true,
           "accepted": false,
           "denied_by": [
-            "MakeStep"
+            "make_step"
           ]
         },
         {

@@ -2,7 +2,7 @@
 /// full columns. Knows nothing about winning; that is the game's concern.
 model Board
 
-import "players.nom" { Player, Other }
+import "players.nom" { Player, other }
 
 type Column = 0..6
 type Row = 0..5
@@ -13,35 +13,35 @@ fact Cell(col: Column, row: Row): Player
 fact Turn: Player
 
 /// Number of discs in a column; also the row the next disc lands on.
-derive Height(c: Column): Int = count(r: Row => Cell(c, r) != none)
-derive Discs(p: Player): Int = count(c: Column, r: Row => Cell(c, r) == p)
-derive Full: Bool = all(c: Column => Height(c) == 6)
+derive height(c: Column): Int = count(r: Row => Cell(c, r) != none)
+derive discs(p: Player): Int = count(c: Column, r: Row => Cell(c, r) == p)
+derive full: Bool = all(c: Column => height(c) == 6)
 
 /// Drop a disc for `player` into `col`.
-action Drop(player: Player, col: Column)
+action drop(player: Player, col: Column)
 
-rule TurnOrder on Drop(p, c) { require Turn == p "not your turn" }
-rule Place on Drop(p, c) {
-  require Height(c) < 6 "column is full"
-  assert Cell(c, Height(c)) = p
-  assert Turn = Other(p)
+rule turn_order on drop(p, c) { require Turn == p "not your turn" }
+rule place on drop(p, c) {
+  require height(c) < 6 "column is full"
+  assert Cell(c, height(c)) = p
+  assert Turn = other(p)
 }
 
-invariant NoFloatingDiscs:
+invariant no_floating_discs:
   all(c: Column, r: Row where r > 0 && Cell(c, r) != none => Cell(c, r - 1) != none)
-invariant TurnMatchesDiscs:
-  Turn == Red ? Discs(Red) == Discs(Yellow) : Discs(Red) == Discs(Yellow) + 1
+invariant turn_matches_discs:
+  Turn == Red ? discs(Red) == discs(Yellow) : discs(Red) == discs(Yellow) + 1
 
 init { assert Turn = Red }
 
 scenario "discs stack from the bottom" {
-  Drop(Red, 3); Drop(Yellow, 3); Drop(Red, 3)
-  expect Cell(3, 0) == Red && Cell(3, 1) == Yellow && Cell(3, 2) == Red && Height(3) == 3
+  drop(Red, 3); drop(Yellow, 3); drop(Red, 3)
+  expect Cell(3, 0) == Red && Cell(3, 1) == Yellow && Cell(3, 2) == Red && height(3) == 3
 }
 
 scenario "a full column rejects further drops" {
-  Drop(Red, 0); Drop(Yellow, 0); Drop(Red, 0); Drop(Yellow, 0); Drop(Red, 0); Drop(Yellow, 0)
-  expect Height(0) == 6
-  Drop(Red, 0) rejected by Place
-  Drop(Red, 1)
+  drop(Red, 0); drop(Yellow, 0); drop(Red, 0); drop(Yellow, 0); drop(Red, 0); drop(Yellow, 0)
+  expect height(0) == 6
+  drop(Red, 0) rejected by place
+  drop(Red, 1)
 }

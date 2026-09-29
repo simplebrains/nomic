@@ -6,25 +6,25 @@
       "scenario": "chain of command",
       "steps": [
         {
-          "description": "SetAlert(Ensign, Red) rejected by AlertCommand",
+          "description": "setAlert(Ensign, Red) rejected by alert_command",
           "passed": true,
           "accepted": false,
           "denied_by": [
-            "AlertCommand",
-            "DoSetAlert"
+            "alert_command",
+            "do_set_alert"
           ]
         },
         {
-          "description": "SetAlert(Doctor, Red) rejected by AlertCommand",
+          "description": "setAlert(Doctor, Red) rejected by alert_command",
           "passed": true,
           "accepted": false,
           "denied_by": [
-            "AlertCommand",
-            "DoSetAlert"
+            "alert_command",
+            "do_set_alert"
           ]
         },
         {
-          "description": "SetAlert(FirstOfficer, Yellow) accepted",
+          "description": "setAlert(FirstOfficer, Yellow) accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -36,16 +36,16 @@
           "passed": true
         },
         {
-          "description": "AllocatePower(Ensign, Sensors, 0) rejected by PowerAuthority",
+          "description": "allocatePower(Ensign, Sensors, 0) rejected by power_authority",
           "passed": true,
           "accepted": false,
           "denied_by": [
-            "PowerAuthority",
-            "DoAllocate"
+            "power_authority",
+            "do_allocate"
           ]
         },
         {
-          "description": "AllocatePower(ChiefEngineer, Sensors, 0) accepted",
+          "description": "allocatePower(ChiefEngineer, Sensors, 0) accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -77,15 +77,15 @@
       "scenario": "the power budget is a hard limit, except for the observed red-alert overdraw",
       "steps": [
         {
-          "description": "AllocatePower(ChiefEngineer, Phasers, 2) rejected by PowerBudget",
+          "description": "allocatePower(ChiefEngineer, Phasers, 2) rejected by power_budget",
           "passed": true,
           "accepted": false,
           "denied_by": [
-            "PowerBudget"
+            "power_budget"
           ]
         },
         {
-          "description": "SetAlert(Captain, Red) accepted",
+          "description": "setAlert(Captain, Red) accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -93,7 +93,7 @@
           ]
         },
         {
-          "description": "AllocatePower(ChiefEngineer, Phasers, 2) accepted",
+          "description": "allocatePower(ChiefEngineer, Phasers, 2) accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -105,23 +105,23 @@
           "passed": true
         },
         {
-          "description": "AllocatePower(ChiefEngineer, Torpedoes, 2) rejected by PowerBudget",
+          "description": "allocatePower(ChiefEngineer, Torpedoes, 2) rejected by power_budget",
           "passed": true,
           "accepted": false,
           "denied_by": [
-            "PowerBudget"
+            "power_budget"
           ]
         },
         {
-          "description": "SetAlert(Captain, Green) rejected by StandDownWithinBudget",
+          "description": "setAlert(Captain, Green) rejected by stand_down_within_budget",
           "passed": true,
           "accepted": false,
           "denied_by": [
-            "StandDownWithinBudget"
+            "stand_down_within_budget"
           ]
         },
         {
-          "description": "AllocatePower(ChiefEngineer, Phasers, 0) accepted",
+          "description": "allocatePower(ChiefEngineer, Phasers, 0) accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -129,7 +129,7 @@
           ]
         },
         {
-          "description": "SetAlert(Captain, Green) accepted",
+          "description": "setAlert(Captain, Green) accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -162,16 +162,16 @@
       "scenario": "shields absorb fire and a breach raises the alarm",
       "steps": [
         {
-          "description": "RaiseShields(Ensign) rejected by ShieldsCommand",
+          "description": "raiseShields(Ensign) rejected by shields_command",
           "passed": true,
           "accepted": false,
           "denied_by": [
-            "ShieldsCommand",
-            "DoRaise"
+            "shields_command",
+            "do_raise"
           ]
         },
         {
-          "description": "RaiseShields(Captain) accepted",
+          "description": "raiseShields(Captain) accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -179,7 +179,7 @@
           ]
         },
         {
-          "description": "TakeHit(20) accepted",
+          "description": "takeHit(20) accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -191,7 +191,7 @@
           "passed": true
         },
         {
-          "description": "LowerShields(Captain) accepted",
+          "description": "lowerShields(Captain) accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -199,7 +199,7 @@
           ]
         },
         {
-          "description": "TakeHit(20) accepted",
+          "description": "takeHit(20) accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -211,7 +211,7 @@
           "passed": true
         },
         {
-          "description": "TakeHit(40) accepted with events",
+          "description": "takeHit(40) accepted with events",
           "passed": true,
           "accepted": true,
           "events": [
@@ -247,7 +247,7 @@
       "scenario": "reallocation may not starve raised shields or life support",
       "steps": [
         {
-          "description": "RaiseShields(Captain) accepted",
+          "description": "raiseShields(Captain) accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -255,23 +255,23 @@
           ]
         },
         {
-          "description": "AllocatePower(ChiefEngineer, Shields, 1) rejected by ShieldsStayPowered",
+          "description": "allocatePower(ChiefEngineer, Shields, 1) rejected by shields_stay_powered",
           "passed": true,
           "accepted": false,
           "denied_by": [
-            "ShieldsStayPowered"
+            "shields_stay_powered"
           ]
         },
         {
-          "description": "AllocatePower(ChiefEngineer, LifeSupport, 1) rejected by LifeSupportMinimum",
+          "description": "allocatePower(ChiefEngineer, LifeSupport, 1) rejected by life_support_minimum",
           "passed": true,
           "accepted": false,
           "denied_by": [
-            "LifeSupportMinimum"
+            "life_support_minimum"
           ]
         },
         {
-          "description": "LowerShields(Captain) accepted",
+          "description": "lowerShields(Captain) accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -279,7 +279,7 @@
           ]
         },
         {
-          "description": "AllocatePower(ChiefEngineer, Shields, 1) accepted",
+          "description": "allocatePower(ChiefEngineer, Shields, 1) accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -287,12 +287,12 @@
           ]
         },
         {
-          "description": "RaiseShields(Captain) rejected by ShieldsOperational",
+          "description": "raiseShields(Captain) rejected by shields_operational",
           "passed": true,
           "accepted": false,
           "denied_by": [
-            "ShieldsOperational",
-            "DoRaise"
+            "shields_operational",
+            "do_raise"
           ]
         }
       ],
@@ -316,7 +316,7 @@
       "scenario": "damage reports and repairs",
       "steps": [
         {
-          "description": "ReportDamage(Shields) accepted",
+          "description": "reportDamage(Shields) accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -324,33 +324,33 @@
           ]
         },
         {
-          "description": "ReportDamage(Shields) rejected by DoReportDamage",
+          "description": "reportDamage(Shields) rejected by do_report_damage",
           "passed": true,
           "accepted": false,
           "denied_by": [
-            "DoReportDamage"
+            "do_report_damage"
           ]
         },
         {
-          "description": "RaiseShields(Captain) rejected by ShieldsOperational",
+          "description": "raiseShields(Captain) rejected by shields_operational",
           "passed": true,
           "accepted": false,
           "denied_by": [
-            "ShieldsOperational",
-            "DoRaise"
+            "shields_operational",
+            "do_raise"
           ]
         },
         {
-          "description": "Repair(Ensign, Shields) rejected by RepairAuthority",
+          "description": "repair(Ensign, Shields) rejected by repair_authority",
           "passed": true,
           "accepted": false,
           "denied_by": [
-            "RepairAuthority",
-            "DoRepair"
+            "repair_authority",
+            "do_repair"
           ]
         },
         {
-          "description": "Repair(ChiefEngineer, Shields) accepted",
+          "description": "repair(ChiefEngineer, Shields) accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -358,16 +358,16 @@
           ]
         },
         {
-          "description": "Repair(ChiefEngineer, Shields) rejected by RepairNeeded",
+          "description": "repair(ChiefEngineer, Shields) rejected by repair_needed",
           "passed": true,
           "accepted": false,
           "denied_by": [
-            "RepairNeeded",
-            "DoRepair"
+            "repair_needed",
+            "do_repair"
           ]
         },
         {
-          "description": "RaiseShields(Captain) accepted",
+          "description": "raiseShields(Captain) accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -400,16 +400,16 @@
       "scenario": "warp needs coils powered for the factor",
       "steps": [
         {
-          "description": "EngageWarp(Captain, 5) rejected by WarpPower",
+          "description": "engageWarp(Captain, 5) rejected by warp_power",
           "passed": true,
           "accepted": false,
           "denied_by": [
-            "WarpPower",
-            "DoWarp"
+            "warp_power",
+            "do_warp"
           ]
         },
         {
-          "description": "EngageWarp(Captain, 4) accepted",
+          "description": "engageWarp(Captain, 4) accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -421,15 +421,15 @@
           "passed": true
         },
         {
-          "description": "AllocatePower(ChiefEngineer, Warp, 2) rejected by WarpNeedsPower",
+          "description": "allocatePower(ChiefEngineer, Warp, 2) rejected by warp_needs_power",
           "passed": true,
           "accepted": false,
           "denied_by": [
-            "WarpNeedsPower"
+            "warp_needs_power"
           ]
         },
         {
-          "description": "AllStop(Captain) accepted",
+          "description": "allStop(Captain) accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -437,7 +437,7 @@
           ]
         },
         {
-          "description": "AllocatePower(ChiefEngineer, Warp, 2) accepted",
+          "description": "allocatePower(ChiefEngineer, Warp, 2) accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -445,24 +445,24 @@
           ]
         },
         {
-          "description": "EngageWarp(Captain, 2) rejected by WarpOperational",
+          "description": "engageWarp(Captain, 2) rejected by warp_operational",
           "passed": true,
           "accepted": false,
           "denied_by": [
-            "WarpOperational",
-            "DoWarp"
+            "warp_operational",
+            "do_warp"
           ]
         },
         {
-          "description": "AllocatePower(ChiefEngineer, Warp, 5) rejected by PowerBudget",
+          "description": "allocatePower(ChiefEngineer, Warp, 5) rejected by power_budget",
           "passed": true,
           "accepted": false,
           "denied_by": [
-            "PowerBudget"
+            "power_budget"
           ]
         },
         {
-          "description": "AllocatePower(ChiefEngineer, Sensors, 0) accepted",
+          "description": "allocatePower(ChiefEngineer, Sensors, 0) accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -470,7 +470,7 @@
           ]
         },
         {
-          "description": "AllocatePower(ChiefEngineer, Warp, 5) accepted",
+          "description": "allocatePower(ChiefEngineer, Warp, 5) accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -478,7 +478,7 @@
           ]
         },
         {
-          "description": "EngageWarp(Captain, 5) accepted",
+          "description": "engageWarp(Captain, 5) accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -511,16 +511,16 @@
       "scenario": "weapons are locked outside red alert",
       "steps": [
         {
-          "description": "FireTorpedo(Captain) rejected by TorpedoRedAlert",
+          "description": "fireTorpedo(Captain) rejected by torpedo_red_alert",
           "passed": true,
           "accepted": false,
           "denied_by": [
-            "TorpedoRedAlert",
-            "DoFireTorpedo"
+            "torpedo_red_alert",
+            "do_fire_torpedo"
           ]
         },
         {
-          "description": "SetAlert(Captain, Red) accepted",
+          "description": "setAlert(Captain, Red) accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -528,7 +528,7 @@
           ]
         },
         {
-          "description": "FireTorpedo(Captain) accepted",
+          "description": "fireTorpedo(Captain) accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -540,16 +540,16 @@
           "passed": true
         },
         {
-          "description": "FirePhasers(Captain) rejected by PhaserReady",
+          "description": "firePhasers(Captain) rejected by phaser_ready",
           "passed": true,
           "accepted": false,
           "denied_by": [
-            "PhaserReady",
-            "DoFirePhasers"
+            "phaser_ready",
+            "do_fire_phasers"
           ]
         },
         {
-          "description": "AllocatePower(ChiefEngineer, Phasers, 2) accepted",
+          "description": "allocatePower(ChiefEngineer, Phasers, 2) accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -557,12 +557,12 @@
           ]
         },
         {
-          "description": "FirePhasers(Captain) accepted",
+          "description": "firePhasers(Captain) accepted",
           "passed": true,
           "accepted": true
         },
         {
-          "description": "ReportDamage(Torpedoes) accepted",
+          "description": "reportDamage(Torpedoes) accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -570,12 +570,12 @@
           ]
         },
         {
-          "description": "FireTorpedo(Captain) rejected by TorpedoReady",
+          "description": "fireTorpedo(Captain) rejected by torpedo_ready",
           "passed": true,
           "accepted": false,
           "denied_by": [
-            "TorpedoReady",
-            "DoFireTorpedo"
+            "torpedo_ready",
+            "do_fire_torpedo"
           ]
         }
       ],
@@ -601,16 +601,16 @@
       "scenario": "self-destruct needs two senior officers and only the captain cancels",
       "steps": [
         {
-          "description": "AuthorizeSelfDestruct(Ensign) rejected by DestructAuthority",
+          "description": "authorizeSelfDestruct(Ensign) rejected by destruct_authority",
           "passed": true,
           "accepted": false,
           "denied_by": [
-            "DestructAuthority",
-            "DoAuthorize"
+            "destruct_authority",
+            "do_authorize"
           ]
         },
         {
-          "description": "AuthorizeSelfDestruct(Captain) accepted with events",
+          "description": "authorizeSelfDestruct(Captain) accepted with events",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -618,24 +618,24 @@
           ]
         },
         {
-          "description": "AuthorizeSelfDestruct(Captain) rejected by DestructOnce",
+          "description": "authorizeSelfDestruct(Captain) rejected by destruct_once",
           "passed": true,
           "accepted": false,
           "denied_by": [
-            "DestructOnce",
-            "DoAuthorize"
+            "destruct_once",
+            "do_authorize"
           ]
         },
         {
-          "description": "Tick rejected by DoTick",
+          "description": "tick rejected by do_tick",
           "passed": true,
           "accepted": false,
           "denied_by": [
-            "DoTick"
+            "do_tick"
           ]
         },
         {
-          "description": "AuthorizeSelfDestruct(FirstOfficer) accepted with events",
+          "description": "authorizeSelfDestruct(FirstOfficer) accepted with events",
           "passed": true,
           "accepted": true,
           "events": [
@@ -651,7 +651,7 @@
           "passed": true
         },
         {
-          "description": "Tick accepted",
+          "description": "tick accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -659,7 +659,7 @@
           ]
         },
         {
-          "description": "Tick accepted",
+          "description": "tick accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -671,16 +671,16 @@
           "passed": true
         },
         {
-          "description": "CancelSelfDestruct(FirstOfficer) rejected by CancelIsCaptains",
+          "description": "cancelSelfDestruct(FirstOfficer) rejected by cancel_is_captains",
           "passed": true,
           "accepted": false,
           "denied_by": [
-            "CancelIsCaptains",
-            "DoCancel"
+            "cancel_is_captains",
+            "do_cancel"
           ]
         },
         {
-          "description": "CancelSelfDestruct(Captain) accepted",
+          "description": "cancelSelfDestruct(Captain) accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -717,7 +717,7 @@
       "scenario": "detonation",
       "steps": [
         {
-          "description": "AuthorizeSelfDestruct(Captain) accepted",
+          "description": "authorizeSelfDestruct(Captain) accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -725,7 +725,7 @@
           ]
         },
         {
-          "description": "AuthorizeSelfDestruct(FirstOfficer) accepted with events",
+          "description": "authorizeSelfDestruct(FirstOfficer) accepted with events",
           "passed": true,
           "accepted": true,
           "events": [
@@ -737,7 +737,7 @@
           ]
         },
         {
-          "description": "Tick accepted",
+          "description": "tick accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -745,7 +745,7 @@
           ]
         },
         {
-          "description": "Tick accepted",
+          "description": "tick accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -753,7 +753,7 @@
           ]
         },
         {
-          "description": "Tick accepted with events",
+          "description": "tick accepted with events",
           "passed": true,
           "accepted": true,
           "events": [
@@ -769,19 +769,19 @@
           "passed": true
         },
         {
-          "description": "SetAlert(Captain, Green) rejected by AlertCommand",
+          "description": "setAlert(Captain, Green) rejected by alert_command",
           "passed": true,
           "accepted": false,
           "denied_by": [
-            "AlertCommand"
+            "alert_command"
           ]
         },
         {
-          "description": "Tick rejected by DoTick",
+          "description": "tick rejected by do_tick",
           "passed": true,
           "accepted": false,
           "denied_by": [
-            "DoTick"
+            "do_tick"
           ]
         }
       ],
@@ -809,7 +809,7 @@
       "scenario": "the computer goes to red alert on its own when life support fails",
       "steps": [
         {
-          "description": "ReportDamage(LifeSupport) accepted with events",
+          "description": "reportDamage(LifeSupport) accepted with events",
           "passed": true,
           "accepted": true,
           "events": [
@@ -825,7 +825,7 @@
           "passed": true
         },
         {
-          "description": "Repair(ChiefEngineer, LifeSupport) accepted with events",
+          "description": "repair(ChiefEngineer, LifeSupport) accepted with events",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -857,7 +857,7 @@
       "scenario": "the ship can be lost",
       "steps": [
         {
-          "description": "TakeHit(40) accepted",
+          "description": "takeHit(40) accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -865,7 +865,7 @@
           ]
         },
         {
-          "description": "TakeHit(40) accepted with events",
+          "description": "takeHit(40) accepted with events",
           "passed": true,
           "accepted": true,
           "events": [
@@ -881,7 +881,7 @@
           "passed": true
         },
         {
-          "description": "TakeHit(40) accepted with events",
+          "description": "takeHit(40) accepted with events",
           "passed": true,
           "accepted": true,
           "events": [
@@ -897,11 +897,11 @@
           "passed": true
         },
         {
-          "description": "TakeHit(5) rejected by DoTakeHit",
+          "description": "takeHit(5) rejected by do_take_hit",
           "passed": true,
           "accepted": false,
           "denied_by": [
-            "DoTakeHit"
+            "do_take_hit"
           ]
         }
       ],

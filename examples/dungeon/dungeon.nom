@@ -3,7 +3,7 @@
 /// combat, death, and an escape with the gold.
 ///
 /// The interesting modeling decision is randomness. The kernel is
-/// deterministic, so the die roll is a parameter of the `Attack` action
+/// deterministic, so the die roll is a parameter of the `attack` action
 /// supplied by whoever drives the machine (a player, a test, or an
 /// exhaustive explorer that tries every roll). Nondeterminism lives at the
 /// boundary; the rules stay pure and every outcome stays explainable.
@@ -27,7 +27,7 @@ fact Consumed(i: Item)
 fact Turn: Actor
 fact Escaped
 
-derive Adjacent(a: Room, b: Room): Bool =
+derive adjacent(a: Room, b: Room): Bool =
   match a {
     Entrance => b == Hall,
     Hall => b == Entrance || b == Armory || b == Treasury || b == Lair,
@@ -36,125 +36,128 @@ derive Adjacent(a: Room, b: Room): Bool =
     Lair => b == Hall
   }
 /// Balance values; not tuned against play.
-assumed derive MaxHP(a: Actor): Int = match a { Hero => 20, Goblin => 6, Orc => 12, Dragon => 40 }
-assumed derive BaseDamage(a: Actor): Int = match a { Hero => 3, Goblin => 2, Orc => 4, Dragon => 8 }
-derive Weapon(a: Actor): Int = Carrying(a, Sword) ? 3 : 0
-derive Armor(a: Actor): Int = Carrying(a, Shield) ? 2 : 0
-derive Max(x: Int, y: Int): Int = x > y ? x : y
-derive Min(x: Int, y: Int): Int = x < y ? x : y
+assumed derive max_hp(a: Actor): Int = match a { Hero => 20, Goblin => 6, Orc => 12, Dragon => 40 }
+assumed derive base_damage(a: Actor): Int =
+  match a { Hero => 3, Goblin => 2, Orc => 4, Dragon => 8 }
+derive weapon(a: Actor): Int = Carrying(a, Sword) ? 3 : 0
+derive armor(a: Actor): Int = Carrying(a, Shield) ? 2 : 0
+derive max(x: Int, y: Int): Int = x > y ? x : y
+derive min(x: Int, y: Int): Int = x < y ? x : y
 /// Damage dealt for a given roll: base plus weapon, roll adjusts by -2..+3, armor absorbs.
-derive Damage(attacker: Actor, target: Actor, roll: Roll): Int =
-  Max(0, BaseDamage(attacker) + Weapon(attacker) + roll - 3 - Armor(target))
-derive Health(a: Actor): Int = HP(a) ?? 0
-derive Hostile(a: Actor, b: Actor): Bool = (a == Hero) != (b == Hero)
-derive SameRoom(a: Actor, b: Actor): Bool = Location(a) != none && Location(a) == Location(b)
+derive damage(attacker: Actor, target: Actor, roll: Roll): Int =
+  max(0, base_damage(attacker) + weapon(attacker) + roll - 3 - armor(target))
+derive health(a: Actor): Int = HP(a) ?? 0
+derive hostile(a: Actor, b: Actor): Bool = (a == Hero) != (b == Hero)
+derive same_room(a: Actor, b: Actor): Bool = Location(a) != none && Location(a) == Location(b)
 /// Next living actor after `a` in initiative order, wrapping around.
-derive Next(a: Actor): Actor =
+derive next(a: Actor): Actor =
   first(b: Actor where b > a && Alive(b) => b) ?? (first(b: Actor where b != a && Alive(b) => b) ?? a)
-derive GameOver: Bool = Escaped || !Alive(Hero)
-derive Holder(i: Item): Actor? = first(a: Actor where Carrying(a, i) => a)
+derive game_over: Bool = Escaped || !Alive(Hero)
+derive holder(i: Item): Actor? = first(a: Actor where Carrying(a, i) => a)
 
-action Move(actor: Actor, to: Room)
+action move(actor: Actor, to: Room)
 /// Attack a hostile in the same room; `roll` is the die, supplied from outside.
-action Attack(attacker: Actor, target: Actor, roll: Roll)
-action PickUp(actor: Actor, item: Item)
-action Drink(actor: Actor)
-action Unlock(actor: Actor, room: Room)
-action Wait(actor: Actor)
+action attack(attacker: Actor, target: Actor, roll: Roll)
+action pickUp(actor: Actor, item: Item)
+action drink(actor: Actor)
+action unlock(actor: Actor, room: Room)
+action wait(actor: Actor)
 
-rule MoveTurn on Move(a, to) { require !GameOver && Turn == a && Alive(a) "not this actor's turn" }
-rule MoveAdjacent on Move(a, to) {
-  require Adjacent(Location(a) ?? Hall, to) "rooms are not connected"
+rule move_turn on move(a, to) {
+  require !game_over && Turn == a && Alive(a) "not this actor's turn"
 }
-rule MoveUnlocked on Move(a, to) { require !Locked(to) "the door is locked" }
-rule DoMove on Move(a, to) {
-  require Turn == a && Alive(a) && Adjacent(Location(a) ?? Hall, to) && !Locked(to)
+rule move_adjacent on move(a, to) {
+  require adjacent(Location(a) ?? Hall, to) "rooms are not connected"
+}
+rule move_unlocked on move(a, to) { require !Locked(to) "the door is locked" }
+rule do_move on move(a, to) {
+  require Turn == a && Alive(a) && adjacent(Location(a) ?? Hall, to) && !Locked(to)
   assert Location(a) = to
-  assert Turn = Next(a)
+  assert Turn = next(a)
 }
 
-rule AttackTurn on Attack(a, t, roll) {
-  require !GameOver && Turn == a && Alive(a) "not this actor's turn"
+rule attack_turn on attack(a, t, roll) {
+  require !game_over && Turn == a && Alive(a) "not this actor's turn"
 }
-rule AttackTarget on Attack(a, t, roll) {
-  require Alive(t) && Hostile(a, t) && SameRoom(a, t) "no such target here"
+rule attack_target on attack(a, t, roll) {
+  require Alive(t) && hostile(a, t) && same_room(a, t) "no such target here"
 }
-rule DoAttack on Attack(a, t, roll) {
-  require Turn == a && Alive(a) && Alive(t) && Hostile(a, t) && SameRoom(a, t)
-  assert HP(t) = Health(t) - Damage(a, t, roll)
-  assert Turn = Next(a)
+rule do_attack on attack(a, t, roll) {
+  require Turn == a && Alive(a) && Alive(t) && hostile(a, t) && same_room(a, t)
+  assert HP(t) = health(t) - damage(a, t, roll)
+  assert Turn = next(a)
 }
 
-rule PickUpTurn on PickUp(a, i) {
-  require !GameOver && Turn == a && Alive(a) "not this actor's turn"
+rule pick_up_turn on pickUp(a, i) {
+  require !game_over && Turn == a && Alive(a) "not this actor's turn"
 }
-rule PickUpHere on PickUp(a, i) {
+rule pick_up_here on pickUp(a, i) {
   require ItemAt(i) != none && ItemAt(i) == Location(a) "the item is not here"
 }
-rule OnlyHeroesLoot on PickUp(a, i) { require a == Hero "monsters do not pick things up" }
-rule DoPickUp on PickUp(a, i) {
+rule only_heroes_loot on pickUp(a, i) { require a == Hero "monsters do not pick things up" }
+rule do_pick_up on pickUp(a, i) {
   require Turn == a && Alive(a) && a == Hero && ItemAt(i) != none && ItemAt(i) == Location(a)
   retract ItemAt(i)
   assert Carrying(a, i)
-  assert Turn = Next(a)
+  assert Turn = next(a)
 }
 
-rule DrinkTurn on Drink(a) { require !GameOver && Turn == a && Alive(a) "not this actor's turn" }
-rule DrinkHasPotion on Drink(a) { require Carrying(a, Potion) "no potion to drink" }
-rule DoDrink on Drink(a) {
+rule drink_turn on drink(a) { require !game_over && Turn == a && Alive(a) "not this actor's turn" }
+rule drink_has_potion on drink(a) { require Carrying(a, Potion) "no potion to drink" }
+rule do_drink on drink(a) {
   require Turn == a && Alive(a) && Carrying(a, Potion)
   retract Carrying(a, Potion)
   assert Consumed(Potion)
-  assert HP(a) = Min(MaxHP(a), Health(a) + 10)
-  assert Turn = Next(a)
+  assert HP(a) = min(max_hp(a), health(a) + 10)
+  assert Turn = next(a)
 }
 
-rule UnlockTurn on Unlock(a, r) {
-  require !GameOver && Turn == a && Alive(a) "not this actor's turn"
+rule unlock_turn on unlock(a, r) {
+  require !game_over && Turn == a && Alive(a) "not this actor's turn"
 }
-rule UnlockKey on Unlock(a, r) { require Carrying(a, Key) "no key" }
-rule UnlockAdjacent on Unlock(a, r) {
-  require Locked(r) && Adjacent(Location(a) ?? Hall, r) "no locked door to that room from here"
+rule unlock_key on unlock(a, r) { require Carrying(a, Key) "no key" }
+rule unlock_adjacent on unlock(a, r) {
+  require Locked(r) && adjacent(Location(a) ?? Hall, r) "no locked door to that room from here"
 }
-rule DoUnlock on Unlock(a, r) {
-  require Turn == a && Alive(a) && Carrying(a, Key) && Locked(r) && Adjacent(Location(a) ?? Hall, r)
+rule do_unlock on unlock(a, r) {
+  require Turn == a && Alive(a) && Carrying(a, Key) && Locked(r) && adjacent(Location(a) ?? Hall, r)
   retract Locked(r)
-  assert Turn = Next(a)
+  assert Turn = next(a)
 }
 
-rule WaitTurn on Wait(a) { require !GameOver && Turn == a && Alive(a) "not this actor's turn" }
-rule DoWait on Wait(a) {
+rule wait_turn on wait(a) { require !game_over && Turn == a && Alive(a) "not this actor's turn" }
+rule do_wait on wait(a) {
   require Turn == a && Alive(a)
-  assert Turn = Next(a)
+  assert Turn = next(a)
 }
 
 /// Hit points reached zero. Reaction: the actor leaves play and drops its pack.
-event Died(a: Actor) when Alive(a) && Health(a) <= 0
-rule OnDeath on Died(a) {
+event Died(a: Actor) when Alive(a) && health(a) <= 0
+rule on_death on Died(a) {
   retract Alive(a)
   for (i: Item where Carrying(a, i)) {
     retract Carrying(a, i)
     assert ItemAt(i) = Location(a) ?? Hall
   }
   retract Location(a)
-  if Turn == a { assert Turn = Next(a) }
+  if Turn == a { assert Turn = next(a) }
 }
 /// The hero reaches the entrance carrying the gold.
 event Victory when Alive(Hero) && Carrying(Hero, Gold) && Location(Hero) == Entrance
-rule OnVictory on Victory { assert Escaped }
+rule on_victory on Victory { assert Escaped }
 event Defeat when !Alive(Hero)
 
-invariant LivingHaveRooms: all(a: Actor => Alive(a) == (Location(a) != none))
-invariant DeadCarryNothing: all(a: Actor, i: Item where Carrying(a, i) => Alive(a))
-invariant HealthBounded: all(a: Actor where Alive(a) => Health(a) >= 1 && Health(a) <= MaxHP(a))
+invariant living_have_rooms: all(a: Actor => Alive(a) == (Location(a) != none))
+invariant dead_carry_nothing: all(a: Actor, i: Item where Carrying(a, i) => Alive(a))
+invariant health_bounded: all(a: Actor where Alive(a) => health(a) >= 1 && health(a) <= max_hp(a))
 /// Every item is in exactly one place: a room floor, one pack, or consumed.
-invariant ItemsInOnePlace:
+invariant items_in_one_place:
   all(i: Item =>
     (ItemAt(i) != none ? 1 : 0) + count(a: Actor => Carrying(a, i)) + (Consumed(i) ? 1 : 0) == 1)
-invariant TurnIsAlive: !Alive(Hero) || Alive(Turn ?? Hero)
+invariant turn_is_alive: !Alive(Hero) || Alive(Turn ?? Hero)
 
 init {
-  for (a: Actor) { assert Alive(a); assert HP(a) = MaxHP(a) }
+  for (a: Actor) { assert Alive(a); assert HP(a) = max_hp(a) }
   assert Location(Hero) = Entrance
   assert Location(Goblin) = Hall
   assert Location(Orc) = Armory
@@ -170,52 +173,52 @@ init {
 
 scenario "initiative cycles through the living" {
   expect Turn == Hero
-  Move(Hero, Hall)
+  move(Hero, Hall)
   expect Turn == Goblin
-  Wait(Goblin)
+  wait(Goblin)
   expect Turn == Orc
-  Wait(Orc); Wait(Dragon)
+  wait(Orc); wait(Dragon)
   expect Turn == Hero
-  Wait(Goblin) rejected by WaitTurn
+  wait(Goblin) rejected by wait_turn
 }
 
 scenario "rooms must connect and locked doors hold" {
-  Move(Hero, Lair) rejected by MoveAdjacent
-  Move(Hero, Hall)
-  Wait(Goblin); Wait(Orc); Wait(Dragon)
-  Move(Hero, Treasury) rejected by MoveUnlocked
-  Unlock(Hero, Treasury) rejected by UnlockKey
+  move(Hero, Lair) rejected by move_adjacent
+  move(Hero, Hall)
+  wait(Goblin); wait(Orc); wait(Dragon)
+  move(Hero, Treasury) rejected by move_unlocked
+  unlock(Hero, Treasury) rejected by unlock_key
 }
 
 scenario "combat with dice, a kill, and dropped loot" {
-  Move(Hero, Hall)
-  Attack(Goblin, Hero, 6)
-  expect Health(Hero) == 15
-  Wait(Orc); Wait(Dragon)
-  Attack(Hero, Goblin, 1) emits nothing
-  expect Health(Goblin) == 5 && Alive(Goblin)
-  Attack(Goblin, Hero, 1) emits nothing
-  expect Health(Hero) == 15
-  Wait(Orc); Wait(Dragon)
-  Attack(Hero, Goblin, 6) emits Died(Goblin)
+  move(Hero, Hall)
+  attack(Goblin, Hero, 6)
+  expect health(Hero) == 15
+  wait(Orc); wait(Dragon)
+  attack(Hero, Goblin, 1) emits nothing
+  expect health(Goblin) == 5 && Alive(Goblin)
+  attack(Goblin, Hero, 1) emits nothing
+  expect health(Hero) == 15
+  wait(Orc); wait(Dragon)
+  attack(Hero, Goblin, 6) emits Died(Goblin)
   expect !Alive(Goblin) && Location(Goblin) == none && Turn == Orc
-  Attack(Goblin, Hero, 3) rejected by AttackTurn
-  Wait(Orc); Wait(Dragon)
-  Attack(Hero, Dragon, 6) rejected by AttackTarget
-  PickUp(Hero, Potion)
+  attack(Goblin, Hero, 3) rejected by attack_turn
+  wait(Orc); wait(Dragon)
+  attack(Hero, Dragon, 6) rejected by attack_target
+  pickUp(Hero, Potion)
 }
 
 scenario "a potion heals but never past the maximum" {
-  Move(Hero, Hall)
-  Attack(Goblin, Hero, 6)
-  Wait(Orc); Wait(Dragon)
-  PickUp(Hero, Potion)
-  Wait(Goblin); Wait(Orc); Wait(Dragon)
-  expect Health(Hero) == 15
-  Drink(Hero)
-  expect Health(Hero) == 20 && !Carrying(Hero, Potion)
-  Wait(Goblin); Wait(Orc); Wait(Dragon)
-  Drink(Hero) rejected by DrinkHasPotion
+  move(Hero, Hall)
+  attack(Goblin, Hero, 6)
+  wait(Orc); wait(Dragon)
+  pickUp(Hero, Potion)
+  wait(Goblin); wait(Orc); wait(Dragon)
+  expect health(Hero) == 15
+  drink(Hero)
+  expect health(Hero) == 20 && !Carrying(Hero, Potion)
+  wait(Goblin); wait(Orc); wait(Dragon)
+  drink(Hero) rejected by drink_has_potion
 }
 
 scenario "armor and weapons change the damage" {
@@ -225,14 +228,14 @@ scenario "armor and weapons change the damage" {
   given ItemAt(Sword) = Armory; given ItemAt(Shield) = Armory
   given ItemAt(Potion) = Hall; given ItemAt(Key) = Lair; given ItemAt(Gold) = Treasury
   given Turn = Hero
-  PickUp(Hero, Sword)
-  Attack(Orc, Hero, 3)
-  expect Health(Hero) == 16
-  PickUp(Hero, Shield)
-  Attack(Orc, Hero, 3)
-  expect Health(Hero) == 14
-  Attack(Hero, Orc, 3)
-  expect Health(Orc) == 6
+  pickUp(Hero, Sword)
+  attack(Orc, Hero, 3)
+  expect health(Hero) == 16
+  pickUp(Hero, Shield)
+  attack(Orc, Hero, 3)
+  expect health(Hero) == 14
+  attack(Hero, Orc, 3)
+  expect health(Orc) == 6
 }
 
 scenario "the dragon can kill the hero, which ends the game" {
@@ -242,9 +245,9 @@ scenario "the dragon can kill the hero, which ends the game" {
   given ItemAt(Sword) = Armory; given ItemAt(Shield) = Armory
   given ItemAt(Potion) = Hall; given ItemAt(Key) = Lair; given ItemAt(Gold) = Treasury
   given Turn = Dragon
-  Attack(Dragon, Hero, 4) emits Died(Hero), Defeat
-  expect !Alive(Hero) && GameOver && Turn == Dragon
-  Wait(Dragon) rejected by WaitTurn
+  attack(Dragon, Hero, 4) emits Died(Hero), Defeat
+  expect !Alive(Hero) && game_over && Turn == Dragon
+  wait(Dragon) rejected by wait_turn
 }
 
 scenario "escaping with the gold is victory" {
@@ -255,11 +258,11 @@ scenario "escaping with the gold is victory" {
   given ItemAt(Gold) = Treasury
   given Locked(Treasury)
   given Turn = Hero
-  Unlock(Hero, Treasury)
-  Move(Hero, Treasury)
-  PickUp(Hero, Gold)
-  Move(Hero, Hall)
-  Move(Hero, Entrance) emits Victory
-  expect Escaped && GameOver
-  Move(Hero, Hall) rejected by MoveTurn
+  unlock(Hero, Treasury)
+  move(Hero, Treasury)
+  pickUp(Hero, Gold)
+  move(Hero, Hall)
+  move(Hero, Entrance) emits Victory
+  expect Escaped && game_over
+  move(Hero, Hall) rejected by move_turn
 }

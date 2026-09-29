@@ -6,7 +6,7 @@
       "scenario": "scholar's mate",
       "steps": [
         {
-          "description": "Move(4, 1, 4, 3) accepted",
+          "description": "move(4, 1, 4, 3) accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -20,7 +20,7 @@
           ]
         },
         {
-          "description": "Move(4, 6, 4, 4) accepted",
+          "description": "move(4, 6, 4, 4) accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -34,7 +34,7 @@
           ]
         },
         {
-          "description": "Move(3, 0, 7, 4) accepted",
+          "description": "move(3, 0, 7, 4) accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -48,7 +48,7 @@
           ]
         },
         {
-          "description": "Move(1, 7, 2, 5) accepted",
+          "description": "move(1, 7, 2, 5) accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -62,7 +62,7 @@
           ]
         },
         {
-          "description": "Move(5, 0, 2, 3) accepted",
+          "description": "move(5, 0, 2, 3) accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -76,7 +76,7 @@
           ]
         },
         {
-          "description": "Move(6, 7, 5, 5) accepted",
+          "description": "move(6, 7, 5, 5) accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -90,7 +90,7 @@
           ]
         },
         {
-          "description": "Move(7, 4, 5, 6) accepted with events",
+          "description": "move(7, 4, 5, 6) accepted with events",
           "passed": true,
           "accepted": true,
           "events": [
@@ -113,13 +113,13 @@
           "passed": true
         },
         {
-          "description": "Move(4, 7, 3, 6) rejected by MoveGameOver",
+          "description": "move(4, 7, 3, 6) rejected by move_game_over",
           "passed": true,
           "accepted": false,
           "denied_by": [
-            "MoveGameOver",
-            "MoveGeometry",
-            "MakeMove"
+            "move_game_over",
+            "move_geometry",
+            "make_move"
           ]
         }
       ],
@@ -199,7 +199,7 @@
       "scenario": "a check must be answered and the king may not walk into attack",
       "steps": [
         {
-          "description": "Move(4, 1, 4, 3) accepted",
+          "description": "move(4, 1, 4, 3) accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -213,7 +213,7 @@
           ]
         },
         {
-          "description": "Move(3, 6, 3, 4) accepted",
+          "description": "move(3, 6, 3, 4) accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -227,7 +227,7 @@
           ]
         },
         {
-          "description": "Move(5, 0, 1, 4) accepted with events",
+          "description": "move(5, 0, 1, 4) accepted with events",
           "passed": true,
           "accepted": true,
           "events": [
@@ -248,15 +248,15 @@
           "passed": true
         },
         {
-          "description": "Move(0, 6, 0, 5) rejected by KingSafe",
+          "description": "move(0, 6, 0, 5) rejected by king_safe",
           "passed": true,
           "accepted": false,
           "denied_by": [
-            "KingSafe"
+            "king_safe"
           ]
         },
         {
-          "description": "Move(1, 7, 2, 5) accepted",
+          "description": "move(1, 7, 2, 5) accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -383,15 +383,15 @@
           "passed": true
         },
         {
-          "description": "Move(4, 0, 4, 1) rejected by KingSafe",
+          "description": "move(4, 0, 4, 1) rejected by king_safe",
           "passed": true,
           "accepted": false,
           "denied_by": [
-            "KingSafe"
+            "king_safe"
           ]
         },
         {
-          "description": "Move(4, 0, 5, 0) accepted",
+          "description": "move(4, 0, 5, 0) accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -426,7 +426,7 @@
       "scenario": "castling kingside and its preconditions",
       "steps": [
         {
-          "description": "Move(4, 1, 4, 3) accepted",
+          "description": "move(4, 1, 4, 3) accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -440,7 +440,7 @@
           ]
         },
         {
-          "description": "Move(4, 6, 4, 4) accepted",
+          "description": "move(4, 6, 4, 4) accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -454,7 +454,7 @@
           ]
         },
         {
-          "description": "Move(6, 0, 5, 2) accepted",
+          "description": "move(6, 0, 5, 2) accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -468,7 +468,7 @@
           ]
         },
         {
-          "description": "Move(1, 7, 2, 5) accepted",
+          "description": "move(1, 7, 2, 5) accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -482,7 +482,7 @@
           ]
         },
         {
-          "description": "Move(5, 0, 2, 3) accepted",
+          "description": "move(5, 0, 2, 3) accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -496,7 +496,7 @@
           ]
         },
         {
-          "description": "Move(5, 7, 2, 4) accepted",
+          "description": "move(5, 7, 2, 4) accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -514,7 +514,7 @@
           "passed": true
         },
         {
-          "description": "Castle(Kingside) accepted",
+          "description": "castle(Kingside) accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -542,21 +542,21 @@
           "passed": true
         },
         {
-          "description": "Castle(Queenside) rejected by CastlePath",
+          "description": "castle(Queenside) rejected by castle_path",
           "passed": true,
           "accepted": false,
           "denied_by": [
-            "CastlePath",
-            "MakeCastle"
+            "castle_path",
+            "make_castle"
           ]
         },
         {
-          "description": "Castle(Kingside) rejected by CastlePath",
+          "description": "castle(Kingside) rejected by castle_path",
           "passed": true,
           "accepted": false,
           "denied_by": [
-            "CastlePath",
-            "MakeCastle"
+            "castle_path",
+            "make_castle"
           ]
         }
       ],
@@ -635,7 +635,7 @@
       "scenario": "en passant",
       "steps": [
         {
-          "description": "Move(4, 1, 4, 3) accepted",
+          "description": "move(4, 1, 4, 3) accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -649,7 +649,7 @@
           ]
         },
         {
-          "description": "Move(0, 6, 0, 5) accepted",
+          "description": "move(0, 6, 0, 5) accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -663,7 +663,7 @@
           ]
         },
         {
-          "description": "Move(4, 3, 4, 4) accepted",
+          "description": "move(4, 3, 4, 4) accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -677,7 +677,7 @@
           ]
         },
         {
-          "description": "Move(3, 6, 3, 4) accepted",
+          "description": "move(3, 6, 3, 4) accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -695,7 +695,7 @@
           "passed": true
         },
         {
-          "description": "Move(4, 4, 3, 5) accepted",
+          "description": "move(4, 4, 3, 5) accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -826,31 +826,31 @@
           "passed": true
         },
         {
-          "description": "Move(0, 6, 0, 7) rejected by MoveMustPromote",
+          "description": "move(0, 6, 0, 7) rejected by move_must_promote",
           "passed": true,
           "accepted": false,
           "denied_by": [
-            "MoveMustPromote"
+            "move_must_promote"
           ]
         },
         {
-          "description": "Promote(0, 6, 0, 7, King) rejected by PromotePiece",
+          "description": "promote(0, 6, 0, 7, King) rejected by promote_piece",
           "passed": true,
           "accepted": false,
           "denied_by": [
-            "PromotePiece"
+            "promote_piece"
           ]
         },
         {
-          "description": "Promote(0, 6, 0, 7, Pawn) rejected by PromotePiece",
+          "description": "promote(0, 6, 0, 7, Pawn) rejected by promote_piece",
           "passed": true,
           "accepted": false,
           "denied_by": [
-            "PromotePiece"
+            "promote_piece"
           ]
         },
         {
-          "description": "Promote(0, 6, 0, 7, Queen) accepted with events",
+          "description": "promote(0, 6, 0, 7, Queen) accepted with events",
           "passed": true,
           "accepted": true,
           "events": [
@@ -918,7 +918,7 @@
           "passed": true
         },
         {
-          "description": "Move(2, 0, 2, 6) accepted with events",
+          "description": "move(2, 0, 2, 6) accepted with events",
           "passed": true,
           "accepted": true,
           "events": [
@@ -956,7 +956,7 @@
       "scenario": "resignation ends the game",
       "steps": [
         {
-          "description": "Move(4, 1, 4, 3) accepted",
+          "description": "move(4, 1, 4, 3) accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -970,7 +970,7 @@
           ]
         },
         {
-          "description": "Resign(Black) accepted",
+          "description": "resign(Black) accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -982,11 +982,11 @@
           "passed": true
         },
         {
-          "description": "Move(4, 6, 4, 4) rejected by MoveGameOver",
+          "description": "move(4, 6, 4, 4) rejected by move_game_over",
           "passed": true,
           "accepted": false,
           "denied_by": [
-            "MoveGameOver"
+            "move_game_over"
           ]
         }
       ],
@@ -1069,25 +1069,25 @@
       "scenario": "pieces obey their geometry",
       "steps": [
         {
-          "description": "Move(0, 0, 0, 2) rejected by MoveGeometry",
+          "description": "move(0, 0, 0, 2) rejected by move_geometry",
           "passed": true,
           "accepted": false,
           "denied_by": [
-            "MoveGeometry",
-            "MakeMove"
+            "move_geometry",
+            "make_move"
           ]
         },
         {
-          "description": "Move(1, 0, 3, 1) rejected by MoveGeometry",
+          "description": "move(1, 0, 3, 1) rejected by move_geometry",
           "passed": true,
           "accepted": false,
           "denied_by": [
-            "MoveGeometry",
-            "MakeMove"
+            "move_geometry",
+            "make_move"
           ]
         },
         {
-          "description": "Move(1, 0, 2, 2) accepted",
+          "description": "move(1, 0, 2, 2) accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -1101,7 +1101,7 @@
           ]
         },
         {
-          "description": "Move(4, 6, 4, 4) accepted",
+          "description": "move(4, 6, 4, 4) accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -1115,7 +1115,7 @@
           ]
         },
         {
-          "description": "Move(2, 2, 4, 3) accepted",
+          "description": "move(2, 2, 4, 3) accepted",
           "passed": true,
           "accepted": true,
           "effects": [

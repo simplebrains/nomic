@@ -10,7 +10,7 @@
           "passed": true
         },
         {
-          "description": "Move(Hero, Hall) accepted",
+          "description": "move(Hero, Hall) accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -23,7 +23,7 @@
           "passed": true
         },
         {
-          "description": "Wait(Goblin) accepted",
+          "description": "wait(Goblin) accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -35,7 +35,7 @@
           "passed": true
         },
         {
-          "description": "Wait(Orc) accepted",
+          "description": "wait(Orc) accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -43,7 +43,7 @@
           ]
         },
         {
-          "description": "Wait(Dragon) accepted",
+          "description": "wait(Dragon) accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -55,12 +55,12 @@
           "passed": true
         },
         {
-          "description": "Wait(Goblin) rejected by WaitTurn",
+          "description": "wait(Goblin) rejected by wait_turn",
           "passed": true,
           "accepted": false,
           "denied_by": [
-            "WaitTurn",
-            "DoWait"
+            "wait_turn",
+            "do_wait"
           ]
         }
       ],
@@ -90,16 +90,16 @@
       "scenario": "rooms must connect and locked doors hold",
       "steps": [
         {
-          "description": "Move(Hero, Lair) rejected by MoveAdjacent",
+          "description": "move(Hero, Lair) rejected by move_adjacent",
           "passed": true,
           "accepted": false,
           "denied_by": [
-            "MoveAdjacent",
-            "DoMove"
+            "move_adjacent",
+            "do_move"
           ]
         },
         {
-          "description": "Move(Hero, Hall) accepted",
+          "description": "move(Hero, Hall) accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -108,7 +108,7 @@
           ]
         },
         {
-          "description": "Wait(Goblin) accepted",
+          "description": "wait(Goblin) accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -116,7 +116,7 @@
           ]
         },
         {
-          "description": "Wait(Orc) accepted",
+          "description": "wait(Orc) accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -124,7 +124,7 @@
           ]
         },
         {
-          "description": "Wait(Dragon) accepted",
+          "description": "wait(Dragon) accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -132,21 +132,21 @@
           ]
         },
         {
-          "description": "Move(Hero, Treasury) rejected by MoveUnlocked",
+          "description": "move(Hero, Treasury) rejected by move_unlocked",
           "passed": true,
           "accepted": false,
           "denied_by": [
-            "MoveUnlocked",
-            "DoMove"
+            "move_unlocked",
+            "do_move"
           ]
         },
         {
-          "description": "Unlock(Hero, Treasury) rejected by UnlockKey",
+          "description": "unlock(Hero, Treasury) rejected by unlock_key",
           "passed": true,
           "accepted": false,
           "denied_by": [
-            "UnlockKey",
-            "DoUnlock"
+            "unlock_key",
+            "do_unlock"
           ]
         }
       ],
@@ -176,7 +176,7 @@
       "scenario": "combat with dice, a kill, and dropped loot",
       "steps": [
         {
-          "description": "Move(Hero, Hall) accepted",
+          "description": "move(Hero, Hall) accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -185,7 +185,7 @@
           ]
         },
         {
-          "description": "Attack(Goblin, Hero, 6) accepted",
+          "description": "attack(Goblin, Hero, 6) accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -198,7 +198,7 @@
           "passed": true
         },
         {
-          "description": "Wait(Orc) accepted",
+          "description": "wait(Orc) accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -206,7 +206,7 @@
           ]
         },
         {
-          "description": "Wait(Dragon) accepted",
+          "description": "wait(Dragon) accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -214,7 +214,7 @@
           ]
         },
         {
-          "description": "Attack(Hero, Goblin, 1) accepted with events",
+          "description": "attack(Hero, Goblin, 1) accepted with events",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -227,7 +227,7 @@
           "passed": true
         },
         {
-          "description": "Attack(Goblin, Hero, 1) accepted with events",
+          "description": "attack(Goblin, Hero, 1) accepted with events",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -240,7 +240,7 @@
           "passed": true
         },
         {
-          "description": "Wait(Orc) accepted",
+          "description": "wait(Orc) accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -248,7 +248,7 @@
           ]
         },
         {
-          "description": "Wait(Dragon) accepted",
+          "description": "wait(Dragon) accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -256,7 +256,7 @@
           ]
         },
         {
-          "description": "Attack(Hero, Goblin, 6) accepted with events",
+          "description": "attack(Hero, Goblin, 6) accepted with events",
           "passed": true,
           "accepted": true,
           "events": [
@@ -275,17 +275,17 @@
           "passed": true
         },
         {
-          "description": "Attack(Goblin, Hero, 3) rejected by AttackTurn",
+          "description": "attack(Goblin, Hero, 3) rejected by attack_turn",
           "passed": true,
           "accepted": false,
           "denied_by": [
-            "AttackTurn",
-            "AttackTarget",
-            "DoAttack"
+            "attack_turn",
+            "attack_target",
+            "do_attack"
           ]
         },
         {
-          "description": "Wait(Orc) accepted",
+          "description": "wait(Orc) accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -293,7 +293,7 @@
           ]
         },
         {
-          "description": "Wait(Dragon) accepted",
+          "description": "wait(Dragon) accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -301,16 +301,16 @@
           ]
         },
         {
-          "description": "Attack(Hero, Dragon, 6) rejected by AttackTarget",
+          "description": "attack(Hero, Dragon, 6) rejected by attack_target",
           "passed": true,
           "accepted": false,
           "denied_by": [
-            "AttackTarget",
-            "DoAttack"
+            "attack_target",
+            "do_attack"
           ]
         },
         {
-          "description": "PickUp(Hero, Potion) accepted",
+          "description": "pickUp(Hero, Potion) accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -344,7 +344,7 @@
       "scenario": "a potion heals but never past the maximum",
       "steps": [
         {
-          "description": "Move(Hero, Hall) accepted",
+          "description": "move(Hero, Hall) accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -353,7 +353,7 @@
           ]
         },
         {
-          "description": "Attack(Goblin, Hero, 6) accepted",
+          "description": "attack(Goblin, Hero, 6) accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -362,7 +362,7 @@
           ]
         },
         {
-          "description": "Wait(Orc) accepted",
+          "description": "wait(Orc) accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -370,7 +370,7 @@
           ]
         },
         {
-          "description": "Wait(Dragon) accepted",
+          "description": "wait(Dragon) accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -378,7 +378,7 @@
           ]
         },
         {
-          "description": "PickUp(Hero, Potion) accepted",
+          "description": "pickUp(Hero, Potion) accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -388,7 +388,7 @@
           ]
         },
         {
-          "description": "Wait(Goblin) accepted",
+          "description": "wait(Goblin) accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -396,7 +396,7 @@
           ]
         },
         {
-          "description": "Wait(Orc) accepted",
+          "description": "wait(Orc) accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -404,7 +404,7 @@
           ]
         },
         {
-          "description": "Wait(Dragon) accepted",
+          "description": "wait(Dragon) accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -416,7 +416,7 @@
           "passed": true
         },
         {
-          "description": "Drink(Hero) accepted",
+          "description": "drink(Hero) accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -431,7 +431,7 @@
           "passed": true
         },
         {
-          "description": "Wait(Goblin) accepted",
+          "description": "wait(Goblin) accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -439,7 +439,7 @@
           ]
         },
         {
-          "description": "Wait(Orc) accepted",
+          "description": "wait(Orc) accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -447,7 +447,7 @@
           ]
         },
         {
-          "description": "Wait(Dragon) accepted",
+          "description": "wait(Dragon) accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -455,12 +455,12 @@
           ]
         },
         {
-          "description": "Drink(Hero) rejected by DrinkHasPotion",
+          "description": "drink(Hero) rejected by drink_has_potion",
           "passed": true,
           "accepted": false,
           "denied_by": [
-            "DrinkHasPotion",
-            "DoDrink"
+            "drink_has_potion",
+            "do_drink"
           ]
         }
       ],
@@ -542,7 +542,7 @@
           "passed": true
         },
         {
-          "description": "PickUp(Hero, Sword) accepted",
+          "description": "pickUp(Hero, Sword) accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -552,7 +552,7 @@
           ]
         },
         {
-          "description": "Attack(Orc, Hero, 3) accepted",
+          "description": "attack(Orc, Hero, 3) accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -565,7 +565,7 @@
           "passed": true
         },
         {
-          "description": "PickUp(Hero, Shield) accepted",
+          "description": "pickUp(Hero, Shield) accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -575,7 +575,7 @@
           ]
         },
         {
-          "description": "Attack(Orc, Hero, 3) accepted",
+          "description": "attack(Orc, Hero, 3) accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -588,7 +588,7 @@
           "passed": true
         },
         {
-          "description": "Attack(Hero, Orc, 3) accepted",
+          "description": "attack(Hero, Orc, 3) accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -672,7 +672,7 @@
           "passed": true
         },
         {
-          "description": "Attack(Dragon, Hero, 4) accepted with events",
+          "description": "attack(Dragon, Hero, 4) accepted with events",
           "passed": true,
           "accepted": true,
           "events": [
@@ -692,11 +692,11 @@
           "passed": true
         },
         {
-          "description": "Wait(Dragon) rejected by WaitTurn",
+          "description": "wait(Dragon) rejected by wait_turn",
           "passed": true,
           "accepted": false,
           "denied_by": [
-            "WaitTurn"
+            "wait_turn"
           ]
         }
       ],
@@ -761,7 +761,7 @@
           "passed": true
         },
         {
-          "description": "Unlock(Hero, Treasury) accepted",
+          "description": "unlock(Hero, Treasury) accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -770,7 +770,7 @@
           ]
         },
         {
-          "description": "Move(Hero, Treasury) accepted",
+          "description": "move(Hero, Treasury) accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -779,7 +779,7 @@
           ]
         },
         {
-          "description": "PickUp(Hero, Gold) accepted",
+          "description": "pickUp(Hero, Gold) accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -789,7 +789,7 @@
           ]
         },
         {
-          "description": "Move(Hero, Hall) accepted",
+          "description": "move(Hero, Hall) accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -798,7 +798,7 @@
           ]
         },
         {
-          "description": "Move(Hero, Entrance) accepted with events",
+          "description": "move(Hero, Entrance) accepted with events",
           "passed": true,
           "accepted": true,
           "events": [
@@ -815,11 +815,11 @@
           "passed": true
         },
         {
-          "description": "Move(Hero, Hall) rejected by MoveTurn",
+          "description": "move(Hero, Hall) rejected by move_turn",
           "passed": true,
           "accepted": false,
           "denied_by": [
-            "MoveTurn"
+            "move_turn"
           ]
         }
       ],

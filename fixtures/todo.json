@@ -6,7 +6,7 @@
       "scenario": "a task moves forward through its lifecycle, never backward",
       "steps": [
         {
-          "description": "Create(TaskId(\"write-spec\"), High) accepted",
+          "description": "create(TaskId(\"write-spec\"), High) accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -19,7 +19,7 @@
           "passed": true
         },
         {
-          "description": "Advance(TaskId(\"write-spec\"), Ready) accepted",
+          "description": "advance(TaskId(\"write-spec\"), Ready) accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -27,15 +27,15 @@
           ]
         },
         {
-          "description": "Advance(TaskId(\"write-spec\"), Draft) rejected by AdvanceForward",
+          "description": "advance(TaskId(\"write-spec\"), Draft) rejected by advance_forward",
           "passed": true,
           "accepted": false,
           "denied_by": [
-            "AdvanceForward"
+            "advance_forward"
           ]
         },
         {
-          "description": "Advance(TaskId(\"write-spec\"), Doing) accepted with events",
+          "description": "advance(TaskId(\"write-spec\"), Doing) accepted with events",
           "passed": true,
           "accepted": true,
           "events": [
@@ -46,7 +46,7 @@
           ]
         },
         {
-          "description": "Advance(TaskId(\"write-spec\"), Done) accepted with events",
+          "description": "advance(TaskId(\"write-spec\"), Done) accepted with events",
           "passed": true,
           "accepted": true,
           "events": [
@@ -57,12 +57,12 @@
           ]
         },
         {
-          "description": "Advance(TaskId(\"write-spec\"), Cancelled) rejected by AdvanceForward",
+          "description": "advance(TaskId(\"write-spec\"), Cancelled) rejected by advance_forward",
           "passed": true,
           "accepted": false,
           "denied_by": [
-            "AdvanceForward",
-            "AdvanceNotCancel"
+            "advance_forward",
+            "advance_not_cancel"
           ]
         }
       ],
@@ -76,7 +76,7 @@
       "scenario": "done and cancelled are incomparable",
       "steps": [
         {
-          "description": "Create(TaskId(\"a\"), Normal) accepted",
+          "description": "create(TaskId(\"a\"), Normal) accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -85,7 +85,7 @@
           ]
         },
         {
-          "description": "Advance(TaskId(\"a\"), Ready) accepted",
+          "description": "advance(TaskId(\"a\"), Ready) accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -93,7 +93,7 @@
           ]
         },
         {
-          "description": "Cancel(TaskId(\"a\")) accepted",
+          "description": "cancel(TaskId(\"a\")) accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -101,11 +101,11 @@
           ]
         },
         {
-          "description": "Advance(TaskId(\"a\"), Done) rejected by AdvanceForward",
+          "description": "advance(TaskId(\"a\"), Done) rejected by advance_forward",
           "passed": true,
           "accepted": false,
           "denied_by": [
-            "AdvanceForward"
+            "advance_forward"
           ]
         },
         {
@@ -117,11 +117,11 @@
           "passed": true
         },
         {
-          "description": "Cancel(TaskId(\"a\")) rejected by CancelOpen",
+          "description": "cancel(TaskId(\"a\")) rejected by cancel_open",
           "passed": true,
           "accepted": false,
           "denied_by": [
-            "CancelOpen"
+            "cancel_open"
           ]
         }
       ],
@@ -135,7 +135,7 @@
       "scenario": "identities compare by representation and are never enumerated",
       "steps": [
         {
-          "description": "Create(TaskId(\"x\"), Low) accepted",
+          "description": "create(TaskId(\"x\"), Low) accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -144,11 +144,11 @@
           ]
         },
         {
-          "description": "Create(TaskId(\"x\"), High) rejected by CreateFresh",
+          "description": "create(TaskId(\"x\"), High) rejected by create_fresh",
           "passed": true,
           "accepted": false,
           "denied_by": [
-            "CreateFresh"
+            "create_fresh"
           ]
         },
         {
@@ -156,12 +156,12 @@
           "passed": true
         },
         {
-          "description": "Advance(TaskId(\"y\"), Ready) rejected by AdvanceExists",
+          "description": "advance(TaskId(\"y\"), Ready) rejected by advance_exists",
           "passed": true,
           "accepted": false,
           "denied_by": [
-            "AdvanceExists",
-            "AdvanceForward"
+            "advance_exists",
+            "advance_forward"
           ]
         }
       ],
@@ -175,7 +175,7 @@
       "scenario": "work in progress is limited and the limit is a fact",
       "steps": [
         {
-          "description": "Create(TaskId(\"a\"), Low) accepted",
+          "description": "create(TaskId(\"a\"), Low) accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -184,7 +184,7 @@
           ]
         },
         {
-          "description": "Create(TaskId(\"b\"), Normal) accepted",
+          "description": "create(TaskId(\"b\"), Normal) accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -193,7 +193,7 @@
           ]
         },
         {
-          "description": "Create(TaskId(\"c\"), High) accepted",
+          "description": "create(TaskId(\"c\"), High) accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -202,7 +202,7 @@
           ]
         },
         {
-          "description": "Advance(TaskId(\"a\"), Ready) accepted",
+          "description": "advance(TaskId(\"a\"), Ready) accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -210,7 +210,7 @@
           ]
         },
         {
-          "description": "Advance(TaskId(\"b\"), Ready) accepted",
+          "description": "advance(TaskId(\"b\"), Ready) accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -218,7 +218,7 @@
           ]
         },
         {
-          "description": "Advance(TaskId(\"c\"), Ready) accepted",
+          "description": "advance(TaskId(\"c\"), Ready) accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -226,7 +226,7 @@
           ]
         },
         {
-          "description": "Advance(TaskId(\"a\"), Doing) accepted",
+          "description": "advance(TaskId(\"a\"), Doing) accepted",
           "passed": true,
           "accepted": true,
           "events": [
@@ -237,7 +237,7 @@
           ]
         },
         {
-          "description": "Advance(TaskId(\"b\"), Doing) accepted",
+          "description": "advance(TaskId(\"b\"), Doing) accepted",
           "passed": true,
           "accepted": true,
           "events": [
@@ -248,23 +248,23 @@
           ]
         },
         {
-          "description": "Advance(TaskId(\"c\"), Doing) rejected by WithinWip",
+          "description": "advance(TaskId(\"c\"), Doing) rejected by within_wip",
           "passed": true,
           "accepted": false,
           "denied_by": [
-            "WithinWip"
+            "within_wip"
           ]
         },
         {
-          "description": "SetWipLimit(1) rejected by DoSetWip",
+          "description": "setWipLimit(1) rejected by do_set_wip",
           "passed": true,
           "accepted": false,
           "denied_by": [
-            "DoSetWip"
+            "do_set_wip"
           ]
         },
         {
-          "description": "SetWipLimit(3) accepted",
+          "description": "setWipLimit(3) accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -272,7 +272,7 @@
           ]
         },
         {
-          "description": "Advance(TaskId(\"c\"), Doing) accepted",
+          "description": "advance(TaskId(\"c\"), Doing) accepted",
           "passed": true,
           "accepted": true,
           "events": [
@@ -301,7 +301,7 @@
       "scenario": "at most one task per priority level in progress",
       "steps": [
         {
-          "description": "Create(TaskId(\"a\"), High) accepted",
+          "description": "create(TaskId(\"a\"), High) accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -310,7 +310,7 @@
           ]
         },
         {
-          "description": "Create(TaskId(\"b\"), High) accepted",
+          "description": "create(TaskId(\"b\"), High) accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -319,7 +319,7 @@
           ]
         },
         {
-          "description": "Advance(TaskId(\"a\"), Ready) accepted",
+          "description": "advance(TaskId(\"a\"), Ready) accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -327,7 +327,7 @@
           ]
         },
         {
-          "description": "Advance(TaskId(\"b\"), Ready) accepted",
+          "description": "advance(TaskId(\"b\"), Ready) accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -335,7 +335,7 @@
           ]
         },
         {
-          "description": "Advance(TaskId(\"a\"), Doing) accepted",
+          "description": "advance(TaskId(\"a\"), Doing) accepted",
           "passed": true,
           "accepted": true,
           "events": [
@@ -346,11 +346,11 @@
           ]
         },
         {
-          "description": "Advance(TaskId(\"b\"), Doing) rejected by OnePerLevelInProgress",
+          "description": "advance(TaskId(\"b\"), Doing) rejected by one_per_level_in_progress",
           "passed": true,
           "accepted": false,
           "denied_by": [
-            "OnePerLevelInProgress"
+            "one_per_level_in_progress"
           ]
         }
       ],
@@ -366,7 +366,7 @@
       "scenario": "blocked tasks wait; finishing the blocker releases them",
       "steps": [
         {
-          "description": "Create(TaskId(\"deploy\"), High) accepted",
+          "description": "create(TaskId(\"deploy\"), High) accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -375,7 +375,7 @@
           ]
         },
         {
-          "description": "Create(TaskId(\"review\"), Normal) accepted",
+          "description": "create(TaskId(\"review\"), Normal) accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -384,7 +384,7 @@
           ]
         },
         {
-          "description": "Block(TaskId(\"deploy\"), TaskId(\"review\")) accepted",
+          "description": "block(TaskId(\"deploy\"), TaskId(\"review\")) accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -392,15 +392,15 @@
           ]
         },
         {
-          "description": "Block(TaskId(\"deploy\"), TaskId(\"deploy\")) rejected by BlockTasks",
+          "description": "block(TaskId(\"deploy\"), TaskId(\"deploy\")) rejected by block_tasks",
           "passed": true,
           "accepted": false,
           "denied_by": [
-            "BlockTasks"
+            "block_tasks"
           ]
         },
         {
-          "description": "Advance(TaskId(\"deploy\"), Ready) accepted",
+          "description": "advance(TaskId(\"deploy\"), Ready) accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -408,15 +408,15 @@
           ]
         },
         {
-          "description": "Advance(TaskId(\"deploy\"), Doing) rejected by NotBlocked",
+          "description": "advance(TaskId(\"deploy\"), Doing) rejected by not_blocked",
           "passed": true,
           "accepted": false,
           "denied_by": [
-            "NotBlocked"
+            "not_blocked"
           ]
         },
         {
-          "description": "Advance(TaskId(\"review\"), Ready) accepted",
+          "description": "advance(TaskId(\"review\"), Ready) accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -424,7 +424,7 @@
           ]
         },
         {
-          "description": "Advance(TaskId(\"review\"), Doing) accepted",
+          "description": "advance(TaskId(\"review\"), Doing) accepted",
           "passed": true,
           "accepted": true,
           "events": [
@@ -435,7 +435,7 @@
           ]
         },
         {
-          "description": "Advance(TaskId(\"review\"), Done) accepted with events",
+          "description": "advance(TaskId(\"review\"), Done) accepted with events",
           "passed": true,
           "accepted": true,
           "events": [
@@ -452,7 +452,7 @@
           "passed": true
         },
         {
-          "description": "Advance(TaskId(\"deploy\"), Doing) accepted with events",
+          "description": "advance(TaskId(\"deploy\"), Doing) accepted with events",
           "passed": true,
           "accepted": true,
           "events": [
@@ -475,7 +475,7 @@
       "scenario": "cancelling a blocked task drops its blocking records",
       "steps": [
         {
-          "description": "Create(TaskId(\"a\"), Low) accepted",
+          "description": "create(TaskId(\"a\"), Low) accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -484,7 +484,7 @@
           ]
         },
         {
-          "description": "Create(TaskId(\"b\"), Low) accepted",
+          "description": "create(TaskId(\"b\"), Low) accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -493,7 +493,7 @@
           ]
         },
         {
-          "description": "Block(TaskId(\"a\"), TaskId(\"b\")) accepted",
+          "description": "block(TaskId(\"a\"), TaskId(\"b\")) accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -501,7 +501,7 @@
           ]
         },
         {
-          "description": "Advance(TaskId(\"a\"), Ready) accepted",
+          "description": "advance(TaskId(\"a\"), Ready) accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -509,7 +509,7 @@
           ]
         },
         {
-          "description": "Cancel(TaskId(\"a\")) accepted",
+          "description": "cancel(TaskId(\"a\")) accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -534,7 +534,7 @@
       "scenario": "subtasks nest without two-cycles",
       "steps": [
         {
-          "description": "Create(TaskId(\"epic\"), High) accepted",
+          "description": "create(TaskId(\"epic\"), High) accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -543,7 +543,7 @@
           ]
         },
         {
-          "description": "Create(TaskId(\"story\"), Normal) accepted",
+          "description": "create(TaskId(\"story\"), Normal) accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -552,7 +552,7 @@
           ]
         },
         {
-          "description": "Nest(TaskId(\"story\"), TaskId(\"epic\")) accepted",
+          "description": "nest(TaskId(\"story\"), TaskId(\"epic\")) accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -560,11 +560,11 @@
           ]
         },
         {
-          "description": "Nest(TaskId(\"epic\"), TaskId(\"story\")) rejected by NestAcyclic",
+          "description": "nest(TaskId(\"epic\"), TaskId(\"story\")) rejected by nest_acyclic",
           "passed": true,
           "accepted": false,
           "denied_by": [
-            "NestAcyclic"
+            "nest_acyclic"
           ]
         },
         {

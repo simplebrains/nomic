@@ -6,7 +6,7 @@
       "scenario": "an accepted transition passes through every stage in order",
       "steps": [
         {
-          "description": "Begin accepted",
+          "description": "begin accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -19,7 +19,7 @@
           "passed": true
         },
         {
-          "description": "Advance accepted",
+          "description": "advance accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -31,7 +31,7 @@
           "passed": true
         },
         {
-          "description": "RuleMatches(1, Allow, true) accepted",
+          "description": "ruleMatches(1, Allow, true) accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -41,7 +41,7 @@
           ]
         },
         {
-          "description": "RuleMatches(2, Allow, false) accepted",
+          "description": "ruleMatches(2, Allow, false) accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -50,7 +50,7 @@
           ]
         },
         {
-          "description": "Advance accepted",
+          "description": "advance accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -62,7 +62,7 @@
           "passed": true
         },
         {
-          "description": "Advance accepted",
+          "description": "advance accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -74,7 +74,7 @@
           "passed": true
         },
         {
-          "description": "Advance accepted",
+          "description": "advance accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -86,7 +86,7 @@
           "passed": true
         },
         {
-          "description": "Advance accepted",
+          "description": "advance accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -99,7 +99,7 @@
           "passed": true
         },
         {
-          "description": "Advance accepted",
+          "description": "advance accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -111,7 +111,7 @@
           "passed": true
         },
         {
-          "description": "Advance accepted",
+          "description": "advance accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -123,7 +123,7 @@
           "passed": true
         },
         {
-          "description": "Advance accepted with events",
+          "description": "advance accepted with events",
           "passed": true,
           "accepted": true,
           "events": [
@@ -139,11 +139,11 @@
           "passed": true
         },
         {
-          "description": "Advance rejected by AdvanceNotDone",
+          "description": "advance rejected by advance_not_done",
           "passed": true,
           "accepted": false,
           "denied_by": [
-            "AdvanceNotDone"
+            "advance_not_done"
           ]
         }
       ],
@@ -163,7 +163,7 @@
       "scenario": "no matching rule rejects",
       "steps": [
         {
-          "description": "Begin accepted",
+          "description": "begin accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -172,7 +172,7 @@
           ]
         },
         {
-          "description": "Advance accepted",
+          "description": "advance accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -180,7 +180,7 @@
           ]
         },
         {
-          "description": "Advance accepted",
+          "description": "advance accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -188,7 +188,7 @@
           ]
         },
         {
-          "description": "Advance accepted",
+          "description": "advance accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -200,7 +200,7 @@
           "passed": true
         },
         {
-          "description": "Advance accepted with events",
+          "description": "advance accepted with events",
           "passed": true,
           "accepted": true,
           "events": [
@@ -225,7 +225,7 @@
       "scenario": "any denial rejects, whatever the other rules say",
       "steps": [
         {
-          "description": "Begin accepted",
+          "description": "begin accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -234,7 +234,7 @@
           ]
         },
         {
-          "description": "Advance accepted",
+          "description": "advance accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -242,7 +242,7 @@
           ]
         },
         {
-          "description": "RuleMatches(1, Allow, true) accepted",
+          "description": "ruleMatches(1, Allow, true) accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -252,7 +252,7 @@
           ]
         },
         {
-          "description": "RuleMatches(2, Deny, false) accepted",
+          "description": "ruleMatches(2, Deny, false) accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -261,15 +261,15 @@
           ]
         },
         {
-          "description": "RuleMatches(2, Allow, true) rejected by MatchOnce",
+          "description": "ruleMatches(2, Allow, true) rejected by match_once",
           "passed": true,
           "accepted": false,
           "denied_by": [
-            "MatchOnce"
+            "match_once"
           ]
         },
         {
-          "description": "Advance accepted",
+          "description": "advance accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -277,7 +277,7 @@
           ]
         },
         {
-          "description": "Advance accepted",
+          "description": "advance accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -289,7 +289,7 @@
           "passed": true
         },
         {
-          "description": "Advance accepted with events",
+          "description": "advance accepted with events",
           "passed": true,
           "accepted": true,
           "events": [
@@ -319,7 +319,7 @@
       "scenario": "conflicting effects are a model error, not a resolution",
       "steps": [
         {
-          "description": "Begin accepted",
+          "description": "begin accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -328,7 +328,7 @@
           ]
         },
         {
-          "description": "Advance accepted",
+          "description": "advance accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -336,7 +336,7 @@
           ]
         },
         {
-          "description": "RuleMatches(1, Allow, true) accepted",
+          "description": "ruleMatches(1, Allow, true) accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -346,7 +346,7 @@
           ]
         },
         {
-          "description": "RuleMatches(3, Allow, true) accepted",
+          "description": "ruleMatches(3, Allow, true) accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -356,7 +356,7 @@
           ]
         },
         {
-          "description": "Advance accepted",
+          "description": "advance accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -364,7 +364,7 @@
           ]
         },
         {
-          "description": "Advance accepted",
+          "description": "advance accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -372,7 +372,7 @@
           ]
         },
         {
-          "description": "Advance accepted",
+          "description": "advance accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -384,7 +384,7 @@
           "passed": true
         },
         {
-          "description": "EffectsConflict accepted with events",
+          "description": "effectsConflict accepted with events",
           "passed": true,
           "accepted": true,
           "events": [
@@ -400,11 +400,11 @@
           "passed": true
         },
         {
-          "description": "Advance rejected by AdvanceNotDone",
+          "description": "advance rejected by advance_not_done",
           "passed": true,
           "accepted": false,
           "denied_by": [
-            "AdvanceNotDone"
+            "advance_not_done"
           ]
         }
       ],
@@ -425,7 +425,7 @@
       "scenario": "reactions cascade in rounds and each event fires once",
       "steps": [
         {
-          "description": "Begin accepted",
+          "description": "begin accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -434,7 +434,7 @@
           ]
         },
         {
-          "description": "Advance accepted",
+          "description": "advance accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -442,7 +442,7 @@
           ]
         },
         {
-          "description": "RuleMatches(1, Allow, true) accepted",
+          "description": "ruleMatches(1, Allow, true) accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -452,7 +452,7 @@
           ]
         },
         {
-          "description": "Advance accepted",
+          "description": "advance accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -460,7 +460,7 @@
           ]
         },
         {
-          "description": "Advance accepted",
+          "description": "advance accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -468,7 +468,7 @@
           ]
         },
         {
-          "description": "Advance accepted",
+          "description": "advance accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -476,7 +476,7 @@
           ]
         },
         {
-          "description": "Advance accepted",
+          "description": "advance accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -489,7 +489,7 @@
           "passed": true
         },
         {
-          "description": "EventDetected(1) accepted",
+          "description": "eventDetected(1) accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -497,7 +497,7 @@
           ]
         },
         {
-          "description": "Advance accepted",
+          "description": "advance accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -509,7 +509,7 @@
           "passed": true
         },
         {
-          "description": "Advance accepted",
+          "description": "advance accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -523,15 +523,15 @@
           "passed": true
         },
         {
-          "description": "EventDetected(1) rejected by OncePerTransition",
+          "description": "eventDetected(1) rejected by once_per_transition",
           "passed": true,
           "accepted": false,
           "denied_by": [
-            "OncePerTransition"
+            "once_per_transition"
           ]
         },
         {
-          "description": "EventDetected(2) accepted",
+          "description": "eventDetected(2) accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -539,7 +539,7 @@
           ]
         },
         {
-          "description": "Advance accepted",
+          "description": "advance accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -553,7 +553,7 @@
           "passed": true
         },
         {
-          "description": "Advance accepted",
+          "description": "advance accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -565,7 +565,7 @@
           "passed": true
         },
         {
-          "description": "Advance accepted with events",
+          "description": "advance accepted with events",
           "passed": true,
           "accepted": true,
           "events": [
@@ -593,7 +593,7 @@
       "scenario": "an excused invariant failure still commits; an unexcused one is a defect",
       "steps": [
         {
-          "description": "Begin accepted",
+          "description": "begin accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -602,7 +602,7 @@
           ]
         },
         {
-          "description": "Advance accepted",
+          "description": "advance accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -610,7 +610,7 @@
           ]
         },
         {
-          "description": "RuleMatches(1, Allow, true) accepted",
+          "description": "ruleMatches(1, Allow, true) accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -620,7 +620,7 @@
           ]
         },
         {
-          "description": "Advance accepted",
+          "description": "advance accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -628,7 +628,7 @@
           ]
         },
         {
-          "description": "Advance accepted",
+          "description": "advance accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -636,7 +636,7 @@
           ]
         },
         {
-          "description": "Advance accepted",
+          "description": "advance accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -644,7 +644,7 @@
           ]
         },
         {
-          "description": "Advance accepted",
+          "description": "advance accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -653,7 +653,7 @@
           ]
         },
         {
-          "description": "Advance accepted",
+          "description": "advance accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -661,7 +661,7 @@
           ]
         },
         {
-          "description": "Advance accepted",
+          "description": "advance accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -673,7 +673,7 @@
           "passed": true
         },
         {
-          "description": "InvariantFails(1, true) accepted",
+          "description": "invariantFails(1, true) accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -682,7 +682,7 @@
           ]
         },
         {
-          "description": "Advance accepted with events",
+          "description": "advance accepted with events",
           "passed": true,
           "accepted": true,
           "events": [
@@ -714,7 +714,7 @@
       "scenario": "an unexcused invariant failure is a model error",
       "steps": [
         {
-          "description": "Begin accepted",
+          "description": "begin accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -723,7 +723,7 @@
           ]
         },
         {
-          "description": "Advance accepted",
+          "description": "advance accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -731,7 +731,7 @@
           ]
         },
         {
-          "description": "RuleMatches(1, Allow, true) accepted",
+          "description": "ruleMatches(1, Allow, true) accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -741,7 +741,7 @@
           ]
         },
         {
-          "description": "Advance accepted",
+          "description": "advance accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -749,7 +749,7 @@
           ]
         },
         {
-          "description": "Advance accepted",
+          "description": "advance accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -757,7 +757,7 @@
           ]
         },
         {
-          "description": "Advance accepted",
+          "description": "advance accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -765,7 +765,7 @@
           ]
         },
         {
-          "description": "Advance accepted",
+          "description": "advance accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -774,7 +774,7 @@
           ]
         },
         {
-          "description": "Advance accepted",
+          "description": "advance accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -782,7 +782,7 @@
           ]
         },
         {
-          "description": "Advance accepted",
+          "description": "advance accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -790,7 +790,7 @@
           ]
         },
         {
-          "description": "InvariantFails(1, true) accepted",
+          "description": "invariantFails(1, true) accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -799,7 +799,7 @@
           ]
         },
         {
-          "description": "InvariantFails(2, false) accepted",
+          "description": "invariantFails(2, false) accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -807,7 +807,7 @@
           ]
         },
         {
-          "description": "Advance accepted with events",
+          "description": "advance accepted with events",
           "passed": true,
           "accepted": true,
           "events": [
@@ -839,47 +839,47 @@
       "scenario": "inputs are only accepted in their stage",
       "steps": [
         {
-          "description": "RuleMatches(1, Allow, true) rejected by MatchOnlyDuringMatch",
+          "description": "ruleMatches(1, Allow, true) rejected by match_only_during_match",
           "passed": true,
           "accepted": false,
           "denied_by": [
-            "MatchOnlyDuringMatch"
+            "match_only_during_match"
           ]
         },
         {
-          "description": "EventDetected(1) rejected by DetectOnlyWhenDetecting",
+          "description": "eventDetected(1) rejected by detect_only_when_detecting",
           "passed": true,
           "accepted": false,
           "denied_by": [
-            "DetectOnlyWhenDetecting"
+            "detect_only_when_detecting"
           ]
         },
         {
-          "description": "InvariantFails(1, false) rejected by FailOnlyInVerify",
+          "description": "invariantFails(1, false) rejected by fail_only_in_verify",
           "passed": true,
           "accepted": false,
           "denied_by": [
-            "FailOnlyInVerify"
+            "fail_only_in_verify"
           ]
         },
         {
-          "description": "EffectsConflict rejected by ConflictOnlyInTransition",
+          "description": "effectsConflict rejected by conflict_only_in_transition",
           "passed": true,
           "accepted": false,
           "denied_by": [
-            "ConflictOnlyInTransition"
+            "conflict_only_in_transition"
           ]
         },
         {
-          "description": "Advance rejected by AdvanceNotIdle",
+          "description": "advance rejected by advance_not_idle",
           "passed": true,
           "accepted": false,
           "denied_by": [
-            "AdvanceNotIdle"
+            "advance_not_idle"
           ]
         },
         {
-          "description": "Begin accepted",
+          "description": "begin accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -888,11 +888,11 @@
           ]
         },
         {
-          "description": "Begin rejected by DoBegin",
+          "description": "begin rejected by do_begin",
           "passed": true,
           "accepted": false,
           "denied_by": [
-            "DoBegin"
+            "do_begin"
           ]
         }
       ],

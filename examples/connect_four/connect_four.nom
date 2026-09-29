@@ -3,13 +3,13 @@
 /// mechanics, and this file adds winning, drawing, and the end of the game.
 ///
 /// `include` takes the board's vocabulary and behavior (its rules, invariants,
-/// and initial state). `import` takes named declarations; `Other as Opponent`
+/// and initial state). `import` takes named declarations; `other as opponent`
 /// shows an alias, and `Player` arriving both through the board and directly
 /// from players.nom is the same declaration once, not a collision.
 model ConnectFour
 
 include "board.nom"
-import "players.nom" { Player, Other as Opponent }
+import "players.nom" { Player, other as opponent }
 
 /// The player who has won, once someone has.
 fact Winner: Player
@@ -18,62 +18,62 @@ fact Drawn
 
 /// Four discs of `p` starting at (c, r) stepping by (dc, dr). Lookups off the
 /// board are `none`, so no bounds arithmetic is needed.
-derive Line(p: Player, c: Int, r: Int, dc: Int, dr: Int): Bool =
+derive line(p: Player, c: Int, r: Int, dc: Int, dr: Int): Bool =
   all(i: 0..3 => Cell(c + i * dc, r + i * dr) == p)
-derive FourInARow(p: Player): Bool =
+derive four_in_a_row(p: Player): Bool =
   exists(c: Column, r: Row =>
-    Line(p, c, r, 1, 0) || Line(p, c, r, 0, 1) || Line(p, c, r, 1, 1) || Line(p, c, r, 1, -1))
-derive Over: Bool = Winner != none || Drawn
+    line(p, c, r, 1, 0) || line(p, c, r, 0, 1) || line(p, c, r, 1, 1) || line(p, c, r, 1, -1))
+derive over: Bool = Winner != none || Drawn
 
-rule GameOver on Drop(p, c) { deny if Over "the game is over" }
+rule game_over on drop(p, c) { deny if over "the game is over" }
 
 /// `p` has connected four. Edge-triggered: emitted once, when it becomes true.
-event Win(p: Player) when FourInARow(p)
+event Win(p: Player) when four_in_a_row(p)
 /// The board filled with no winner.
-event Draw when Full && !FourInARow(Red) && !FourInARow(Yellow)
+event Draw when full && !four_in_a_row(Red) && !four_in_a_row(Yellow)
 
-rule RecordWinner on Win(p) { assert Winner = p }
-rule RecordDraw on Draw { assert Drawn }
+rule record_winner on Win(p) { assert Winner = p }
+rule record_draw on Draw { assert Drawn }
 
-invariant WinnerHasLine: Winner == none || FourInARow(Winner)
-invariant NotBothEnded: !(Winner != none && Drawn)
+invariant winner_has_line: Winner == none || four_in_a_row(Winner)
+invariant not_both_ended: !(Winner != none && Drawn)
 
 scenario "vertical win is emitted exactly once and ends the game" {
-  Drop(Red, 0); Drop(Yellow, 1); Drop(Red, 0); Drop(Yellow, 1); Drop(Red, 0); Drop(Yellow, 1)
-  expect Height(0) == 3 && Winner == none
-  Drop(Red, 0) emits Win(Red)
-  expect Winner == Red && Over
-  Drop(Yellow, 2) rejected by GameOver
+  drop(Red, 0); drop(Yellow, 1); drop(Red, 0); drop(Yellow, 1); drop(Red, 0); drop(Yellow, 1)
+  expect height(0) == 3 && Winner == none
+  drop(Red, 0) emits Win(Red)
+  expect Winner == Red && over
+  drop(Yellow, 2) rejected by game_over
 }
 
 scenario "horizontal win" {
-  Drop(Red, 0); Drop(Yellow, 0); Drop(Red, 1); Drop(Yellow, 1); Drop(Red, 2); Drop(Yellow, 2)
-  Drop(Red, 3) emits Win(Red)
+  drop(Red, 0); drop(Yellow, 0); drop(Red, 1); drop(Yellow, 1); drop(Red, 2); drop(Yellow, 2)
+  drop(Red, 3) emits Win(Red)
 }
 
 scenario "diagonal win" {
-  Drop(Red, 0)
-  Drop(Yellow, 1); Drop(Red, 1)
-  Drop(Yellow, 2); Drop(Red, 3); Drop(Yellow, 2); Drop(Red, 2)
-  Drop(Yellow, 3); Drop(Red, 4); Drop(Yellow, 3)
-  Drop(Red, 3) emits Win(Red)
+  drop(Red, 0)
+  drop(Yellow, 1); drop(Red, 1)
+  drop(Yellow, 2); drop(Red, 3); drop(Yellow, 2); drop(Red, 2)
+  drop(Yellow, 3); drop(Red, 4); drop(Yellow, 3)
+  drop(Red, 3) emits Win(Red)
 }
 
 scenario "moves out of turn are rejected" {
-  Drop(Yellow, 3) rejected by TurnOrder
-  Drop(Red, 3)
-  Drop(Red, 3) rejected by TurnOrder
-  expect Turn == Opponent(Red)
+  drop(Yellow, 3) rejected by turn_order
+  drop(Red, 3)
+  drop(Red, 3) rejected by turn_order
+  expect Turn == opponent(Red)
 }
 
 scenario "a full column rejects further drops" {
-  Drop(Red, 0); Drop(Yellow, 0); Drop(Red, 0); Drop(Yellow, 0); Drop(Red, 0); Drop(Yellow, 0)
-  expect Height(0) == 6
-  Drop(Red, 0) rejected by Place
-  Drop(Red, 1)
+  drop(Red, 0); drop(Yellow, 0); drop(Red, 0); drop(Yellow, 0); drop(Red, 0); drop(Yellow, 0)
+  expect height(0) == 6
+  drop(Red, 0) rejected by place
+  drop(Red, 1)
 }
 
 scenario "a move that does not win emits nothing" {
-  Drop(Red, 3) emits nothing
+  drop(Red, 3) emits nothing
   expect Cell(3, 0) == Red && Turn == Yellow
 }

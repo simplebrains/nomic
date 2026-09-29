@@ -3,7 +3,7 @@
 /// reorder alerts, and stock adjustments under audit.
 ///
 /// This is the first model written in the descriptive rather than prescriptive
-/// mode. The normative invariant `NonNegativeStock` stays strong, and the
+/// mode. The normative invariant `non_negative_stock` stays strong, and the
 /// known production wart (cycle counts posting negatives mid-audit) is a
 /// named `exception` the machine reports whenever it is exercised, instead of
 /// a weakened invariant or a comment.
@@ -27,135 +27,135 @@ fact ReorderPoint(site: Site, sku: Sku): Int
 /// A physical count is under way at this site.
 observed fact Auditing(site: Site)
 
-derive Stock(s: Site, k: Sku): Int = OnHand(s, k) ?? 0
-derive Held(s: Site, k: Sku): Int = Reservation(s, k) ?? 0
-derive Available(s: Site, k: Sku): Int = Stock(s, k) - Held(s, k)
-derive Wanted(id: OrderId, k: Sku): Int = Line(id, k) ?? 0
-derive HasLines(id: OrderId): Bool = exists(k: Sku => Wanted(id, k) > 0)
-/// What reserved orders at a site currently claim; must equal `Held`.
-derive Demand(s: Site, k: Sku): Int =
-  sum(id: OrderId where Order(id) == Reserved && OrderSite(id) == s => Wanted(id, k))
-derive CanFill(id: OrderId): Bool =
-  all(k: Sku => Wanted(id, k) <= Available(OrderSite(id) ?? Warehouse, k))
-derive Threshold(s: Site, k: Sku): Int = ReorderPoint(s, k) ?? 0
+derive stock(s: Site, k: Sku): Int = OnHand(s, k) ?? 0
+derive held(s: Site, k: Sku): Int = Reservation(s, k) ?? 0
+derive available(s: Site, k: Sku): Int = stock(s, k) - held(s, k)
+derive wanted(id: OrderId, k: Sku): Int = Line(id, k) ?? 0
+derive has_lines(id: OrderId): Bool = exists(k: Sku => wanted(id, k) > 0)
+/// What reserved orders at a site currently claim; must equal `held`.
+derive demand(s: Site, k: Sku): Int =
+  sum(id: OrderId where Order(id) == Reserved && OrderSite(id) == s => wanted(id, k))
+derive can_fill(id: OrderId): Bool =
+  all(k: Sku => wanted(id, k) <= available(OrderSite(id) ?? Warehouse, k))
+derive threshold(s: Site, k: Sku): Int = ReorderPoint(s, k) ?? 0
 
-action Receive(site: Site, sku: Sku, qty: Amount)
-action PlaceOrder(id: OrderId, site: Site)
-action AddLine(id: OrderId, sku: Sku, qty: Amount)
+action receive(site: Site, sku: Sku, qty: Amount)
+action placeOrder(id: OrderId, site: Site)
+action addLine(id: OrderId, sku: Sku, qty: Amount)
 /// Reserve every line of the order at its site, all or nothing.
-action Reserve(id: OrderId)
-action Ship(id: OrderId)
-action Cancel(id: OrderId)
-action Transfer(from: Site, to: Site, sku: Sku, qty: Amount)
+action reserve(id: OrderId)
+action ship(id: OrderId)
+action cancel(id: OrderId)
+action transfer(from: Site, to: Site, sku: Sku, qty: Amount)
 /// Correct on-hand after a physical count. Only during an audit.
-action Adjust(site: Site, sku: Sku, delta: Delta)
-action BeginAudit(site: Site)
-action EndAudit(site: Site)
+action adjust(site: Site, sku: Sku, delta: Delta)
+action beginAudit(site: Site)
+action endAudit(site: Site)
 
-rule DoReceive on Receive(s, k, q) {
-  assert OnHand(s, k) = Stock(s, k) + q
+rule do_receive on receive(s, k, q) {
+  assert OnHand(s, k) = stock(s, k) + q
 }
 
-rule OrderIdFree on PlaceOrder(id, s) { require Order(id) == none "order id already used" }
-rule DoPlaceOrder on PlaceOrder(id, s) {
+rule order_id_free on placeOrder(id, s) { require Order(id) == none "order id already used" }
+rule do_place_order on placeOrder(id, s) {
   assert Order(id) = Open
   assert OrderSite(id) = s
 }
 
-rule LineOnOpenOrder on AddLine(id, k, q) {
+rule line_on_open_order on addLine(id, k, q) {
   require Order(id) == Open "lines can only be added to an open order"
 }
-rule DoAddLine on AddLine(id, k, q) {
-  assert Line(id, k) = Wanted(id, k) + q
+rule do_add_line on addLine(id, k, q) {
+  assert Line(id, k) = wanted(id, k) + q
 }
 
-rule ReserveOpen on Reserve(id) { require Order(id) == Open "only an open order can be reserved" }
-rule ReserveNonEmpty on Reserve(id) { require HasLines(id) "the order has no lines" }
-rule ReserveStock on Reserve(id) { require CanFill(id) "insufficient available stock" }
-rule DoReserve on Reserve(id) {
-  require Order(id) == Open && HasLines(id) && CanFill(id)
+rule reserve_open on reserve(id) { require Order(id) == Open "only an open order can be reserved" }
+rule reserve_non_empty on reserve(id) { require has_lines(id) "the order has no lines" }
+rule reserve_stock on reserve(id) { require can_fill(id) "insufficient available stock" }
+rule do_reserve on reserve(id) {
+  require Order(id) == Open && has_lines(id) && can_fill(id)
   let s = OrderSite(id) ?? Warehouse
-  for (k: Sku where Wanted(id, k) > 0) {
-    assert Reservation(s, k) = Held(s, k) + Wanted(id, k)
+  for (k: Sku where wanted(id, k) > 0) {
+    assert Reservation(s, k) = held(s, k) + wanted(id, k)
   }
   assert Order(id) = Reserved
 }
 
-rule ShipReserved on Ship(id) { require Order(id) == Reserved "only a reserved order can ship" }
-rule DoShip on Ship(id) {
+rule ship_reserved on ship(id) { require Order(id) == Reserved "only a reserved order can ship" }
+rule do_ship on ship(id) {
   require Order(id) == Reserved
   let s = OrderSite(id) ?? Warehouse
-  for (k: Sku where Wanted(id, k) > 0) {
-    assert OnHand(s, k) = Stock(s, k) - Wanted(id, k)
-    assert Reservation(s, k) = Held(s, k) - Wanted(id, k)
+  for (k: Sku where wanted(id, k) > 0) {
+    assert OnHand(s, k) = stock(s, k) - wanted(id, k)
+    assert Reservation(s, k) = held(s, k) - wanted(id, k)
   }
   assert Order(id) = Shipped
   emit OrderShipped(id)
 }
 
-rule CancelLive on Cancel(id) {
+rule cancel_live on cancel(id) {
   require Order(id) == Open || Order(id) == Reserved "only open or reserved orders can be cancelled"
 }
-rule DoCancel on Cancel(id) {
+rule do_cancel on cancel(id) {
   require Order(id) == Open || Order(id) == Reserved
   let s = OrderSite(id) ?? Warehouse
   if Order(id) == Reserved {
-    for (k: Sku where Wanted(id, k) > 0) {
-      assert Reservation(s, k) = Held(s, k) - Wanted(id, k)
+    for (k: Sku where wanted(id, k) > 0) {
+      assert Reservation(s, k) = held(s, k) - wanted(id, k)
     }
   }
   assert Order(id) = Cancelled
 }
 
-rule TransferSites on Transfer(a, b, k, q) { require a != b "transfer needs two different sites" }
-rule TransferAvailable on Transfer(a, b, k, q) {
-  require Available(a, k) >= q "reserved stock cannot be transferred"
+rule transfer_sites on transfer(a, b, k, q) { require a != b "transfer needs two different sites" }
+rule transfer_available on transfer(a, b, k, q) {
+  require available(a, k) >= q "reserved stock cannot be transferred"
 }
-rule DoTransfer on Transfer(a, b, k, q) {
-  require a != b && Available(a, k) >= q
-  assert OnHand(a, k) = Stock(a, k) - q
-  assert OnHand(b, k) = Stock(b, k) + q
+rule do_transfer on transfer(a, b, k, q) {
+  require a != b && available(a, k) >= q
+  assert OnHand(a, k) = stock(a, k) - q
+  assert OnHand(b, k) = stock(b, k) + q
 }
 
-rule AdjustUnderAudit on Adjust(s, k, d) {
+rule adjust_under_audit on adjust(s, k, d) {
   require Auditing(s) "adjustments are only accepted during an audit"
 }
-rule DoAdjust on Adjust(s, k, d) {
+rule do_adjust on adjust(s, k, d) {
   require Auditing(s)
-  assert OnHand(s, k) = Stock(s, k) + d
+  assert OnHand(s, k) = stock(s, k) + d
 }
 
-rule DoBeginAudit on BeginAudit(s) {
+rule do_begin_audit on beginAudit(s) {
   require !Auditing(s) "an audit is already running"
   assert Auditing(s)
 }
-rule EndAuditReconciled on EndAudit(s) {
+rule end_audit_reconciled on endAudit(s) {
   require Auditing(s) "no audit is running"
-  require all(k: Sku => Stock(s, k) >= 0) "reconcile negative counts before closing the audit"
+  require all(k: Sku => stock(s, k) >= 0) "reconcile negative counts before closing the audit"
   retract Auditing(s)
 }
 
 /// An order left the building.
 event OrderShipped(id: OrderId)
 /// Available stock fell below the reorder point.
-expected event LowStock(site: Site, sku: Sku) when Available(site, sku) < Threshold(site, sku)
-event StockOut(site: Site, sku: Sku) when Stock(site, sku) == 0 && Threshold(site, sku) > 0
+expected event LowStock(site: Site, sku: Sku) when available(site, sku) < threshold(site, sku)
+event StockOut(site: Site, sku: Sku) when stock(site, sku) == 0 && threshold(site, sku) > 0
 
-invariant NonNegativeStock: all(s: Site, k: Sku => Stock(s, k) >= 0)
-invariant ReservedWithinStock: all(s: Site, k: Sku => Held(s, k) <= Stock(s, k))
+invariant non_negative_stock: all(s: Site, k: Sku => stock(s, k) >= 0)
+invariant reserved_within_stock: all(s: Site, k: Sku => held(s, k) <= stock(s, k))
 /// Reservations are exactly the sum of reserved orders' lines: no leaks.
-invariant ReservationsMatchOrders: all(s: Site, k: Sku => Held(s, k) == Demand(s, k))
-invariant OrdersHaveSites: all(id: OrderId => (Order(id) == none) == (OrderSite(id) == none))
+invariant reservations_match_orders: all(s: Site, k: Sku => held(s, k) == demand(s, k))
+invariant orders_have_sites: all(id: OrderId => (Order(id) == none) == (OrderSite(id) == none))
 
 /// Cycle counts during an audit post their deltas immediately, so on-hand
 /// can go negative until the recount reconciles it. Seen weekly in the
 /// warehouse; the audit cannot be closed until it is fixed.
-observed exception NegativeDuringAudit on NonNegativeStock when
-  all(s: Site, k: Sku where Stock(s, k) < 0 => Auditing(s))
+observed exception negative_during_audit on non_negative_stock when
+  all(s: Site, k: Sku where stock(s, k) < 0 => Auditing(s))
 /// The same wart seen from the reservation side: a negative count can sit
 /// below what reserved orders hold until the recount lands.
-observed exception HeldExceedsCountDuringAudit on ReservedWithinStock when
-  all(s: Site, k: Sku where Held(s, k) > Stock(s, k) => Auditing(s))
+observed exception held_exceeds_count_during_audit on reserved_within_stock when
+  all(s: Site, k: Sku where held(s, k) > stock(s, k) => Auditing(s))
 
 init {
   for (s: Site, k: Sku) { assert ReorderPoint(s, k) = 5 }
@@ -165,67 +165,67 @@ init {
 }
 
 scenario "receive, order, reserve, ship" {
-  Receive(StoreSouth, Gizmo, 10)
-  PlaceOrder(1, Warehouse)
-  AddLine(1, Widget, 12)
-  AddLine(1, Gadget, 4)
-  Reserve(1) emits LowStock(Warehouse, Gadget)
-  expect Held(Warehouse, Widget) == 12 && Available(Warehouse, Widget) == 8 && Order(1) == Reserved
-  Ship(1) emits OrderShipped(1)
-  expect Stock(Warehouse, Widget) == 8 && Held(Warehouse, Widget) == 0 && Stock(Warehouse, Gadget) == 4
+  receive(StoreSouth, Gizmo, 10)
+  placeOrder(1, Warehouse)
+  addLine(1, Widget, 12)
+  addLine(1, Gadget, 4)
+  reserve(1) emits LowStock(Warehouse, Gadget)
+  expect held(Warehouse, Widget) == 12 && available(Warehouse, Widget) == 8 && Order(1) == Reserved
+  ship(1) emits OrderShipped(1)
+  expect stock(Warehouse, Widget) == 8 && held(Warehouse, Widget) == 0 && stock(Warehouse, Gadget) == 4
   expect Order(1) == Shipped
-  Ship(1) rejected by ShipReserved
+  ship(1) rejected by ship_reserved
 }
 
 scenario "reservation is all or nothing" {
-  PlaceOrder(1, StoreNorth)
-  AddLine(1, Widget, 4)
-  AddLine(1, Gadget, 1)
-  Reserve(1) rejected by ReserveStock
-  expect Held(StoreNorth, Widget) == 0 && Order(1) == Open
-  Transfer(Warehouse, StoreNorth, Gadget, 2)
-  Reserve(1)
-  expect Held(StoreNorth, Gadget) == 1
+  placeOrder(1, StoreNorth)
+  addLine(1, Widget, 4)
+  addLine(1, Gadget, 1)
+  reserve(1) rejected by reserve_stock
+  expect held(StoreNorth, Widget) == 0 && Order(1) == Open
+  transfer(Warehouse, StoreNorth, Gadget, 2)
+  reserve(1)
+  expect held(StoreNorth, Gadget) == 1
 }
 
 scenario "cancelling a reserved order releases its stock" {
-  PlaceOrder(2, Warehouse)
-  AddLine(2, Widget, 20)
-  Reserve(2) emits LowStock(Warehouse, Widget)
-  expect Available(Warehouse, Widget) == 0
-  Transfer(Warehouse, StoreSouth, Widget, 1) rejected by TransferAvailable
-  Cancel(2)
-  expect Available(Warehouse, Widget) == 20 && Order(2) == Cancelled
-  Cancel(2) rejected by CancelLive
-  AddLine(2, Gadget, 1) rejected by LineOnOpenOrder
+  placeOrder(2, Warehouse)
+  addLine(2, Widget, 20)
+  reserve(2) emits LowStock(Warehouse, Widget)
+  expect available(Warehouse, Widget) == 0
+  transfer(Warehouse, StoreSouth, Widget, 1) rejected by transfer_available
+  cancel(2)
+  expect available(Warehouse, Widget) == 20 && Order(2) == Cancelled
+  cancel(2) rejected by cancel_live
+  addLine(2, Gadget, 1) rejected by line_on_open_order
 }
 
 scenario "order ids are single use and lines need an open order" {
-  PlaceOrder(3, StoreSouth)
-  PlaceOrder(3, Warehouse) rejected by OrderIdFree
-  Reserve(3) rejected by ReserveNonEmpty
-  Reserve(4) rejected by ReserveOpen
-  Transfer(Warehouse, Warehouse, Widget, 1) rejected by TransferSites
+  placeOrder(3, StoreSouth)
+  placeOrder(3, Warehouse) rejected by order_id_free
+  reserve(3) rejected by reserve_non_empty
+  reserve(4) rejected by reserve_open
+  transfer(Warehouse, Warehouse, Widget, 1) rejected by transfer_sites
 }
 
 scenario "adjustments happen under audit and may go negative until reconciled" {
-  Adjust(Warehouse, Gadget, -3) rejected by AdjustUnderAudit
-  BeginAudit(Warehouse)
-  BeginAudit(Warehouse) rejected by DoBeginAudit
-  Adjust(Warehouse, Gadget, -10) emits LowStock(Warehouse, Gadget)
-  expect Stock(Warehouse, Gadget) == -2
-  EndAudit(Warehouse) rejected by EndAuditReconciled
-  Receive(Warehouse, Gadget, 2) emits StockOut(Warehouse, Gadget)
-  EndAudit(Warehouse)
-  expect !Auditing(Warehouse) && Stock(Warehouse, Gadget) == 0
+  adjust(Warehouse, Gadget, -3) rejected by adjust_under_audit
+  beginAudit(Warehouse)
+  beginAudit(Warehouse) rejected by do_begin_audit
+  adjust(Warehouse, Gadget, -10) emits LowStock(Warehouse, Gadget)
+  expect stock(Warehouse, Gadget) == -2
+  endAudit(Warehouse) rejected by end_audit_reconciled
+  receive(Warehouse, Gadget, 2) emits StockOut(Warehouse, Gadget)
+  endAudit(Warehouse)
+  expect !Auditing(Warehouse) && stock(Warehouse, Gadget) == 0
 }
 
 scenario "stock-out and low-stock are announced once each" {
-  PlaceOrder(1, StoreNorth)
-  AddLine(1, Widget, 6)
-  Reserve(1) emits LowStock(StoreNorth, Widget)
-  Ship(1) emits OrderShipped(1), StockOut(StoreNorth, Widget)
-  Receive(StoreNorth, Widget, 1) emits nothing
-  Receive(StoreNorth, Widget, 4) emits nothing
-  expect Available(StoreNorth, Widget) == 5 && !(Available(StoreNorth, Widget) < Threshold(StoreNorth, Widget))
+  placeOrder(1, StoreNorth)
+  addLine(1, Widget, 6)
+  reserve(1) emits LowStock(StoreNorth, Widget)
+  ship(1) emits OrderShipped(1), StockOut(StoreNorth, Widget)
+  receive(StoreNorth, Widget, 1) emits nothing
+  receive(StoreNorth, Widget, 4) emits nothing
+  expect available(StoreNorth, Widget) == 5 && !(available(StoreNorth, Widget) < threshold(StoreNorth, Widget))
 }

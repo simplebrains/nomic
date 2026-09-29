@@ -6,7 +6,7 @@
       "scenario": "vertical win is emitted exactly once and ends the game",
       "steps": [
         {
-          "description": "Drop(Red, 0) accepted",
+          "description": "drop(Red, 0) accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -15,7 +15,7 @@
           ]
         },
         {
-          "description": "Drop(Yellow, 1) accepted",
+          "description": "drop(Yellow, 1) accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -24,7 +24,7 @@
           ]
         },
         {
-          "description": "Drop(Red, 0) accepted",
+          "description": "drop(Red, 0) accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -33,7 +33,7 @@
           ]
         },
         {
-          "description": "Drop(Yellow, 1) accepted",
+          "description": "drop(Yellow, 1) accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -42,7 +42,7 @@
           ]
         },
         {
-          "description": "Drop(Red, 0) accepted",
+          "description": "drop(Red, 0) accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -51,7 +51,7 @@
           ]
         },
         {
-          "description": "Drop(Yellow, 1) accepted",
+          "description": "drop(Yellow, 1) accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -64,7 +64,7 @@
           "passed": true
         },
         {
-          "description": "Drop(Red, 0) accepted with events",
+          "description": "drop(Red, 0) accepted with events",
           "passed": true,
           "accepted": true,
           "events": [
@@ -81,11 +81,11 @@
           "passed": true
         },
         {
-          "description": "Drop(Yellow, 2) rejected by GameOver",
+          "description": "drop(Yellow, 2) rejected by game_over",
           "passed": true,
           "accepted": false,
           "denied_by": [
-            "GameOver"
+            "game_over"
           ]
         }
       ],
@@ -105,7 +105,7 @@
       "scenario": "horizontal win",
       "steps": [
         {
-          "description": "Drop(Red, 0) accepted",
+          "description": "drop(Red, 0) accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -114,7 +114,7 @@
           ]
         },
         {
-          "description": "Drop(Yellow, 0) accepted",
+          "description": "drop(Yellow, 0) accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -123,7 +123,7 @@
           ]
         },
         {
-          "description": "Drop(Red, 1) accepted",
+          "description": "drop(Red, 1) accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -132,7 +132,7 @@
           ]
         },
         {
-          "description": "Drop(Yellow, 1) accepted",
+          "description": "drop(Yellow, 1) accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -141,7 +141,7 @@
           ]
         },
         {
-          "description": "Drop(Red, 2) accepted",
+          "description": "drop(Red, 2) accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -150,7 +150,7 @@
           ]
         },
         {
-          "description": "Drop(Yellow, 2) accepted",
+          "description": "drop(Yellow, 2) accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -159,7 +159,7 @@
           ]
         },
         {
-          "description": "Drop(Red, 3) accepted with events",
+          "description": "drop(Red, 3) accepted with events",
           "passed": true,
           "accepted": true,
           "events": [
@@ -188,7 +188,7 @@
       "scenario": "diagonal win",
       "steps": [
         {
-          "description": "Drop(Red, 0) accepted",
+          "description": "drop(Red, 0) accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -197,7 +197,7 @@
           ]
         },
         {
-          "description": "Drop(Yellow, 1) accepted",
+          "description": "drop(Yellow, 1) accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -206,7 +206,7 @@
           ]
         },
         {
-          "description": "Drop(Red, 1) accepted",
+          "description": "drop(Red, 1) accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -215,7 +215,7 @@
           ]
         },
         {
-          "description": "Drop(Yellow, 2) accepted",
+          "description": "drop(Yellow, 2) accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -224,7 +224,7 @@
           ]
         },
         {
-          "description": "Drop(Red, 3) accepted",
+          "description": "drop(Red, 3) accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -233,7 +233,7 @@
           ]
         },
         {
-          "description": "Drop(Yellow, 2) accepted",
+          "description": "drop(Yellow, 2) accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -242,7 +242,7 @@
           ]
         },
         {
-          "description": "Drop(Red, 2) accepted",
+          "description": "drop(Red, 2) accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -251,7 +251,7 @@
           ]
         },
         {
-          "description": "Drop(Yellow, 3) accepted",
+          "description": "drop(Yellow, 3) accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -260,7 +260,7 @@
           ]
         },
         {
-          "description": "Drop(Red, 4) accepted",
+          "description": "drop(Red, 4) accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -269,7 +269,7 @@
           ]
         },
         {
-          "description": "Drop(Yellow, 3) accepted",
+          "description": "drop(Yellow, 3) accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -278,7 +278,7 @@
           ]
         },
         {
-          "description": "Drop(Red, 3) accepted with events",
+          "description": "drop(Red, 3) accepted with events",
           "passed": true,
           "accepted": true,
           "events": [
@@ -311,15 +311,15 @@
       "scenario": "moves out of turn are rejected",
       "steps": [
         {
-          "description": "Drop(Yellow, 3) rejected by TurnOrder",
+          "description": "drop(Yellow, 3) rejected by turn_order",
           "passed": true,
           "accepted": false,
           "denied_by": [
-            "TurnOrder"
+            "turn_order"
           ]
         },
         {
-          "description": "Drop(Red, 3) accepted",
+          "description": "drop(Red, 3) accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -328,11 +328,11 @@
           ]
         },
         {
-          "description": "Drop(Red, 3) rejected by TurnOrder",
+          "description": "drop(Red, 3) rejected by turn_order",
           "passed": true,
           "accepted": false,
           "denied_by": [
-            "TurnOrder"
+            "turn_order"
           ]
         },
         {
@@ -349,7 +349,7 @@
       "scenario": "a full column rejects further drops",
       "steps": [
         {
-          "description": "Drop(Red, 0) accepted",
+          "description": "drop(Red, 0) accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -358,7 +358,7 @@
           ]
         },
         {
-          "description": "Drop(Yellow, 0) accepted",
+          "description": "drop(Yellow, 0) accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -367,7 +367,7 @@
           ]
         },
         {
-          "description": "Drop(Red, 0) accepted",
+          "description": "drop(Red, 0) accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -376,7 +376,7 @@
           ]
         },
         {
-          "description": "Drop(Yellow, 0) accepted",
+          "description": "drop(Yellow, 0) accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -385,7 +385,7 @@
           ]
         },
         {
-          "description": "Drop(Red, 0) accepted",
+          "description": "drop(Red, 0) accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -394,7 +394,7 @@
           ]
         },
         {
-          "description": "Drop(Yellow, 0) accepted",
+          "description": "drop(Yellow, 0) accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -407,15 +407,15 @@
           "passed": true
         },
         {
-          "description": "Drop(Red, 0) rejected by Place",
+          "description": "drop(Red, 0) rejected by place",
           "passed": true,
           "accepted": false,
           "denied_by": [
-            "Place"
+            "place"
           ]
         },
         {
-          "description": "Drop(Red, 1) accepted",
+          "description": "drop(Red, 1) accepted",
           "passed": true,
           "accepted": true,
           "effects": [
@@ -439,7 +439,7 @@
       "scenario": "a move that does not win emits nothing",
       "steps": [
         {
-          "description": "Drop(Red, 3) accepted with events",
+          "description": "drop(Red, 3) accepted with events",
           "passed": true,
           "accepted": true,
           "effects": [
