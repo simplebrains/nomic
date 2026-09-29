@@ -96,10 +96,15 @@ struct Parser {
     i: usize,
 }
 
-/// Every reserved word. Kept identical to `packages/syntax/keywords.json`
-/// (all groups except `primitives`) by a test. `by` is deliberately absent:
-/// it is contextual, read only right after `rejected`, so it stays usable as
-/// a name (`Blocked(id, by)`).
+/// The language's vocabulary. Kept identical to `packages/syntax/keywords.json`
+/// (all groups except `primitives`) by a test, so editors highlight exactly the
+/// words the parser knows. Almost all of these are **contextual**: the parser
+/// recognizes them only in the position where they mean something (a
+/// declaration word at the start of a top-level line, a statement word at the
+/// start of a statement, `when` after a rule pattern, a quantifier only when
+/// followed by a binder), so they remain usable as names everywhere else.
+/// `by` is contextual too and deliberately not listed, since editors should
+/// not color it as a keyword.
 pub const KEYWORDS: &[&str] = &[
     "model", "type", "fact", "derive", "action", "event", "rule", "invariant", "exception", "init",
     "scenario", "on", "when", "require", "deny", "allow", "assert", "retract", "emit", "let", "if",
@@ -108,6 +113,13 @@ pub const KEYWORDS: &[&str] = &[
     "for", "nothing", "ensure", "legal", "cite", "import", "include", "as", "opaque", "order", "in", "unique",
     "realizes", "derives_from", "evidences", "contradicts", "configures", "documents",
 ];
+
+/// The words a name can never be. Each sits in a position where a name is also
+/// legal, so context cannot tell them apart: `match (p) {` reads like a call,
+/// `legal(Move(1))` is call-shaped, the literals are values, and scenario steps
+/// have no terminator, so `emits` on the next line could be an occurrence.
+pub const RESERVED: &[&str] = &["match", "legal", "true", "false", "none", "given", "expect", "emits", "rejected"];
+
 
 impl Parser {
     fn peek(&self) -> &Tok {
@@ -166,8 +178,8 @@ impl Parser {
     fn ident(&mut self) -> PResult<String> {
         match self.peek().clone() {
             Tok::Ident(s) => {
-                if KEYWORDS.contains(&s.as_str()) {
-                    return self.err(format!("`{s}` is a keyword and cannot be used as a name"));
+                if RESERVED.contains(&s.as_str()) {
+                    return self.err(format!("`{s}` is a reserved word and cannot be used as a name"));
                 }
                 self.bump();
                 Ok(s)
@@ -872,12 +884,12 @@ impl Parser {
                     self.bump();
                     Ok(Expr::Lit { value: Literal::Bool { value: s == "true" }, pos })
                 }
-                "none" if *self.peek_at(1) == Tok::LParen => self.quant(),
+                "none" if self.binder_ahead() => self.quant(),
                 "none" => {
                     self.bump();
                     Ok(Expr::Lit { value: Literal::None, pos })
                 }
-                "all" | "exists" | "count" | "sum" | "first" | "unique" => self.quant(),
+                "all" | "exists" | "count" | "sum" | "first" | "unique" if self.binder_ahead() => self.quant(),
                 "match" => self.match_expr(),
                 "legal" => {
                     self.bump();
@@ -922,6 +934,38 @@ impl Parser {
         let body = Box::new(self.expr()?);
         self.expect(Tok::RParen)?;
         Ok(Expr::Quant { q, binders, filter, body, pos })
+    }
+
+    /// Is the current identifier followed by `(` and then a binder? A binder
+    /// starts `name :`, `name in`, or `( name, … ) in`; a call argument cannot,
+    /// which is what lets the quantifier words double as ordinary names.
+    fn binder_ahead(&self) -> bool {
+        if *self.peek_at(1) != Tok::LParen {
+            return false;
+        }
+        match self.peek_at(2) {
+            Tok::Ident(_) => *self.peek_at(3) == Tok::Colon || matches!(self.peek_at(3), Tok::Ident(w) if w == "in"),
+            Tok::LParen => {
+                // `((a, b) in F` : skip to the matching paren, then expect `in`.
+                let mut depth = 0usize;
+                let mut k = 2;
+                loop {
+                    match self.peek_at(k) {
+                        Tok::LParen => depth += 1,
+                        Tok::RParen => {
+                            depth -= 1;
+                            if depth == 0 {
+                                return matches!(self.peek_at(k + 1), Tok::Ident(w) if w == "in");
+                            }
+                        }
+                        Tok::Eof => return false,
+                        _ => {}
+                    }
+                    k += 1;
+                }
+            }
+            _ => false,
+        }
     }
 
     /// `x: T`, `x in Fact`, or `(a, b) in Fact`, comma-separated.
@@ -1007,6 +1051,29 @@ mod tests {
         assert_eq!(m.facts[0].doc.as_deref(), Some("Whose turn."));
         assert_eq!(m.rules[0].on.args.len(), 2);
         assert_eq!(m.scenarios[0].steps.len(), 3);
+    }
+
+    #[test]
+    fn most_keywords_are_contextual() {
+        // `order`, `count`, `when`, `emit`, `type`, `deny` as names; quantifiers
+        // still recognized when a binder follows.
+        let m = parse(
+            "type Kind = A | B\nfact order: Int\nfact count: Int\nfact when(k: Kind): Int\n\
+             derive emit(x: Int): Int = x + (count ?? 0) + (order ?? 0)\n\
+             derive Total: Int = sum(k: Kind => when(k) ?? 0) + count(k: Kind => when(k) != none)\n\
+             action type(deny: Int)\naction allow\n\
+             rule Set on type(d) { assert order = d; assert count = emit(d) }\nrule Ok on allow { allow }\n\
+             scenario \"s\" { type(3); allow; expect order == 3 && Total >= 0 }\n",
+        )
+        .unwrap();
+        assert_eq!(m.facts.iter().map(|f| f.name.as_str()).collect::<Vec<_>>(), ["order", "count", "when"]);
+        assert_eq!(m.derives[0].name, "emit");
+        assert_eq!(m.actions.iter().map(|a| a.name.as_str()).collect::<Vec<_>>(), ["type", "allow"]);
+        assert!(matches!(&m.derives[1].body, Expr::Binary { .. }), "sum/count parsed as quantifiers");
+        for w in RESERVED {
+            assert!(KEYWORDS.contains(w), "{w} must be in the vocabulary");
+            assert!(parse(&format!("fact {w}: Int\n")).is_err(), "{w} must stay reserved");
+        }
     }
 
     #[test]

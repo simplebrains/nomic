@@ -192,6 +192,18 @@ Dependents follow automatically: a bump to `nomic` patches `nomic-fmt` and
 - **Your own markdown renderer (Astro, MDX, rehype, anything on Shiki):** pass `nomicShikiLanguage` from `@simplebrains/nomic-syntax` in Shiki's `langs`; fences tagged `nomic` or `nom` then highlight.
 - **GitHub:** cannot be taught per repository. Fences render as plain text until Nomic is added to GitHub Linguist, which requires a published grammar and real-world usage. Tag fences `nomic` anyway so they light up everywhere else.
 
+## Names and words
+
+Nine words are reserved and can never be names: `match`, `legal`, `true`,
+`false`, `none`, `given`, `expect`, `emits`, `rejected`. Every other keyword is
+contextual: recognized only where it means something (a declaration word at
+the start of a top-level line, a statement word at the start of a statement,
+`when` after a rule pattern, a quantifier only when a binder follows) and an
+ordinary name everywhere else, so a fact may be called `order`, `count`, or
+`when`, and an action `allow` or `deny`. Enum variants must be capitalized, so
+a pattern can tell `Red` (a literal) from `c` (a binding). Nothing else about
+case is enforced.
+
 ## The transition pipeline
 
 `Machine::apply(state, occurrence)` runs the reference pipeline from the core
