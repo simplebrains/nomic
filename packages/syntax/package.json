@@ -1,6 +1,6 @@
 {
   "name": "@simplebrains/nomic-syntax",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "description": "Editor support for the Nomic language: TextMate grammar, Monaco Monarch tokenizer, language configuration, keyword lists",
   "license": "MIT",
   "type": "module",

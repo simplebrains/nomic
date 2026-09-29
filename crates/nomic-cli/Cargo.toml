@@ -1,6 +1,6 @@
 [package]
 name = "nomic-cli"
-version = "0.2.0"
+version = "0.3.0"
 edition.workspace = true
 license.workspace = true
 repository.workspace = true
@@ -14,6 +14,6 @@ name = "nomic"
 path = "src/main.rs"
 
 [dependencies]
-nomic = { path = "../nomic", version = "0.2.0" }
-nomic-fmt = { path = "../nomic-fmt", version = "0.2.0" }
+nomic = { path = "../nomic", version = "0.3.0" }
+nomic-fmt = { path = "../nomic-fmt", version = "0.3.0" }
 serde_json = "1"
